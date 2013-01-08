@@ -1,0 +1,52 @@
+%        File: notes.tex
+%     Created: Tue Jan 08 11:00 AM 2013 P
+% Last Change: Tue Jan 08 11:00 AM 2013 P
+%
+\documentclass[a4paper]{article}
+\usepackage{hyperref}
+
+\newcommand{\ham}{\mathcal{H}}
+\newcommand{\nn}[2]{\langle #1 #2 \rangle}
+\newcommand{\av}[1]{\langle #1 \rangle}
+
+\begin{document}
+\begin{equation}
+  \ham = (1 - s) \ham_D + s \ham_P,
+  \qquad
+  0 \leq s \leq 1
+  \label{def-h_qaa}
+\end{equation}
+\begin{equation}
+  \ham_D = \sum_i \sigma^x_i
+  \label{def-h_d}
+\end{equation}
+\begin{equation}
+  \ham_P = \sum_{\nn{i}{j}} \sigma^z_i \sigma^z_j + \sum_i h_i \sigma^z_i,
+  \qquad
+  h_i \rightarrow h
+  \label{def-h_p}
+\end{equation}
+\begin{equation}
+  F_{ij} = \av{ \sigma^z_i (h_j)}
+  \label{def-f}
+\end{equation}
+Measure $F_{ij}(h_j \rightarrow h)$.
+\begin{equation}
+  \frac{\partial F_{ij}}{\partial h_j} (h_i \rightarrow h)
+  \sim \av{\sigma^z_i \sigma^z_j}
+  \label{}
+\end{equation}
+Can approximate derivative using finite differences. (What about Peter's
+method?)
+
+Numerical methods to consider:
+\begin{enumerate}
+  \item \href{http://en.wikipedia.org/wiki/Lanczos_algorithm}
+    {Lanczos algorithm} (matrix diagonalization)
+  \item \href{http://en.wikipedia.org/wiki/Conjugate_gradient_method}
+    {Conjugate gradient method} (find ground state only)
+  \item Power method
+\end{enumerate}
+\end{document}
+
+
