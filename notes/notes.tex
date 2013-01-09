@@ -27,17 +27,13 @@
   \label{def-h_p}
 \end{equation}
 \begin{equation}
-  F_{ij} = \av{ \sigma^z_i (h_j)}
+  f_{ij} = \frac{\partial}{\partial h_j} \av{\sigma^z_i}
+  \sim \av{\sigma^z_i \sigma^z_j}
   \label{def-f}
 \end{equation}
-Measure $F_{ij}(h_j \rightarrow h)$.
-\begin{equation}
-  \frac{\partial F_{ij}}{\partial h_j} (h_i \rightarrow h)
-  \sim \av{\sigma^z_i \sigma^z_j}
-  \label{}
-\end{equation}
-Can approximate derivative using finite differences. (What about Peter's
-method?)
+
+Can approximate derivative using finite differences. (Peter's method for
+calculating susceptibility using Lanczos?)
 
 Numerical methods to consider:
 \begin{enumerate}
@@ -47,6 +43,8 @@ Numerical methods to consider:
     {Conjugate gradient method} (find ground state only)
   \item Power method
 \end{enumerate}
+
+Calculate $f_{ij}$ in first-order nondegenerate perturbation theory.
 \end{document}
 
 
