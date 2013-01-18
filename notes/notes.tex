@@ -72,9 +72,33 @@ Therefore
 and
 \begin{equation}
   \pd{}{h_j} \avg{\sigma_i}
-  = \matrixel{\psi} {\sigma_j \sum_{n>0} \frac{\ket{n} \bra{n}}{E_0 - E_n} \sigma_i} {\psi} + \cc
+  = -2 \matrixel{\psi} {\sigma_j \sum_{n>0} \frac{\ket{n} \bra{n}}{E_n - E_0} \sigma_i} {\psi}
+  \label{}
+\end{equation}
+
+\begin{equation}
+  \ham = \sum_n E_n \ket{n} \bra{n}
+  \label{}
+\end{equation}
+Let
+\begin{equation}
+  \boxed{
+  \ham^{\prime} \equiv \ham - E_0 \ket{\psi} \bra{\psi}
+  }
+  \label{}
+\end{equation}
+Then
+\begin{equation}
+  \ham^{\prime} - E_0 = \sum_{n>0} \left( E_n - E_0 \right) \ket{n} \bra{n}
+  \label{}
+\end{equation}
+and
+\begin{equation}
+  \boxed{
+  \pd{}{h_j} \avg{\sigma_i}
+  = -2 \matrixel{\psi}{\sigma_j \left( \ham^{\prime} - E_0 \right)^{-1} \sigma_i}{\psi}
+  }
   \label{}
 \end{equation}
 \end{document}
-
 
