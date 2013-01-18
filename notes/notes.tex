@@ -2,12 +2,12 @@
 %     Created: Tue Jan 08 11:00 AM 2013 P
 % Last Change: Tue Jan 08 11:00 AM 2013 P
 %
-\documentclass[a4paper]{article}
+\input{header.tex}
 \usepackage{hyperref}
 
 \newcommand{\ham}{\mathcal{H}}
-\newcommand{\nn}[2]{\langle #1 #2 \rangle}
-\newcommand{\av}[1]{\langle #1 \rangle}
+\newcommand{\nnsum}[2]{\sum_{\langle #1 #2 \rangle}}
+\newcommand{\cc}{\mathrm{c.c.}}
 
 \begin{document}
 \begin{equation}
@@ -21,14 +21,14 @@
   \label{def-h_d}
 \end{equation}
 \begin{equation}
-  \ham_P = \sum_{\nn{i}{j}} \sigma^z_i \sigma^z_j + \sum_i h_i \sigma^z_i,
+  \ham_P = \nnsum{i}{j} \sigma^z_i \sigma^z_j + \sum_i h_i \sigma^z_i,
   \qquad
   h_i \rightarrow h
   \label{def-h_p}
 \end{equation}
 \begin{equation}
-  f_{ij} = \frac{\partial}{\partial h_j} \av{\sigma^z_i}
-  \sim \av{\sigma^z_i \sigma^z_j}
+  f_{ij} = \pd{}{h_j} \avg{\sigma^z_i}
+  \sim \avg{\sigma^z_i \sigma^z_j}
   \label{def-f}
 \end{equation}
 
@@ -45,6 +45,36 @@ Numerical methods to consider:
 \end{enumerate}
 
 Calculate $f_{ij}$ in first-order nondegenerate perturbation theory.
+
+Let $\ket{\psi}$ be the ground state.
+\begin{equation}
+  \pd{}{h_j} \avg{\sigma_i}
+  = \matrixel{\pd{\psi}{h_j}}{\sigma_i}{\psi} + \cc
+  \label{}
+\end{equation}
+Let
+$h_j \rightarrow h_j + \delta h_j$.
+Then
+$\ham_P \rightarrow \ham_P + \delta h_j \sigma_j$.
+The first-order change in the ground state is
+\begin{equation}
+  \ket{\psi^{(1)}}
+  = \delta h_j \sum_{n>0} \frac{\matrixel{n}{\sigma_j}{\psi}}{E_0 - E_n} \ket{n}.
+  \label{}
+\end{equation}
+Therefore
+\begin{align}
+  \ket{\pd{\psi}{h_j}}
+  &= \frac{1}{\delta h_j} \ket{\psi^{(1)}} \\
+  &= \sum_{n>0} \frac{\matrixel{n}{\sigma_j}{\psi}}{E_0 - E_n} \ket{n}
+  \label{}
+\end{align}
+and
+\begin{equation}
+  \pd{}{h_j} \avg{\sigma_i}
+  = \matrixel{\psi} {\sigma_j \sum_{n>0} \frac{\ket{n} \bra{n}}{E_0 - E_n} \sigma_i} {\psi} + \cc
+  \label{}
+\end{equation}
 \end{document}
 
 
