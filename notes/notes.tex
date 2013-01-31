@@ -115,17 +115,19 @@ and
 \end{equation}
 
 \begin{equation}
-  \ket{\psi} = \sum_{i=0}^{2^n-1} c_i \ket{i}
+  \ket{\psi} = \sum_{i=0}^{2^N-1} c_n \ket{n}
   \label{}
 \end{equation}
-where $\ket{i}$ is an eigenstate of
-$\sigma_1 \otimes \sigma_2 \otimes \cdots \otimes \sigma_n$
+where $\ket{n}$ is an eigenstate of
+$\sigma_1 \otimes \sigma_2 \otimes \cdots \otimes \sigma_N$
 such that
 \begin{equation}
-  i = \sum_{j=0}^n \left( \sigma_j + \frac{1}{2} \right) 2^j.
+    \sum_{i=0}^N \left( \sigma_i + \frac{1}{2} \right) 2^i \ket{n} = n \ket{n}.
   \label{}
 \end{equation}
-For example, with $n=3$
+In words, $\ket{n}$ corresponds to the spin configuration obtained by taking 1
+as spin up and 0 as spin down in the binary representation of $n$.
+For example, with $N=3$,
 \begin{align*}
   \ket{0} \equiv \ket{000}
   &\equiv
@@ -148,19 +150,19 @@ For example, with $n=3$
 The driver Hamiltonian $\ham_D$ connects states that differ by one and only one
 spin flip.
 \begin{equation}
-  \matrixel{i}{H_D}{j} = \sum_{k=1}^n \delta_{i,\, n_{jk}}
+  \matrixel{i}{H_D}{j} = \sum_{k=1}^N \delta_{i,\, n_{jk}}
   \label{}
 \end{equation}
 \begin{align}
   \avg{\ham_D}
   &= \sum_{i,\,j} c_i^* c_j \matrixel{i}{\ham_D}{j} \\
-  &= \sum_{i,\,j} \sum_{k=1}^n c_i^* c_j \delta_{i,\, n_{jk}} \\
-  &= \sum_j \sum_{k=1}^n c_{n_{jk}}^* c_j
+  &= \sum_{i,\,j} \sum_{k=1}^N c_i^* c_j \delta_{i,\, n_{jk}} \\
+  &= \sum_j \sum_{k=1}^N c_{n_{jk}}^* c_j
   \label{}
 \end{align}
 \begin{equation}
   \boxed{
-  \avg{\ham_D} = \sum_i \sum_{j=1}^n c_{n_{ij}}^* c_i
+  \avg{\ham_D} = \sum_i \sum_{j=1}^N c_{n_{ij}}^* c_i
   }
   \label{}
 \end{equation}
