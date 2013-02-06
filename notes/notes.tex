@@ -8,8 +8,7 @@
 \newcommand{\ham}{H}
 \newcommand{\nnsum}[2]{\sum_{\langle #1 #2 \rangle}}
 \newcommand{\cc}{\mathrm{c.c.}}
-%\newcommand{\nghbr}[2]{#1 ( #2 )}
-\newcommand{\nghbr}[2]{b(#1,\,#2)}
+\newcommand{\nghbr}[2]{a(#1,\,#2)}
 
 \begin{document}
 
@@ -109,7 +108,7 @@ and
   \label{}
 \end{equation}
 
-\section*{Energy expectation value}
+\section*{Energy}
 
 \begin{equation}
   \ham = (1 - s) \avg{\ham_D} + s \avg{\ham_P}
@@ -117,9 +116,9 @@ and
 \end{equation}
 Expand the ground state $\ket{\psi}$ in an orthonormal basis
 \begin{equation}
-  \ket{\psi} = \sum_{n=0}^{2^N-1} a_n \ket{n},
+  \ket{\psi} = \sum_{n=0}^{2^N-1} c_n \ket{n},
   \qquad
-  \sum_n \abs{a_n}^2 = 1
+  \sum_n \abs{c_n}^2 = 1
   \label{}
 \end{equation}
 where $\ket{n}$ is an eigenstate of
@@ -152,29 +151,34 @@ For example, with $N=3$,
   \label{}
 \end{align*}
 Because $\ham$ is real and symmetric in this basis, we can restrict the
-coefficients $a_n$ to be real
+coefficients $c_n$ to be real
 \begin{equation}
-  a_n = a_n^*.
+  c_n = c_n^*.
   \label{}
 \end{equation}
 The driver Hamiltonian $\ham_D$ connects states that differ by a single spin
-flip (hereafter referred to as ``neighboring'' states)
+flip. Let
 \begin{equation}
-  \matrixel{m}{H_D}{n} = \sum_{i=1}^N \delta_{m,\, \nghbr{n}{i}}
+  A_{n m}
+  \equiv \matrixel{n}{\ham_D}{m}
+  \equiv \begin{cases}
+    1 & \ket{n}, \ket{m} \text{ differ by a single spin flip} \\
+    0
+  \end{cases}
   \label{}
 \end{equation}
-where $\ket{\nghbr{n}{i}}$ is the $i$th neighbor of $\ket{n}$.
-\begin{align}
-  \avg{\ham_D}
-  &= \sum_{m,\,n} a_m a_n \matrixel{m}{\ham_D}{n} \\
-  &= \sum_{m,\,n} \sum_{i=1}^N a_m a_n \delta_{m,\, \nghbr{n}{i}} \\
-  &= \sum_n \sum_{i=1}^N a_{\nghbr{n}{i}} a_n
-  \label{}
-\end{align}
+For each state $\ket{n}$ there are $N$ ``neighboring'' states that differ by a
+single spin flip. Let $\ket{\nghbr{n}{i}}$ denote the $i$th neighbor of
+$\ket{n}$, so that
 \begin{equation}
-  \boxed{
-  \avg{\ham_D} = \sum_n \sum_{i=1}^N a_{\nghbr{n}{i}} a_n
-  }
+  \sum_m A_{n m} c_m \equiv \sum_{i=1}^N c_{\nghbr{n}{i}}.
+  \label{}
+\end{equation}
+Then
+\begin{equation}
+  \avg{\ham_D}
+  = \sum_{n,\,m} c_n A_{n m} c_m
+  \equiv \sum_n \sum_{i=1}^N c_n c_{\nghbr{n}{i}}.
   \label{}
 \end{equation}
 The problem Hamiltonian $\ham_P$ is diagonal in the computational basis
@@ -183,16 +187,16 @@ The problem Hamiltonian $\ham_P$ is diagonal in the computational basis
   \label{}
 \end{equation}
 \begin{equation}
-  \avg{\ham_P} = \sum_n E_n a_n^2
+  \avg{\ham_P} = \sum_n E_n c_n^2
   \label{}
 \end{equation}
 The function to be minimized is
 \begin{equation}
   \boxed{
-  f \left( \left\{ a_i \right\} \right)
+  f \left( \left\{ c_i \right\} \right)
   \equiv \avg{\ham}
-  = \frac{(1-s) \sum_n \sum_{i=1}^N a_{\nghbr{n}{i}} a_n + s \sum_n E_n a_n^2}
-  {\sum_n a_n^2}
+  = \frac{(1-s) \sum_n \sum_{i=1}^N c_n c_{\nghbr{n}{i}} + s \sum_n E_n c_n^2}
+  {\sum_n c_n^2}
   }
   \label{}
 \end{equation}
