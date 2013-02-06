@@ -193,7 +193,7 @@ The problem Hamiltonian $\ham_P$ is diagonal in the computational basis
 The function to be minimized is
 \begin{equation}
   \boxed{
-  f \left( \left\{ c_i \right\} \right)
+  E( \{ c_i \})
   \equiv \avg{\ham}
   = \frac{(1-s) \sum_n \sum_{i=1}^N c_n c_{\nghbr{n}{i}} + s \sum_n E_n c_n^2}
   {\sum_n c_n^2}
@@ -201,5 +201,20 @@ The function to be minimized is
   \label{}
 \end{equation}
 \section*{Gradient of energy}
+\begin{align}
+  \pd{}{c_j} \sum_{n,\,m} c_n A_{n m} c_m
+  &= \sum_n \left( A_{j n} c_n + c_n A_{n j} \right) \\
+  &= 2 \sum_n A_{j n} c_n \\
+  &= 2 \sum_{i=1}^N c_{\nghbr{j}{i}}
+  \label{}
+\end{align}
+\begin{equation}
+  \alpha_j \equiv \sum_n A_{j n} c_n
+  \label{}
+\end{equation}
+\begin{equation}
+  \sum_{n,\,m} c_n A_{n m} c_m = \sum_n c_n \alpha_n
+  \label{}
+\end{equation}
 \end{document}
 
