@@ -3,12 +3,12 @@
 % Last Change: Tue Jan 08 11:00 AM 2013 P
 %
 \input{header.tex}
-\usepackage{hyperref}
+%\usepackage{hyperref}
 
 \newcommand{\ham}{H}
 \newcommand{\nnsum}[2]{\sum_{\langle #1 #2 \rangle}}
 \newcommand{\cc}{\mathrm{c.c.}}
-\newcommand{\nghbr}[2]{a(#1,\,#2)}
+\newcommand{\nghbr}[2]{(#1,\,#2)}
 
 \begin{document}
 
@@ -38,15 +38,6 @@
 
 Can approximate derivative using finite differences. (Peter's method for
 calculating susceptibility using Lanczos?)
-
-Numerical methods to consider:
-\begin{enumerate}
-  \item \href{http://en.wikipedia.org/wiki/Lanczos_algorithm}
-    {Lanczos algorithm} (matrix diagonalization)
-  \item \href{http://en.wikipedia.org/wiki/Conjugate_gradient_method}
-    {Conjugate gradient method} (find ground state only)
-  \item Power method
-\end{enumerate}
 
 \section*{Perturbation theory for susceptibility}
 
@@ -109,7 +100,6 @@ and
 \end{equation}
 
 \section*{Energy}
-
 \begin{equation}
   \ham = (1 - s) \avg{\ham_D} + s \avg{\ham_P}
   \label{}
@@ -125,10 +115,10 @@ where $\ket{n}$ is an eigenstate of
 $\sigma_1 \otimes \sigma_2 \otimes \cdots \otimes \sigma_N$
 such that
 \begin{equation}
-    \sum_{i=0}^N \left( \sigma_i + \frac{1}{2} \right) 2^i \ket{n} = n \ket{n}.
+    \sum_{k=0}^N \left( \sigma_k + \frac{1}{2} \right) 2^k \ket{n} = n \ket{n}.
   \label{}
 \end{equation}
-In words, $\ket{n}$ corresponds to the spin configuration obtained by taking 1
+i.e. $\ket{n}$ corresponds to the spin configuration obtained by taking 1
 as spin up and 0 as spin down in the binary representation of $n$.
 For example, with $N=3$,
 \begin{align*}
@@ -168,17 +158,17 @@ flip. Let
   \label{}
 \end{equation}
 For each state $\ket{n}$ there are $N$ ``neighboring'' states that differ by a
-single spin flip. Let $\ket{\nghbr{n}{i}}$ denote the $i$th neighbor of
+single spin flip. Let $\ket{\nghbr{n}{k}}$ denote the $k$th neighbor of
 $\ket{n}$, so that
 \begin{equation}
-  \sum_m A_{n m} c_m \equiv \sum_{i=1}^N c_{\nghbr{n}{i}}.
+  (A c)_n \equiv \sum_{k=1}^N c_{\nghbr{n}{k}}.
   \label{}
 \end{equation}
 Then
 \begin{equation}
   \avg{\ham_D}
-  = \sum_{n,\,m} c_n A_{n m} c_m
-  \equiv \sum_n \sum_{i=1}^N c_n c_{\nghbr{n}{i}}.
+  = c^T A c
+  \equiv \sum_n c_n \sum_k c_{\nghbr{n}{k}}.
   \label{}
 \end{equation}
 The problem Hamiltonian $\ham_P$ is diagonal in the computational basis
@@ -195,21 +185,17 @@ The function to be minimized is
   \boxed{
   E( \{ c_i \})
   \equiv \avg{\ham}
-  = \frac{(1-s) \sum_n \sum_{i=1}^N c_n c_{\nghbr{n}{i}} + s \sum_n E_n c_n^2}
-  {\sum_n c_n^2}
+  = \frac{(1-s) c^T A c + s \sum_n E_n c_n^2}{c^T c}
   }
   \label{}
 \end{equation}
 \section*{Gradient of energy}
-\begin{align}
-  \pd{}{c_j} \sum_{n,\,m} c_n A_{n m} c_m
-  &= \sum_n \left( A_{j n} c_n + c_n A_{n j} \right) \\
-  &= 2 \sum_n A_{j n} c_n \\
-  &= 2 \sum_{i=1}^N c_{\nghbr{j}{i}}
-  \label{}
-\end{align}
+Using the symmetry of $A$ we have
+
 \begin{equation}
-  \alpha_j \equiv \sum_n A_{j n} c_n
+  \pd{}{c_{\ell}} \sum_{n,\,m} c_n A_{n m} c_m
+  = \sum_n \left( A_{\ell n} c_n + c_n A_{n \ell} \right)
+  = 2 \left( \v{A} \cdot \v{c} \right)_{\ell}
   \label{}
 \end{equation}
 \begin{equation}
