@@ -5,27 +5,26 @@
 \input{header.tex}
 %\usepackage{hyperref}
 
-\newcommand{\ham}{H}
 \newcommand{\nnsum}[2]{\sum_{\langle #1 #2 \rangle}}
 \newcommand{\cc}{\mathrm{c.c.}}
-\newcommand{\nghbr}[2]{(#1,\,#2)}
+\newcommand{\nghbr}[2]{#1,\,#2}
 
 \begin{document}
 
 \section*{Definitions}
 
 \begin{equation}
-  \ham = (1 - s) \ham_D + s \ham_P,
+  H = (1 - s) H_D + s H_P,
   \qquad
   0 \leq s \leq 1
   \label{def-h_qaa}
 \end{equation}
 \begin{equation}
-  \ham_D = \sum_i \sigma^x_i
+  H_D = \sum_i \sigma^x_i
   \label{def-h_d}
 \end{equation}
 \begin{equation}
-  \ham_P = \nnsum{i}{j} \sigma^z_i \sigma^z_j + \sum_i h_i \sigma^z_i,
+  H_P = \nnsum{i}{j} \sigma^z_i \sigma^z_j + \sum_i h_i \sigma^z_i,
   \qquad
   h_i \rightarrow h
   \label{def-h_p}
@@ -52,7 +51,7 @@ Let $\ket{\psi}$ be the ground state.
 Let
 $h_j \rightarrow h_j + \delta h_j$.
 Then
-$\ham_P \rightarrow \ham_P + \delta h_j \sigma_j$.
+$H_P \rightarrow H_P + \delta h_j \sigma_j$.
 The first-order change in the ground state is
 \begin{equation}
   \ket{\psi^{(1)}}
@@ -75,33 +74,33 @@ and
 where $\avg{\cdots}$ is the ground-state expectation value.
 
 \begin{equation}
-  \ham = \sum_n E_n \ket{n} \bra{n}
+  H = \sum_n E_n \ket{n} \bra{n}
   \label{}
 \end{equation}
 Let
 \begin{equation}
   \boxed{
-  \ham^{\prime} \equiv \ham - E_0 \ket{\psi} \bra{\psi}
+  H^{\prime} \equiv H - E_0 \ket{\psi} \bra{\psi}
   }
   \label{}
 \end{equation}
 Then
 \begin{equation}
-  \ham^{\prime} - E_0 = \sum_{n>0} \left( E_n - E_0 \right) \ket{n} \bra{n}
+  H^{\prime} - E_0 = \sum_{n>0} \left( E_n - E_0 \right) \ket{n} \bra{n}
   \label{}
 \end{equation}
 and
 \begin{equation}
   \boxed{
   \pd{}{h_j} \avg{\sigma_i}
-  = -2 \avg{\sigma_j \left( \ham^{\prime} - E_0 \right)^{-1} \sigma_i}
+  = -2 \avg{\sigma_j \left( H^{\prime} - E_0 \right)^{-1} \sigma_i}
   }
   \label{}
 \end{equation}
 
 \section*{Energy}
 \begin{equation}
-  \ham = (1 - s) \avg{\ham_D} + s \avg{\ham_P}
+  H = (1 - s) \avg{H_D} + s \avg{H_P}
   \label{}
 \end{equation}
 Expand the ground state $\ket{\psi}$ in an orthonormal basis
@@ -140,18 +139,16 @@ For example, with $N=3$,
   \ket{\uparrow}.
   \label{}
 \end{align*}
-Because $\ham$ is real and symmetric in this basis, we can restrict the
+Because $H$ is real and symmetric in this basis, we can restrict the
 coefficients $c_n$ to be real
 \begin{equation}
   c_n = c_n^*.
   \label{}
 \end{equation}
-The driver Hamiltonian $\ham_D$ connects states that differ by a single spin
-flip. Let
+The driver Hamiltonian $H_D$ connects states that differ by a single spin flip:
 \begin{equation}
-  A_{n m}
-  \equiv \matrixel{n}{\ham_D}{m}
-  \equiv \begin{cases}
+  \matrixel{n}{H_D}{m}
+  = \begin{cases}
     1 & \ket{n}, \ket{m} \text{ differ by a single spin flip} \\
     0
   \end{cases}
@@ -160,47 +157,85 @@ flip. Let
 For each state $\ket{n}$ there are $N$ ``neighboring'' states that differ by a
 single spin flip. Let $\ket{\nghbr{n}{k}}$ denote the $k$th neighbor of
 $\ket{n}$, so that
+\begin{align}
+  \matrixel{n}{H_D}{\psi}
+  &= \sum_m \matrixel{n}{H_D}{m} \braket{m}{\psi} \\
+  &= \sum_{k=1}^N \matrixel{n}{H_D}{\nghbr{n}{k}} \braket{\nghbr{n}{k}}{\psi} \\
+  &= \sum_{k=1}^N \braket{\nghbr{n}{k}}{\psi}.
+  \label{}
+\end{align}
+Then
+\begin{align}
+  \avg{H_D}
+  &= \sum_n \braket{\psi}{n} \matrixel{n}{H_D}{\psi} \\
+  &= \sum_n \braket{\psi}{n} \sum_{k=1}^{N} \braket{\nghbr{n}{k}}{\psi}.
+  \label{}
+\end{align}
+$\avg{H_D}$ can be computed in $N \times 2^N$ steps.
 \begin{equation}
-  (A c)_n \equiv \sum_{k=1}^N c_{\nghbr{n}{k}}.
+  \boxed{
+    \avg{H_D} = \sum_n c_n \sum_{k=1}^N c_{(\nghbr{n}{k})}
+  }
+  \label{}
+\end{equation}
+The problem Hamiltonian $H_P$ is diagonal in the computational basis. Let
+\begin{equation}
+  \matrixel{n}{H_P}{n} \equiv E_n.
   \label{}
 \end{equation}
 Then
 \begin{equation}
-  \avg{\ham_D}
-  = c^T A c
-  \equiv \sum_n c_n \sum_k c_{\nghbr{n}{k}}.
-  \label{}
-\end{equation}
-The problem Hamiltonian $\ham_P$ is diagonal in the computational basis
-\begin{equation}
-  \ham_P \ket{n} = E_n \ket{n}
-  \label{}
-\end{equation}
-\begin{equation}
-  \avg{\ham_P} = \sum_n E_n c_n^2
+  \avg{H_P}
+  = \sum_{n,\,m} \braket{\psi}{n} \matrixel{n}{H_P}{m} \braket{m}{\psi}
+  = \sum_n c_n^2 E_n.
   \label{}
 \end{equation}
 The function to be minimized is
 \begin{equation}
   \boxed{
   E( \{ c_i \})
-  \equiv \avg{\ham}
-  = \frac{(1-s) c^T A c + s \sum_n E_n c_n^2}{c^T c}
+  \equiv \avg{H}
+  = \frac{(1-s) \avg{H_D} + s \avg{H_P}}{\braket{\psi}{\psi}}
   }
   \label{}
 \end{equation}
 \section*{Gradient of energy}
-Using the symmetry of $A$ we have
+\begin{equation}
+  \pd{E}{c_i} = \frac{1}{\braket{\psi}{\psi}}
+  \left[ (1-s) \pd{\avg{H_D}}{c_i} + s \pd{\avg{H_P}}{c_i}
+  - E \pd{\braket{\psi}{\psi}}{c_i} \right]
+  \label{}
+\end{equation}
+We now compute the gradient of $H_D$:
+\begin{align}
+  \pd{\avg{H_D}}{c_i}
+  &= \sum_{n,\,m} c_n \matrixel{n}{H_D}{m} c_m \\
+  &= \sum_n \left( \matrixel{i}{H_D}{n} c_n + c_n \matrixel{n}{H_D}{i} \right) \\
+  &= 2 \matrixel{i}{H_D}{\psi}.
+  \label{}
+\end{align}
+Let
+\begin{equation}
+  d_i
+  \equiv \matrixel{i}{H_D}{\psi}
+  = \sum_{k=1}^N \braket{\nghbr{i}{k}}{\psi}
+  \label{}
+\end{equation}
+Then
+\begin{equation}
+  \boxed{
+    \pd{E}{c_i} = \frac{2}{c^2} \left[ (1-s) d_i + s c_i E_i - E c_i \right]
+  }
+  \label{}
+\end{equation}
+where
+\begin{equation}
+  \boxed{
+    E = \frac{1}{c^2} \left[ (1-s) \sum_n c_n d_n + s \sum_n c_n^2 E_n \right]
+  }
+  \label{}
+\end{equation}
+This computation requires $N \times 2^N$ steps.
 
-\begin{equation}
-  \pd{}{c_{\ell}} \sum_{n,\,m} c_n A_{n m} c_m
-  = \sum_n \left( A_{\ell n} c_n + c_n A_{n \ell} \right)
-  = 2 \left( \v{A} \cdot \v{c} \right)_{\ell}
-  \label{}
-\end{equation}
-\begin{equation}
-  \sum_{n,\,m} c_n A_{n m} c_m = \sum_n c_n \alpha_n
-  \label{}
-\end{equation}
 \end{document}
 
