@@ -193,7 +193,7 @@ Then
 The function to be minimized is
 \begin{equation}
   \boxed{
-  E( \{ c_i \})
+  \mathcal{E}(\psi) 
   \equiv \avg{H}
   = \frac{(1-s) \avg{H_D} + s \avg{H_P}}{\braket{\psi}{\psi}}
   }
@@ -201,12 +201,12 @@ The function to be minimized is
 \end{equation}
 \section*{Gradient of energy}
 \begin{equation}
-  \pd{E}{c_i} = \frac{1}{\braket{\psi}{\psi}}
+  \pd{\mathcal{E}}{c_i} = \frac{1}{\braket{\psi}{\psi}}
   \left[ (1-s) \pd{\avg{H_D}}{c_i} + s \pd{\avg{H_P}}{c_i}
-  - E \pd{\braket{\psi}{\psi}}{c_i} \right]
+  - \mathcal{E} \pd{\braket{\psi}{\psi}}{c_i} \right]
   \label{}
 \end{equation}
-We now compute the gradient of $H_D$:
+We have
 \begin{align}
   \pd{\avg{H_D}}{c_i}
   &= \sum_{n,\,m} c_n \matrixel{n}{H_D}{m} c_m \\
@@ -216,22 +216,28 @@ We now compute the gradient of $H_D$:
 \end{align}
 Let
 \begin{equation}
-  d_i
-  \equiv \matrixel{i}{H_D}{\psi}
-  = \sum_{k=1}^N \braket{\nghbr{i}{k}}{\psi}
+  d_n
+  \equiv \matrixel{n}{H_D}{\psi}
+  = \sum_{k=1}^N \braket{\nghbr{n}{k}}{\psi}
   \label{}
 \end{equation}
 Then
 \begin{equation}
   \boxed{
-    \pd{E}{c_i} = \frac{2}{c^2} \left[ (1-s) d_i + s c_i E_i - E c_i \right]
+    \pd{\mathcal{E}}{c_i}
+    = \frac{2}{c^2}
+    \left[ (1-s) d_i -
+      \left(1 - \frac{E_i}{\mathcal{E}} s \right)
+      \mathcal{E} c_i
+    \right]
   }
   \label{}
 \end{equation}
 where
 \begin{equation}
   \boxed{
-    E = \frac{1}{c^2} \left[ (1-s) \sum_n c_n d_n + s \sum_n c_n^2 E_n \right]
+    \mathcal{E}
+    = \frac{1}{c^2} \left[ (1-s) \sum_n c_n d_n + s \sum_n c_n^2 E_n \right]
   }
   \label{}
 \end{equation}
