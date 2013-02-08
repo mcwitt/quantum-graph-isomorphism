@@ -103,14 +103,16 @@ and
   H = (1 - s) \avg{H_D} + s \avg{H_P}
   \label{}
 \end{equation}
-Expand the ground state $\ket{\psi}$ in an orthonormal basis
+The function to be minimized is
 \begin{equation}
-  \ket{\psi} = \sum_{n=0}^{2^N-1} c_n \ket{n},
-  \qquad
-  \sum_n \abs{c_n}^2 = 1
-  \label{}
+  \boxed{
+  \mathcal{E}(\psi) 
+  \equiv \avg{H}
+  = \frac{(1-s) \avg{H_D} + s \avg{H_P}}{\braket{\psi}{\psi}}
+  }
+  \label{eq:energy}
 \end{equation}
-where $\ket{n}$ is an eigenstate of
+Let $\ket{n}$ be an eigenstate of
 $\sigma_1 \otimes \sigma_2 \otimes \cdots \otimes \sigma_N$
 such that
 \begin{equation}
@@ -139,12 +141,21 @@ For example, with $N=3$,
   \ket{\uparrow}.
   \label{}
 \end{align*}
-Because $H$ is real and symmetric in this basis, we can restrict the
-coefficients $c_n$ to be real
-\begin{equation}
-  c_n = c_n^*.
-  \label{}
-\end{equation}
+In this basis $H_P$ is diagonal with diagonal elements $E_i$. $H_D$ is real
+symmetric and therefore $H$ is real symmetric so
+$\braket{i}{\psi} = \braket{\psi}{i}$. Let $\psi_i \equiv \braket{i}{\psi}$.
+The gradient is given by
+\begin{align}
+  \pd{\mathcal{E}}{\psi_i}
+  &= \frac{1}{\braket{\psi}{\psi}}
+  \left[ (1-s) \pd{\avg{H_D}}{\psi_i} + s \pd{\avg{H_P}}{\psi_i}
+  - \mathcal{E} \pd{\braket{\psi}{\psi}}{\psi_i} \right] \\
+  &= \frac{2}{\braket{\psi}{\psi}}
+  \left[
+    (1-s) \matrixel{i}{H_D}{\psi}
+    - \left( 1 - \frac{E_i}{\mathcal{E}} s \right) \mathcal{E} \psi_i
+  \right]. \label{eq:grad}
+\end{align}
 The driver Hamiltonian $H_D$ connects states that differ by a single spin flip:
 \begin{equation}
   \matrixel{n}{H_D}{m}
@@ -156,28 +167,22 @@ The driver Hamiltonian $H_D$ connects states that differ by a single spin flip:
 \end{equation}
 For each state $\ket{n}$ there are $N$ ``neighboring'' states that differ by a
 single spin flip. Let $\ket{\nghbr{n}{k}}$ denote the $k$th neighbor of
-$\ket{n}$, so that
+$\ket{n}$. We have
 \begin{align}
   \matrixel{n}{H_D}{\psi}
   &= \sum_m \matrixel{n}{H_D}{m} \braket{m}{\psi} \\
   &= \sum_{k=1}^N \matrixel{n}{H_D}{\nghbr{n}{k}} \braket{\nghbr{n}{k}}{\psi} \\
-  &= \sum_{k=1}^N \braket{\nghbr{n}{k}}{\psi}.
+  &= \sum_{k=1}^N \braket{\nghbr{n}{k}}{\psi}
   \label{}
 \end{align}
-Then
+and therefore
 \begin{align}
   \avg{H_D}
   &= \sum_n \braket{\psi}{n} \matrixel{n}{H_D}{\psi} \\
   &= \sum_n \braket{\psi}{n} \sum_{k=1}^{N} \braket{\nghbr{n}{k}}{\psi}.
   \label{}
 \end{align}
-$\avg{H_D}$ can be computed in $N \times 2^N$ steps.
-\begin{equation}
-  \boxed{
-    \avg{H_D} = \sum_n c_n \sum_{k=1}^N c_{(\nghbr{n}{k})}
-  }
-  \label{}
-\end{equation}
+
 The problem Hamiltonian $H_P$ is diagonal in the computational basis. Let
 \begin{equation}
   \matrixel{n}{H_P}{n} \equiv E_n.
@@ -187,61 +192,36 @@ Then
 \begin{equation}
   \avg{H_P}
   = \sum_{n,\,m} \braket{\psi}{n} \matrixel{n}{H_P}{m} \braket{m}{\psi}
-  = \sum_n c_n^2 E_n.
+  = \sum_n \psi_n^2 E_n.
   \label{}
 \end{equation}
-The function to be minimized is
-\begin{equation}
-  \boxed{
-  \mathcal{E}(\psi) 
-  \equiv \avg{H}
-  = \frac{(1-s) \avg{H_D} + s \avg{H_P}}{\braket{\psi}{\psi}}
-  }
-  \label{}
-\end{equation}
-\section*{Gradient of energy}
-\begin{equation}
-  \pd{\mathcal{E}}{c_i} = \frac{1}{\braket{\psi}{\psi}}
-  \left[ (1-s) \pd{\avg{H_D}}{c_i} + s \pd{\avg{H_P}}{c_i}
-  - \mathcal{E} \pd{\braket{\psi}{\psi}}{c_i} \right]
-  \label{}
-\end{equation}
-We have
-\begin{align}
-  \pd{\avg{H_D}}{c_i}
-  &= \sum_{n,\,m} c_n \matrixel{n}{H_D}{m} c_m \\
-  &= \sum_n \left( \matrixel{i}{H_D}{n} c_n + c_n \matrixel{n}{H_D}{i} \right) \\
-  &= 2 \matrixel{i}{H_D}{\psi}.
-  \label{}
-\end{align}
 Let
 \begin{equation}
-  d_n
+  \xi_n
   \equiv \matrixel{n}{H_D}{\psi}
   = \sum_{k=1}^N \braket{\nghbr{n}{k}}{\psi}
   \label{}
 \end{equation}
-Then
-\begin{equation}
-  \boxed{
-    \pd{\mathcal{E}}{c_i}
-    = \frac{2}{c^2}
-    \left[ (1-s) d_i -
-      \left(1 - \frac{E_i}{\mathcal{E}} s \right)
-      \mathcal{E} c_i
-    \right]
-  }
-  \label{}
-\end{equation}
-where
+Then we can write \eqref{eq:energy} as
 \begin{equation}
   \boxed{
     \mathcal{E}
-    = \frac{1}{c^2} \left[ (1-s) \sum_n c_n d_n + s \sum_n c_n^2 E_n \right]
+    = \frac{1}{c^2} \left[ (1-s) \sum_n \psi_n \xi_n + s \sum_n \psi_n^2 E_n \right]
   }
   \label{}
 \end{equation}
-This computation requires $N \times 2^N$ steps.
+and \eqref{eq:grad} as
+\begin{equation}
+  \boxed{
+    \pd{\mathcal{E}}{\psi_i}
+    = \frac{2}{c^2}
+    \left[ (1-s) \xi_i -
+      \left(1 - \frac{E_i}{\mathcal{E}} s \right)
+      \mathcal{E} \psi_i
+    \right].
+  }
+  \label{}
+\end{equation}
 
 \end{document}
 
