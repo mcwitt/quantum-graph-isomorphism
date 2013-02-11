@@ -35,13 +35,9 @@
   \label{def-f}
 \end{equation}
 
-Can approximate derivative using finite differences. (Peter's method for
-calculating susceptibility using Lanczos?)
-
 \section{Perturbation theory for susceptibility}
 
 Calculate $f_{ij}$ in first-order nondegenerate perturbation theory.
-
 Let $\ket{\psi}$ be the ground state.
 \begin{equation}
   \pd{}{h_j} \avg{\sigma_i}
@@ -101,28 +97,6 @@ and
 
 \section{Energy minimization}
 
-\subsection{Energy function}
-
-The function to be minimized is
-\begin{equation}
-  \boxed{
-  \mathcal{E}(\psi) 
-  \equiv \frac{\matrixel{\psi}{H}{\psi}}{\braket{\psi}{\psi}}
-  }
-  \label{eq:energy}
-\end{equation}
-We will show that there exists a basis in which $H$ is a real symmetric matrix.
-Therefore the components $\psi_i$ of $\ket{\psi}$ in this basis may be taken to
-be real, i.e. $\psi_i = \psi_i^*$.  The gradient is given by
-\begin{equation}
-  \pd{\mathcal{E}}{\psi_i}
-  = \frac{1}{\braket{\psi}{\psi}}
-  \left( \pd{\matrixel{\psi}{H}{\psi}}{\psi_i} - \mathcal{E} \pd{\braket{\psi}{\psi}}{\psi_i} \right)
-  = \frac{2}{\braket{\psi}{\psi}}
-  \left( \matrixel{i}{H}{\psi} - \mathcal{E} \psi_i \right).
-  \label{eq:grad}
-\end{equation}
-
 \subsection{Computational basis}
 
 Let $\ket{n}$ be an eigenstate of
@@ -154,30 +128,32 @@ For example, with $N=3$,
   \ket{\uparrow}.
   \label{}
 \end{align*}
-In this basis $H_P$ is diagonal, and $H_D$ and $H$ are real and symmetric.
-Equation \eqref{eq:energy} becomes
+\subsection{Energy function}
+
+The function to be minimized is
 \begin{equation}
-  \mathcal{E}
-  = \frac{1}{\abs{\psi}^2} \left[ (1-s) \sum_n \psi_n \sum_{k=1}^N \psi_{\nghbr{n}{k}} + s \sum_n \psi_n^2 E_n \right]
-  \label{}
+  \boxed{
+  \mathcal{E}(\psi) 
+  \equiv \frac{\matrixel{\psi}{H}{\psi}}{\braket{\psi}{\psi}}
+  }
+  \label{eq:energy}
 \end{equation}
-where
-$H_P \ket{i} \equiv E_i \ket{i}$
-and
-$\psi_{\nghbr{i}{k}} \equiv \braket{\nghbr{i}{k}}{\psi}$.
-Combining \eqref{eq:grad} and \eqref{eq:id}, we have 
+Because $H$ is real and symmetric in the computational basis, the the
+components $\psi_i$ may be taken to be real, i.e.
+$\psi_i = \psi_i^*$.
+The gradient is given by
 \begin{equation}
   \pd{\mathcal{E}}{\psi_i}
-  = \frac{2}{\abs{\psi}^2}
-  \left[
-      (1-s) \sum_{k=1}^N \psi_{\nghbr{i}{k}}
-    - \left( 1 - \frac{E_i}{\mathcal{E}} s \right) \mathcal{E} \psi_i
-  \right].
+  = \frac{1}{\braket{\psi}{\psi}}
+  \left( \pd{\matrixel{\psi}{H}{\psi}}{\psi_i} - \mathcal{E} \pd{\braket{\psi}{\psi}}{\psi_i} \right)
+  = \frac{2}{\braket{\psi}{\psi}}
+  \left( \matrixel{i}{H}{\psi} - \mathcal{E} \psi_i \right).
+  \label{eq:grad}
 \end{equation}
-
-\subsection{Driver Hamiltonian}
-
-The driver Hamiltonian $H_D$ connects states that differ by a single spin flip:
+In this basis $H_P$ is diagonal, allowing computation of $\avg{H_P}$ in $2^N$
+steps. $H_D$ is non-diagonal but sparse; $\avg{H_D}$ may be computed in $2^N
+\times N$ steps noting that $H_D$ connects states that differ by a single spin
+flip:
 \begin{equation}
   \matrixel{n}{H_D}{m}
   = \begin{cases}
@@ -201,9 +177,29 @@ and therefore
   \avg{H_D}
   &= \sum_n \braket{\psi}{n} \matrixel{n}{H_D}{\psi} \\
   &= \sum_n \braket{\psi}{n} \sum_{k=1}^{N} \braket{\nghbr{n}{k}}{\psi}.
-  \label{}
+  \label{eq:avgHd}
 \end{align}
-
+Let $E_n$ denote the eigenvalue of $H_P$ corresponding to $\ket{n}$ and define
+$\psi_{\nghbr{i}{k}} \equiv \braket{\nghbr{i}{k}}{\psi}$.
+Then, combining \eqref{eq:energy} and \eqref{eq:avgHd}, we have
+\begin{equation}
+  \mathcal{E}
+  = \frac{1}{\abs{\psi}^2}
+  \left[
+  (1-s) \sum_n \psi_n \sum_{k=1}^N \psi_{\nghbr{n}{k}}
+  + s \sum_n \psi_n^2 E_n
+  \right].
+  \label{}
+\end{equation}
+Combining \eqref{eq:grad} and \eqref{eq:id}, we have 
+\begin{equation}
+  \pd{\mathcal{E}}{\psi_i}
+  = \frac{2}{\abs{\psi}^2}
+  \left[
+      (1-s) \sum_{k=1}^N \psi_{\nghbr{i}{k}}
+    - \left( 1 - \frac{E_i}{\mathcal{E}} s \right) \mathcal{E} \psi_i
+  \right].
+\end{equation}
 \subsection{Conjugate gradient method}
 
 \begin{equation}
