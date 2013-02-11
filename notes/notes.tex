@@ -11,7 +11,7 @@
 
 \begin{document}
 
-\section*{Definitions}
+\section{Definitions}
 
 \begin{equation}
   H = (1 - s) H_D + s H_P,
@@ -38,7 +38,7 @@
 Can approximate derivative using finite differences. (Peter's method for
 calculating susceptibility using Lanczos?)
 
-\section*{Perturbation theory for susceptibility}
+\section{Perturbation theory for susceptibility}
 
 Calculate $f_{ij}$ in first-order nondegenerate perturbation theory.
 
@@ -98,20 +98,33 @@ and
   \label{}
 \end{equation}
 
-\section*{Energy}
-\begin{equation}
-  H = (1 - s) \avg{H_D} + s \avg{H_P}
-  \label{}
-\end{equation}
+
+\section{Energy minimization}
+
+\subsection{Energy function}
+
 The function to be minimized is
 \begin{equation}
   \boxed{
   \mathcal{E}(\psi) 
-  \equiv \avg{H}
-  = \frac{(1-s) \avg{H_D} + s \avg{H_P}}{\braket{\psi}{\psi}}
+  \equiv \frac{\matrixel{\psi}{H}{\psi}}{\braket{\psi}{\psi}}
   }
   \label{eq:energy}
 \end{equation}
+We will show that there exists a basis in which $H$ is a real symmetric matrix.
+Therefore the components $\psi_i$ of $\ket{\psi}$ in this basis may be taken to
+be real, i.e. $\psi_i = \psi_i^*$.  The gradient is given by
+\begin{equation}
+  \pd{\mathcal{E}}{\psi_i}
+  = \frac{1}{\braket{\psi}{\psi}}
+  \left( \pd{\matrixel{\psi}{H}{\psi}}{\psi_i} - \mathcal{E} \pd{\braket{\psi}{\psi}}{\psi_i} \right)
+  = \frac{2}{\braket{\psi}{\psi}}
+  \left( \matrixel{i}{H}{\psi} - \mathcal{E} \psi_i \right).
+  \label{eq:grad}
+\end{equation}
+
+\subsection{Computational basis}
+
 Let $\ket{n}$ be an eigenstate of
 $\sigma_1 \otimes \sigma_2 \otimes \cdots \otimes \sigma_N$
 such that
@@ -141,21 +154,29 @@ For example, with $N=3$,
   \ket{\uparrow}.
   \label{}
 \end{align*}
-In this basis $H_P$ is diagonal with diagonal elements $E_i$. $H_D$ is real
-symmetric and therefore $H$ is real symmetric so
-$\braket{i}{\psi} = \braket{\psi}{i}$. Let $\psi_i \equiv \braket{i}{\psi}$.
-The gradient is given by
-\begin{align}
+In this basis $H_P$ is diagonal, and $H_D$ and $H$ are real and symmetric.
+Equation \eqref{eq:energy} becomes
+\begin{equation}
+  \mathcal{E}
+  = \frac{1}{\abs{\psi}^2} \left[ (1-s) \sum_n \psi_n \sum_{k=1}^N \psi_{\nghbr{n}{k}} + s \sum_n \psi_n^2 E_n \right]
+  \label{}
+\end{equation}
+where
+$H_P \ket{i} \equiv E_i \ket{i}$
+and
+$\psi_{\nghbr{i}{k}} \equiv \braket{\nghbr{i}{k}}{\psi}$.
+Combining \eqref{eq:grad} and \eqref{eq:id}, we have 
+\begin{equation}
   \pd{\mathcal{E}}{\psi_i}
-  &= \frac{1}{\braket{\psi}{\psi}}
-  \left[ (1-s) \pd{\avg{H_D}}{\psi_i} + s \pd{\avg{H_P}}{\psi_i}
-  - \mathcal{E} \pd{\braket{\psi}{\psi}}{\psi_i} \right] \\
-  &= \frac{2}{\braket{\psi}{\psi}}
+  = \frac{2}{\abs{\psi}^2}
   \left[
-    (1-s) \matrixel{i}{H_D}{\psi}
+      (1-s) \sum_{k=1}^N \psi_{\nghbr{i}{k}}
     - \left( 1 - \frac{E_i}{\mathcal{E}} s \right) \mathcal{E} \psi_i
-  \right]. \label{eq:grad}
-\end{align}
+  \right].
+\end{equation}
+
+\subsection{Driver Hamiltonian}
+
 The driver Hamiltonian $H_D$ connects states that differ by a single spin flip:
 \begin{equation}
   \matrixel{n}{H_D}{m}
@@ -173,7 +194,7 @@ $\ket{n}$. We have
   &= \sum_m \matrixel{n}{H_D}{m} \braket{m}{\psi} \\
   &= \sum_{k=1}^N \matrixel{n}{H_D}{\nghbr{n}{k}} \braket{\nghbr{n}{k}}{\psi} \\
   &= \sum_{k=1}^N \braket{\nghbr{n}{k}}{\psi}
-  \label{}
+  \label{eq:id}
 \end{align}
 and therefore
 \begin{align}
@@ -183,43 +204,10 @@ and therefore
   \label{}
 \end{align}
 
-The problem Hamiltonian $H_P$ is diagonal in the computational basis. Let
+\subsection{Conjugate gradient method}
+
 \begin{equation}
-  \matrixel{n}{H_P}{n} \equiv E_n.
-  \label{}
-\end{equation}
-Then
-\begin{equation}
-  \avg{H_P}
-  = \sum_{n,\,m} \braket{\psi}{n} \matrixel{n}{H_P}{m} \braket{m}{\psi}
-  = \sum_n \psi_n^2 E_n.
-  \label{}
-\end{equation}
-Let
-\begin{equation}
-  \xi_n
-  \equiv \matrixel{n}{H_D}{\psi}
-  = \sum_{k=1}^N \braket{\nghbr{n}{k}}{\psi}
-  \label{}
-\end{equation}
-Then we can write \eqref{eq:energy} as
-\begin{equation}
-  \boxed{
-    \mathcal{E}
-    = \frac{1}{c^2} \left[ (1-s) \sum_n \psi_n \xi_n + s \sum_n \psi_n^2 E_n \right]
-  }
-  \label{}
-\end{equation}
-and \eqref{eq:grad} as
-\begin{equation}
-  \boxed{
-    \pd{\mathcal{E}}{\psi_i}
-    = \frac{2}{c^2}
-    \left[ (1-s) \xi_i -
-      \left(1 - \frac{E_i}{\mathcal{E}} s \right)
-      \mathcal{E} \psi_i
-    \right].
-  }
+  \v{d} \cdot \grad f(\v{x} + \alpha \v{d}) = 0
   \label{}
 \end{equation}
 
