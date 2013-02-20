@@ -200,12 +200,44 @@ Combining \eqref{eq:grad} and \eqref{eq:id}, we have
     - \left( 1 - \frac{E_i}{\mathcal{E}} s \right) \mathcal{E} \psi_i
   \right].
 \end{equation}
-\subsection{Conjugate gradient method}
+\subsection{Applying the conjugate gradient method}
 
 \begin{equation}
-  \v{d} \cdot \grad f(\v{x} + \alpha \v{d}) = 0
+  f( \ket{\psi} )
+  = \frac{\matrixel{\psi}{H}{\psi}}{\braket{\psi}{\psi}}
   \label{}
 \end{equation}
 
+At each step of the algorithm we minimize the energy in the direction
+$\ket{\delta}$, i.e. we compute
+\begin{equation}
+  \min_{\alpha} f( \ket{\psi} + \alpha \ket{\delta} )
+  = \min_{\alpha}
+  \frac{
+      \matrixel{\psi}{H}{\psi}
+      + 2 \alpha \matrixel{\delta}{H}{\psi}
+      + \alpha^2 \matrixel{\delta}{H}{\delta}
+    }
+    {
+      \braket{\psi}{\psi}
+      + 2 \alpha \braket{\delta}{\psi}
+      + \alpha^2 \braket{\delta}{\delta}
+    }.
+  \label{}
+\end{equation}
+The critical points are given by solutions of
+\begin{equation}
+  \pd{}{\alpha} f(\ket{\psi} + \alpha \ket{\delta}) = 0
+  \label{}
+\end{equation}
+\begin{align}
+  &\alpha^2 \left( \braket{\delta}{\psi} \matrixel{\delta}{H}{\delta}
+    - \braket{\delta}{\delta} \matrixel{\psi}{H}{\delta} \right) \\
+  &\alpha \left( \braket{\psi}{\psi} \matrixel{\delta}{H}{\delta}
+    - \braket{\delta}{\delta} \matrixel{\psi}{H}{\psi} \right) \\
+  &\phantom{\alpha(} \braket{\psi}{\psi} \matrixel{\delta}{H}{\psi}
+    - \braket{\delta}{\psi} \matrixel{\psi}{H}{\psi} = 0
+  \label{}
+\end{align}
 \end{document}
 
