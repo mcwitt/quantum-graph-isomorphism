@@ -94,10 +94,7 @@ and
   \label{}
 \end{equation}
 
-
-\section{Energy minimization}
-
-\subsection{Computational basis}
+\section{Computational basis}
 
 Let $\ket{n}$ be an eigenstate of
 $\sigma_1 \otimes \sigma_2 \otimes \cdots \otimes \sigma_N$
@@ -128,32 +125,85 @@ For example, with $N=3$,
   \ket{\uparrow}.
   \label{}
 \end{align*}
-\subsection{Energy function}
 
-The function to be minimized is
+\section{Energy minimization}
+
+The ground-state energy $E_0$ is the minimum of the objective function
 \begin{equation}
-  \boxed{
-  \mathcal{E}(\psi) 
+  f(\ket{\psi}) 
   \equiv \frac{\matrixel{\psi}{H}{\psi}}{\braket{\psi}{\psi}}
-  }
   \label{eq:energy}
 \end{equation}
-Because $H$ is real and symmetric in the computational basis, the the
-components $\psi_i$ may be taken to be real, i.e.
-$\psi_i = \psi_i^*$.
+with respect to $\ket{\psi}$, i.e.
+\begin{equation}
+  E_0 = \min_{\ket{\psi}} f(\ket{\psi}).
+  \label{}
+\end{equation}
+Let $\{\ket{n}\}$ be the computational basis and write
+$\ket{\psi} = \sum_n c_n \ket{n}$.
+Because $H$ is real and symmetric in this basis, the components $c_n$ may be
+taken to be real, i.e. $c_n=c_n^*$.
+Denote the diagonal elements of $H$ by $d_n \equiv H_{n n}$ and the off-diagonal
+elements by $a_{n m} \equiv H_{n m}$.
+The objective function becomes
+\begin{equation}
+  f(\ket{\psi})
+  = \frac{\sum_n c_n^2 d_n + \sum_n c_n \sum_m a_{n m} c_m}{\sum_n c_n^2}.
+  \label{}
+\end{equation}
 The gradient is given by
 \begin{equation}
-  \pd{\mathcal{E}}{\psi_i}
-  = \frac{1}{\braket{\psi}{\psi}}
-  \left( \pd{\matrixel{\psi}{H}{\psi}}{\psi_i} - \mathcal{E} \pd{\braket{\psi}{\psi}}{\psi_i} \right)
+  \pd{f}{c_k}
   = \frac{2}{\braket{\psi}{\psi}}
-  \left( \matrixel{i}{H}{\psi} - \mathcal{E} \psi_i \right).
+  \left( \matrixel{k}{H}{\psi} - f c_k \right)
   \label{eq:grad}
 \end{equation}
-In this basis $H_P$ is diagonal, allowing computation of $\avg{H_P}$ in $2^N$
-steps. $H_D$ is non-diagonal but sparse; $\avg{H_D}$ may be computed in $2^N
-\times N$ steps noting that $H_D$ connects states that differ by a single spin
-flip:
+or
+\begin{equation}
+  \pd{f}{c_k}
+  = \frac{2 c_k (d_k - f) + 2 \sum_m a_{k m} c_m}{\sum_n c_n^2}.
+  \label{}
+\end{equation}
+
+\subsection{Applying the conjugate gradient method}
+
+At each step of the algorithm we minimize the energy in the direction
+$\ket{\delta}$, i.e. we compute
+\begin{equation}
+  \min_{\alpha} f( \ket{\psi} + \alpha \ket{\delta} )
+  = \min_{\alpha}
+  \frac{
+      \matrixel{\psi}{H}{\psi}
+      + 2 \alpha \matrixel{\delta}{H}{\psi}
+      + \alpha^2 \matrixel{\delta}{H}{\delta}
+    }
+    {
+      \braket{\psi}{\psi}
+      + 2 \alpha \braket{\delta}{\psi}
+      + \alpha^2 \braket{\delta}{\delta}
+    }.
+  \label{}
+\end{equation}
+The critical points are given by solutions of
+\begin{equation}
+  \left. \pd{}{\alpha} f(\ket{\psi} + \alpha \ket{\delta}) \right|_{\alpha=\alpha^*} = 0
+  \label{}
+\end{equation}
+\begin{align}
+  &\alpha^2 \left( \braket{\delta}{\psi} \matrixel{\delta}{H}{\delta}
+    - \braket{\delta}{\delta} \matrixel{\psi}{H}{\delta} \right) \\
+  &\alpha \left( \braket{\psi}{\psi} \matrixel{\delta}{H}{\delta}
+    - \braket{\delta}{\delta} \matrixel{\psi}{H}{\psi} \right) \\
+  &\phantom{\alpha(} \braket{\psi}{\psi} \matrixel{\delta}{H}{\psi}
+    - \braket{\delta}{\psi} \matrixel{\psi}{H}{\psi} = 0
+  \label{}
+\end{align}
+
+\section{Off-diagonal elements of $H$}
+In the computational basis $H_P$ is diagonal, allowing computation of
+$\avg{H_P}$ in $2^N$ steps. $H_D$ is non-diagonal but sparse; $\avg{H_D}$ may
+be computed in $2^N \times N$ steps noting that $H_D$ connects states that
+differ by a single spin flip:
 \begin{equation}
   \matrixel{n}{H_D}{m}
   = \begin{cases}
@@ -200,44 +250,5 @@ Combining \eqref{eq:grad} and \eqref{eq:id}, we have
     - \left( 1 - \frac{E_i}{\mathcal{E}} s \right) \mathcal{E} \psi_i
   \right].
 \end{equation}
-\subsection{Applying the conjugate gradient method}
-
-\begin{equation}
-  f( \ket{\psi} )
-  = \frac{\matrixel{\psi}{H}{\psi}}{\braket{\psi}{\psi}}
-  \label{}
-\end{equation}
-
-At each step of the algorithm we minimize the energy in the direction
-$\ket{\delta}$, i.e. we compute
-\begin{equation}
-  \min_{\alpha} f( \ket{\psi} + \alpha \ket{\delta} )
-  = \min_{\alpha}
-  \frac{
-      \matrixel{\psi}{H}{\psi}
-      + 2 \alpha \matrixel{\delta}{H}{\psi}
-      + \alpha^2 \matrixel{\delta}{H}{\delta}
-    }
-    {
-      \braket{\psi}{\psi}
-      + 2 \alpha \braket{\delta}{\psi}
-      + \alpha^2 \braket{\delta}{\delta}
-    }.
-  \label{}
-\end{equation}
-The critical points are given by solutions of
-\begin{equation}
-  \pd{}{\alpha} f(\ket{\psi} + \alpha \ket{\delta}) = 0
-  \label{}
-\end{equation}
-\begin{align}
-  &\alpha^2 \left( \braket{\delta}{\psi} \matrixel{\delta}{H}{\delta}
-    - \braket{\delta}{\delta} \matrixel{\psi}{H}{\delta} \right) \\
-  &\alpha \left( \braket{\psi}{\psi} \matrixel{\delta}{H}{\delta}
-    - \braket{\delta}{\delta} \matrixel{\psi}{H}{\psi} \right) \\
-  &\phantom{\alpha(} \braket{\psi}{\psi} \matrixel{\delta}{H}{\psi}
-    - \braket{\delta}{\psi} \matrixel{\psi}{H}{\psi} = 0
-  \label{}
-\end{align}
 \end{document}
 

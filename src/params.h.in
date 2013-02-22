@@ -1,0 +1,2 @@
+#define N @N@   /* number of vertices (spins) */
+#define D @D@   /* dimension of Hilbert space = 2^N */
