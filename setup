@@ -1,0 +1,18 @@
+#! /bin/bash
+
+rootdir="$(dirname "$0")"
+srcdir="$rootdir"/src
+
+echo -n 'N=? '; read N
+D=$((2**N))
+
+for f in $srcdir/*".in"
+do
+    sed "\
+        s:@srcdir@:$srcdir:;\
+        s:@N@:$N:;\
+        s:@D@:$D:;\
+        " < "$f" > "$(basename "${f%.in}")"
+done
+
+#for f in *.sh; do chmod +x $f; done
