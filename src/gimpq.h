@@ -1,6 +1,11 @@
 #include "params.h"
 
-void gradient(double c[D], double d[D], double grad[D]);
+typedef struct
+{
+    double d[D];    /* diagonal elements of H_P */
+    double s;       /* adiabatic parameter */
+} GQProblem;
 
-void compute_diagonal_elements(int amatrix[N][N]
+void gq_init(GQProblem *p, int g[N][N], double h[N]);
 
+void gq_grad_energy(gimpq_t *g, double c[D], double grad[D]);
