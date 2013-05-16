@@ -27,7 +27,7 @@ void gq_init(GQProblem *p, int g[N][N], double h[N])
     ULONG i;
     int n, m;
 
-    p->s = 0.;
+    s = 0.;
 
     /* compute diagonal elements of H_P */
 
@@ -43,14 +43,14 @@ void gq_init(GQProblem *p, int g[N][N], double h[N])
 
             for (m = 0; m < N; m++)
             {
-                if (p[n][m] == 0) continue;
+                if (g[n][m] == 0) continue;
                 p->d[i] += s_n * SPIN(i, m);
             }
         }
     }
 }
 
-void gq_grad_energy(GQProblem *p, double c[D], double grad[D])
+void gq_grad_energy(GQProblem *p, double s, double c[D], double grad[D])
 {
     ULONG i;
     int j;
@@ -84,3 +84,25 @@ void gq_grad_energy(GQProblem *p, double c[D], double grad[D])
     }
 }
 
+double gq_line_min(GQProblem *p, double s, double psi[D], double delta[D])
+{
+    double psi_dot_delta = 0.,
+           psi2 = 0.,
+           delta2 = 0.,
+           psi_H_delta = 0.,
+           psi_H_psi = 0.,
+           delta_H_delta = 0.;
+    int i;
+
+    for (i = 0; i < D; i++)
+    {
+        psi2 += 
+        psi_dot_delta += psi[i] * delta[i];
+    }
+
+
+
+
+    
+
+}
