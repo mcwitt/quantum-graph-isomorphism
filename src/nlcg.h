@@ -7,7 +7,9 @@
  * @param[out] x Solution vector.
  */
 
+#include "params.h"
+
 void nlcg_minimize(
         void   (*gradient)(double*, double*),
         double (*line_min)(double*, double*),
-        double x[CG_DIM]);
+        double x[D]);

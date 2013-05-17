@@ -1,29 +1,39 @@
 #include <stdlib.h>
+#include <stdint.h>
 #include "amatrix.h"
 #include "gimpq.h"
 #include "nlcg.h"
 #include "params.h"
 
-GQProblem g;
+double d[D];
+double s;
 
 /* wrappers for gradient and line minimization functions
  * to be passed to NLCG routine */
-void gradient(double *x, double *grad) { gq_grad_energy(&g, x, grad); }
-void line_min(double *x, double *d) { gq_line_min(&g, x, d); }
+void gradient(double *x, double *grad) { gq_energy_grad(s, d, x, grad); }
+double line_min(double *x, double *delta) { return gq_line_min(s, d, x, delta); }
 
 int main()
 {
     double h[N];
+    double x[D], grad[D];
+    double energy;
+    uint64_t i;
     int a[N][N], j;
 
-    amatrix_load("test-graph-16.txt", 16, a);
+    amatrix_load("test-graph-16.txt", 16, &a[0][0]);
 
-    g.s = 1.;
     for (j = 0; j < N; j++) h[j] = 1.;
 
-    gq_init(&g, a, h);
+    gq_compute_problem_hamiltonian(a, h, d);
+
+    for (i = 0; i < D; i++) x[i] = 0.;
+    s = 0.99;
 
     nlcg_minimize(gradient, line_min, x);
+
+    energy = gq_energy_grad(s, d, x, grad);
+    printf("energy = %g\n", energy);
 
     return EXIT_SUCCESS;
 }

@@ -1,14 +1,9 @@
 #include "params.h"
 
-typedef struct
-{
-    double d[D];    /* diagonal elements of H_P */
-    double s;       /* adiabatic parameter */
-} GQProblem;
+/** Compute the diagonal elements of the problem Hamiltonian. */
+void gq_compute_problem_hamiltonian(int a[][N], double h[N], double d[D]);
 
-void gq_init(GQProblem *p, int g[N][N], double h[N]);
+double gq_energy_grad(double s, double d[D], double psi[D], double grad[D]);
 
-void gq_grad_energy(GQProblem *p, double s, double c[D], double grad[D]);
-
-double gq_line_min(GQProblem *p, double s, double c[D], double delta[D]);
+double gq_line_min(double s, double d[D], double psi[D], double delta[D]);
 
