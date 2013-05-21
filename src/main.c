@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     double x[D], grad[D];
     double energy;
     ULONG i;
-    int a[N][N], j;
+    int a[N][N], j, iter, max_iter = 100;
 
     filename = "test-graph-16.txt";
 
@@ -45,7 +45,8 @@ int main(int argc, char *argv[])
     for (i = 0; i < D; i++) x[i] = 0.;
     s = 0.99;
 
-    nlcg_minimize(gradient, line_min, x);
+    iter = nlcg_minimize(gradient, line_min, 100, 1e-6, x);
+    printf("stopped after %d iterations. (%d max)\n", iter, max_iter);
 
     energy = gq_energy_grad(s, d, x, grad);
     printf("energy = %g\n", energy);
