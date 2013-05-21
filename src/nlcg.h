@@ -8,6 +8,9 @@
  */
 
 #include "params.h"
+#include <stdint.h>
+
+typedef uint64_t ULONG;
 
 void nlcg_minimize(
         void   (*gradient)(double*, double*),

@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     double h[N];
     double x[D], grad[D];
     double energy;
-    uint64_t i;
+    ULONG i;
     int a[N][N], j;
 
     filename = "test-graph-16.txt";
