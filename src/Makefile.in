@@ -4,9 +4,6 @@ VPATH = $(srcdir)
 CC = gcc
 CFLAGS = -Wall -O3
 
-#CC = icc
-#CFLAGS = -Wall -O3
-
 CFLAGS += -I.
 CFLAGS += -DVERSION=\"$(shell git describe)\"
 LDLIBS = -lm

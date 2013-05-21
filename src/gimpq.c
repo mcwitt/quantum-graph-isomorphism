@@ -1,9 +1,8 @@
 /*
  * N        number of vertices (spins)
  * D        dimension of Hilbert space
- * a        off-diagonal part of Hamiltonian
- * g        adjacency matrix describing graph G
- * c        state vector in the \sigma^z basis
+ * a        adjacency matrix describing graph G
+ * psi      state vector in the \sigma^z basis
  * d        diagonal elements of H_P
  */
 
@@ -23,7 +22,7 @@
 
 typedef uint64_t ULONG;
 
-void gq_compute_problem_hamiltonian(int a[][N], double h[N], double d[D])
+void gq_compute_problem_hamiltonian(int a[N][N], double h[N], double d[D])
 {
     ULONG i;
     int m, n;
@@ -38,7 +37,7 @@ void gq_compute_problem_hamiltonian(int a[][N], double h[N], double d[D])
 
             d[i] += h[n] * s_n;
 
-            for (m = 0; m < N; m++)
+            for (m = 0; m < n; m++)
             {
                 if (a[n][m] == 0) continue;
                 d[i] += s_n * SPIN(i, m);
@@ -95,48 +94,14 @@ double gq_energy_grad(double s, double d[D], double psi[D], double grad[D])
     /* compute the gradient */
     for (k = 0; k < D; k++)
     {
-        double apsi_i = 0.;   /* component of A psi */
+        double sum = 0.;
 
-        for (j = 0; j < N; j++) apsi_i += psi[NEIGHBOR(k, j)];
-        grad[k] = 2. * (psi[k] * (s * d[k] - energy) + (1. - s) * apsi_i) / psi2;
+        for (j = 0; j < N; j++) sum += psi[NEIGHBOR(k, j)];
+        grad[k] = 2. * (psi[k] * (s * d[k] - energy) + (1. - s) * sum) / psi2;
     }
 
     return energy;
 }
-
-/*
-void gq_grad_energy(double d[D], double s, double c[D], double grad[D])
-{
-    ULONG i;
-    int j;
-    double c2, energy, dsum, asum;
-
-    c2 = 0.;
-    dsum = 0.;
-    asum = 0.;
-
-    for (i = 0; i < D; i++)
-    {
-        double ci2 = c[i] * c[i];
-
-        c2 += ci2;
-        dsum += ci2 * d[i];
-
-        for (j = 0; j < N; j++)
-            asum += c[i] * c[NEIGHBOR(i, j)];
-    }
-
-    energy = ((1. - s) * asum + s * dsum) / c2;
-
-    for (i = 0; i < D; i++)
-    {
-        double ac_i = 0.;
-
-        for (j = 0; j < N; j++) ac_i += c[NEIGHBOR(i, j)];
-        grad[i] = 2. * (c[i] * (s * d[i] - energy) + (1. - s) * ac_i) / c2;
-    }
-}
-*/
 
 double gq_line_min(double s, double d[D], double psi[D], double delta[D])
 {
@@ -152,5 +117,5 @@ double gq_line_min(double s, double d[D], double psi[D], double delta[D])
     gamma = psi2 * psi_H_delta - psi_dot_delta * psi_H_psi;
 
     disc = beta*beta - 4.*alpha*gamma;
-    return 0.5*(sqrt(disc) - beta) / alpha;
+    return 0.5 * (sqrt(disc) - beta) / alpha;
 }
