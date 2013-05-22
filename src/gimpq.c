@@ -108,8 +108,8 @@ double gq_line_min(double s, double d[D], double psi[D], double delta[D])
     double psi2, psi_dot_delta, delta2, psi_H_psi, psi_H_delta, delta_H_delta,
            alpha, beta, gamma, disc;
 
-    psi_H_psi = gq_matrix_element(s, d, psi, psi, &psi2);
-    psi_H_delta = gq_matrix_element(s, d, psi, delta, &psi_dot_delta);
+    psi_H_psi     = gq_matrix_element(s, d, psi,   psi,   &psi2);
+    psi_H_delta   = gq_matrix_element(s, d, psi,   delta, &psi_dot_delta);
     delta_H_delta = gq_matrix_element(s, d, delta, delta, &delta2);
 
     alpha = psi_dot_delta * delta_H_delta - delta2 * psi_H_delta;

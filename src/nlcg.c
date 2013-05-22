@@ -1,4 +1,5 @@
 #include "nlcg.h"
+#include <stdio.h>
 
 int nlcg_minimize(
         void   (*gradient)(double*, double*),
