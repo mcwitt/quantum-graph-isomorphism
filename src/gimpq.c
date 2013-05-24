@@ -12,13 +12,15 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <stdio.h>
+
 /*
  * NEIGHBOR(i, j)   returns the jth neighbor state of |i>
  * SPIN(i, j)       returns the eigenvalue of sigma^z_j for state |i>
  */
 
 #define NEIGHBOR(i, j)  ((i) ^ (1UL << (j)))
-#define SPIN(i, j)      (2 * (((1UL << (j)) & (i)) >> (j)) - 1)
+#define SPIN(i, j)      (2 * ((int) (((1UL << (j)) & (i)) >> (j))) - 1)
 
 typedef uint64_t ULONG;
 
@@ -38,10 +40,8 @@ void gq_compute_problem_hamiltonian(int a[N][N], double h[N], double d[D])
             d[i] += h[n] * s_n;
 
             for (m = 0; m < n; m++)
-            {
-                if (a[n][m] == 0) continue;
-                d[i] += s_n * SPIN(i, m);
-            }
+                if (a[n][m] == 1)
+                    d[i] += s_n * SPIN(i, m);
         }
     }
 }
