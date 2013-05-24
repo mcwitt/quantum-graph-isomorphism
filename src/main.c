@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     exit(0);
     */
 
-    for (i = 0; i < D; i++) x[i] = 0.;
+    for (i = 0; i < D; i++) x[i] = 1.;
     s = 0.99;
 
     iter = nlcg_minimize(gradient, line_min, 100, 1e-6, x);
