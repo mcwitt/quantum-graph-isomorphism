@@ -12,6 +12,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+/* DEBUG */
+#include <assert.h>
 #include <stdio.h>
 
 /*
@@ -22,11 +24,11 @@
 #define NEIGHBOR(i, j)  ((i) ^ (1UL << (j)))
 #define SPIN(i, j)      (2 * ((int) (((1UL << (j)) & (i)) >> (j))) - 1)
 
-typedef uint64_t ULONG;
+typedef uint64_t index_t;
 
 void gq_compute_problem_hamiltonian(int a[N][N], double h[N], double d[D])
 {
-    ULONG i;
+    index_t i;
     int m, n;
 
     for (i = 0; i < D; i++)
@@ -49,7 +51,7 @@ void gq_compute_problem_hamiltonian(int a[N][N], double h[N], double d[D])
 double gq_driver_matrix_element(double u[D], double v[D])
 {
     double result = 0.;
-    ULONG i;
+    index_t i;
     int j;
 
     for (i = 0; i < D; i++)
@@ -62,7 +64,7 @@ double gq_driver_matrix_element(double u[D], double v[D])
 double gq_problem_matrix_element(double d[D], double u[D], double v[D], double *udotv)
 {
     double udotv_i, result = 0.;
-    ULONG i;
+    index_t i;
 
     *udotv = 0.;
 
@@ -84,8 +86,8 @@ double gq_matrix_element(double s, double d[D], double u[D], double v[D], double
 
 double gq_energy_grad(double s, double d[D], double psi[D], double grad[D])
 {
-    int j, k;
     double psi2, energy;
+    int j, k;
 
     /* compute the energy */
     energy = gq_matrix_element(s, d, psi, psi, &psi2);
@@ -105,17 +107,24 @@ double gq_energy_grad(double s, double d[D], double psi[D], double grad[D])
 
 double gq_line_min(double s, double d[D], double psi[D], double delta[D])
 {
-    double psi2, psi_dot_delta, delta2, psi_H_psi, psi_H_delta, delta_H_delta,
-           alpha, beta, gamma, disc;
+    double psi2, psi_dot_delta, delta2,
+           psi_H_psi, psi_H_delta, delta_H_delta,
+           a, b, c, coef, sqr, alpha;
 
     psi_H_psi     = gq_matrix_element(s, d, psi,   psi,   &psi2);
     psi_H_delta   = gq_matrix_element(s, d, psi,   delta, &psi_dot_delta);
     delta_H_delta = gq_matrix_element(s, d, delta, delta, &delta2);
 
-    alpha = psi_dot_delta * delta_H_delta - delta2 * psi_H_delta;
-    beta  = psi2 * delta_H_delta - delta2 * psi_H_psi;
-    gamma = psi2 * psi_H_delta - psi_dot_delta * psi_H_psi;
+    a = psi_dot_delta * delta_H_delta - delta2 * psi_H_delta;
+    b = psi2 * delta_H_delta - delta2 * psi_H_psi;
+    c = psi2 * psi_H_delta - psi_dot_delta * psi_H_psi;
 
-    disc = beta*beta - 4.*alpha*gamma;
-    return 0.5 * (sqrt(disc) - beta) / alpha;
+    coef = -0.5 / a;
+    sqr = sqrt(b*b - 4.*a*c);
+    alpha = coef * (b - sqr);
+
+    /* if critical point is a maximum, use other solution */
+    if (2*a*alpha + b < 0.) alpha = coef * (b + sqr);
+
+    return alpha;
 }
