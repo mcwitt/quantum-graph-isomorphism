@@ -1,15 +1,35 @@
-import fileinput
 import numpy as np
 
-# read in adjacency matrix
+def spin(i, j): return (((1 << j) & i) >> j)*2 - 1
 
-a = []
+def neighbor(i, j): return (1 << j) ^ i
 
-for line in fileinput.input():
-    a.append(list(line.strip()))
+if __name__=='__main__':
 
-a = np.array(a, dtype=int)
+    ## read in adjacency matrix ##
+    import fileinput
 
-# construct Hamiltonian matrix
+    a = []
+
+    for line in fileinput.input():
+        a.append(list(line.strip()))
+
+    a = np.array(a, dtype=int)
+    n = a.shape[0]
+    assert(a.shape[1] == n)
+
+    ## construct Hamiltonian matrix ##
+
+    d = 2**n    # dimension of Hilbert space
+
+    H = np.empty((d, d))
+
+    for i in xrange(d):
+        for j in xrange(i):
+            pass
+
+
+
+
 
 

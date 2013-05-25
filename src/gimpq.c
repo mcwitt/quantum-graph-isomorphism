@@ -21,8 +21,8 @@
  * SPIN(i, j)       returns the eigenvalue of sigma^z_j for state |i>
  */
 
-#define NEIGHBOR(i, j)  ((i) ^ (1UL << (j)))
-#define SPIN(i, j)      (2 * ((int) (((1UL << (j)) & (i)) >> (j))) - 1)
+#define NEIGHBOR(i, j)  ((1UL << (j)) ^ (i))
+#define SPIN(i, j)      (((int) (((1UL << (j)) & (i)) >> (j)))*2 - 1)
 
 typedef uint64_t index_t;
 
