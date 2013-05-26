@@ -22,9 +22,9 @@ int main(int argc, char *argv[])
     ULONG i;
     int a[N][N], j, iter, max_iter = 100;
 
-    filename = "test-graph-16.txt";
+    filename = "test-graph-8.txt";
 
-    if (! amatrix_load(filename, 16, &a[0][0]))
+    if (! amatrix_load(filename, 8, &a[0][0]))
     {
         fprintf(stderr, "%s: error loading adjacency matrix from file \"%s\"\n",
                 argv[0], filename);
@@ -43,13 +43,13 @@ int main(int argc, char *argv[])
     */
 
     for (i = 0; i < D; i++) x[i] = 1.;
-    s = 0.99;
+    s = 0.9;
 
-    iter = nlcg_minimize(gradient, line_min, 100, 1e-6, x);
+    iter = nlcg_minimize(gradient, line_min, 100, 1e-18, x);
     printf("stopped after %d iterations. (%d max)\n", iter, max_iter);
 
     energy = gq_energy_grad(s, d, x, grad);
-    printf("energy = %g\n", energy);
+    printf("energy = %.10g\n", energy);
 
     return EXIT_SUCCESS;
 }
