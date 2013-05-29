@@ -8,8 +8,8 @@
 #define S           0.9
 #define H_0         1.
 #define X_0_i       1.
-#define MAX_ITER    100
-#define EPS         1e-12
+#define MAX_ITER    1000
+#define EPS         1e-16
 
 double d[D];
 

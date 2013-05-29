@@ -2,11 +2,11 @@
 #include <stdio.h>
 
 int nlcg_minimize(
-        void   (*gradient)(double*, double*),
-        double (*line_min)(double*, double*),
-        int max_iter,
-        double eps,
-        double x[D]
+        void    (*gradient)(double*, double*),
+        double  (*line_min)(double*, double*),
+        int     max_iter,
+        double  eps,
+        double  x[D]
         )
 {
     index_t i;
@@ -33,7 +33,16 @@ int nlcg_minimize(
         gradient(x, r1);
         r1norm2 = 0.; for (i = 0; i < D; i++) r1norm2 += r1[i] * r1[i];
         if (r1norm2 < rtol) break;   /* are we done? */
-        b = r1norm2 / r0norm2;  /* Fletcher-Reeves method */
+#ifdef USE_FLETCHER_REEVES
+        /* compute b (\beta) using the simpler Fletcher-Reeves method */
+        b = r1norm2 / r0norm2;
+#else
+        /* use Polak-Ribiere (generally converges in fewer iterations) */
+        b = 0.;
+        for (i = 0; i < D; i++) b += r1[i] * (r1[i] - r0[i]);
+        b /= r0norm2;
+        if (b < 0.) b = 0.;
+#endif
         for (i = 0; i < D; i++) d[i] = r1[i] + b*d[i];  /* update search direction */
         for (i = 0; i < D; i++) r0[i] = r1[i];  /* save residual for next iteration */
         r0norm2 = r1norm2;
