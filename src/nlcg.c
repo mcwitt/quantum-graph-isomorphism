@@ -9,7 +9,7 @@ int nlcg_minimize(
         double x[D]
         )
 {
-    ULONG i;
+    index_t i;
     double d[D], r0[D], r1[D];
     double a, b, r0norm2, r1norm2, rtol;
     int iter;

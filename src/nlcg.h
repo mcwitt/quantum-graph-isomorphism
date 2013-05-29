@@ -13,7 +13,7 @@
 #include "params.h"
 #include <stdint.h>
 
-typedef uint64_t ULONG;
+typedef uint64_t index_t;
 
 int nlcg_minimize(
         void   (*gradient)(double*, double*),
