@@ -6,15 +6,11 @@
  * d        diagonal elements of H_P
  */
 
-#include "gimpq.h"
+#include "qgi.h"
 
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
-
-/* DEBUG */
-#include <assert.h>
-#include <stdio.h>
 
 /*
  * NEIGHBOR(i, j)   returns the jth neighbor state of |i>
@@ -26,7 +22,7 @@
 
 typedef uint64_t index_t;
 
-void gq_compute_problem_hamiltonian(int a[N][N], double h[N], double d[D])
+void qgi_compute_problem_hamiltonian(int a[N][N], double h[N], double d[D])
 {
     index_t i;
     int m, n;
@@ -48,7 +44,7 @@ void gq_compute_problem_hamiltonian(int a[N][N], double h[N], double d[D])
     }
 }
 
-double gq_driver_matrix_element(double u[D], double v[D])
+double qgi_driver_matrix_element(double u[D], double v[D])
 {
     double result = 0.;
     index_t i;
@@ -61,7 +57,7 @@ double gq_driver_matrix_element(double u[D], double v[D])
     return result;
 }
 
-double gq_problem_matrix_element(double d[D], double u[D], double v[D], double *udotv)
+double qgi_problem_matrix_element(double d[D], double u[D], double v[D], double *udotv)
 {
     double udotv_i, result = 0.;
     index_t i;
@@ -78,19 +74,19 @@ double gq_problem_matrix_element(double d[D], double u[D], double v[D], double *
     return result;
 }
 
-double gq_matrix_element(double s, double d[D], double u[D], double v[D], double *udotv)
+double qgi_matrix_element(double s, double d[D], double u[D], double v[D], double *udotv)
 {
-    return (1. - s) * gq_driver_matrix_element(u, v)
-               + s  * gq_problem_matrix_element(d, u, v, udotv);
+    return (1. - s) * qgi_driver_matrix_element(u, v)
+               + s  * qgi_problem_matrix_element(d, u, v, udotv);
 }
 
-double gq_energy_grad(double s, double d[D], double psi[D], double grad[D])
+double qgi_energy_grad(double s, double d[D], double psi[D], double grad[D])
 {
     double psi2, energy;
     int j, k;
 
     /* compute the energy */
-    energy = gq_matrix_element(s, d, psi, psi, &psi2);
+    energy = qgi_matrix_element(s, d, psi, psi, &psi2);
     energy /= psi2;
 
     /* compute the gradient */
@@ -105,15 +101,15 @@ double gq_energy_grad(double s, double d[D], double psi[D], double grad[D])
     return energy;
 }
 
-double gq_line_min(double s, double d[D], double psi[D], double delta[D])
+double qgi_line_min(double s, double d[D], double psi[D], double delta[D])
 {
     double psi2, psi_dot_delta, delta2,
            psi_H_psi, psi_H_delta, delta_H_delta,
            a, b, c, coef, sqr, alpha;
 
-    psi_H_psi     = gq_matrix_element(s, d, psi,   psi,   &psi2);
-    psi_H_delta   = gq_matrix_element(s, d, psi,   delta, &psi_dot_delta);
-    delta_H_delta = gq_matrix_element(s, d, delta, delta, &delta2);
+    psi_H_psi     = qgi_matrix_element(s, d, psi,   psi,   &psi2);
+    psi_H_delta   = qgi_matrix_element(s, d, psi,   delta, &psi_dot_delta);
+    delta_H_delta = qgi_matrix_element(s, d, delta, delta, &delta2);
 
     a = psi_dot_delta * delta_H_delta - delta2 * psi_H_delta;
     b = psi2 * delta_H_delta - delta2 * psi_H_psi;

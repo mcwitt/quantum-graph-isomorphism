@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "amatrix.h"
-#include "gimpq.h"
+#include "qgi.h"
 #include "nlcg.h"
 #include "params.h"
 
@@ -15,8 +15,8 @@ double d[D];
 
 /* wrappers for gradient and line minimization functions
  * to be passed to NLCG routine */
-void gradient(double *x, double *grad) { gq_energy_grad(S, d, x, grad); }
-double line_min(double *x, double *delta) { return gq_line_min(S, d, x, delta); }
+void gradient(double *x, double *grad) { qgi_energy_grad(S, d, x, grad); }
+double line_min(double *x, double *delta) { return qgi_line_min(S, d, x, delta); }
 
 int main(int argc, char *argv[])
 {
@@ -48,10 +48,10 @@ int main(int argc, char *argv[])
         }
 
         for (j = 0; j < N; j++) h[j] = H_0;
-        gq_compute_problem_hamiltonian(a, h, d);
+        qgi_compute_problem_hamiltonian(a, h, d);
         for (i = 0; i < D; i++) x[i] = X_0_i;
         iter = nlcg_minimize(gradient, line_min, MAX_ITER, EPS, x);
-        energy = gq_energy_grad(S, d, x, grad);
+        energy = qgi_energy_grad(S, d, x, grad);
         printf("%12s %12.9g %12d\n", file_names[ifile], energy, iter);
     }
 
