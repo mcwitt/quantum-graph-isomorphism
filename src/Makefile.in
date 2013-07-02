@@ -9,3 +9,12 @@ CFLAGS += -DVERSION=\"$(shell git describe)\"
 LDLIBS = -lm
 
 test: qgi.o nlcg.o amatrix.o
+
+measure: qgi.o nlcg.o amatrix.o
+
+.PHONY: clean
+
+clean:
+	$(RM) *.o test
+
+

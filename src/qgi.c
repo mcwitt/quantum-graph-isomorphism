@@ -80,13 +80,15 @@ double qgi_matrix_element(double s, double d[D], double u[D], double v[D], doubl
                + s  * qgi_problem_matrix_element(d, u, v, udotv);
 }
 
-double qgi_energy_grad(double s, double d[D], double psi[D], double grad[D])
+double qgi_energy_grad(double s, double d[D], double psi[D], double grad[D], double *eod)
 {
     double psi2, energy;
     int j, k;
 
     /* compute the energy */
-    energy = qgi_matrix_element(s, d, psi, psi, &psi2);
+    *eod = qgi_driver_matrix_element(psi, psi);
+    energy = qgi_problem_matrix_element(d, psi, psi, &psi2);
+    energy = (1. - s) * (*eod) + s * energy;
     energy /= psi2;
 
     /* compute the gradient */

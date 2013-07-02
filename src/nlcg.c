@@ -1,6 +1,56 @@
 #include "nlcg.h"
 #include <stdio.h>
 
+void nlcg_init(
+        void    (*gradient)(double*, double*),
+        double  x[D],
+        double  d[D],
+        double  r[D],
+        double  *r2)
+{
+    index_t i;
+
+    gradient(x, r);
+    *r2 = 0.;
+
+    for (i = 0; i < D; i++)
+    {
+        d[i] = r[i];   /* set initial search direction */
+        *r2 += r[i] * r[i];
+    }
+}
+
+void nlcg_iterate(
+        void    (*gradient)(double*, double*),
+        double  (*line_min)(double*, double*),
+        double  x[D],
+        double  d[D],
+        double  rprev[D],
+        double  *r2prev
+        )
+{
+    double r[D], a, b, r2;
+    index_t i;
+
+    a = line_min(x, d);
+    for (i = 0; i < D; i++) x[i] += a * d[i];
+    gradient(x, r);
+    r2 = 0.; for (i = 0; i < D; i++) r2 += r[i] * r[i];
+#ifdef USE_FLETCHER_REEVES
+    /* compute b (\beta) using the simpler Fletcher-Reeves method */
+    b = r2 / *r2prev;
+#else
+    /* use Polak-Ribiere (generally converges in fewer iterations) */
+    b = 0.;
+    for (i = 0; i < D; i++) b += r[i] * (r[i] - rprev[i]);
+    b /= *r2prev;
+    if (b < 0.) b = 0.;
+#endif
+    for (i = 0; i < D; i++) d[i] = r[i] + b*d[i];  /* update search direction */
+    for (i = 0; i < D; i++) rprev[i] = r[i];  /* save residual for next iteration */
+    *r2prev = r2;
+}
+
 int nlcg_minimize(
         void    (*gradient)(double*, double*),
         double  (*line_min)(double*, double*),
@@ -9,43 +59,17 @@ int nlcg_minimize(
         double  x[D]
         )
 {
-    index_t i;
-    double d[D], r0[D], r1[D];
-    double a, b, r0norm2, r1norm2, rtol;
+    double d[D], r[D], r2, r2max;
     int iter;
 
-    gradient(x, r0);
-    r0norm2 = 0.;
-
-    for (i = 0; i < D; i++)
-    {
-        d[i] = r0[i];   /* set initial search direction */
-        r0norm2 += r0[i] * r0[i];
-    }
-
-    rtol = eps * r0norm2;   /* stop when we've reached some small fraction of
-                               the initial residual */
+    nlcg_init(gradient, x, d, r, &r2);
+    r2max = eps * r2;   /* stop when we've reached some small fraction of
+                           the initial residual */
 
     for (iter = 0; iter < max_iter; iter++)
     {
-        a = line_min(x, d);
-        for (i = 0; i < D; i++) x[i] += a * d[i];
-        gradient(x, r1);
-        r1norm2 = 0.; for (i = 0; i < D; i++) r1norm2 += r1[i] * r1[i];
-        if (r1norm2 < rtol) break;   /* are we done? */
-#ifdef USE_FLETCHER_REEVES
-        /* compute b (\beta) using the simpler Fletcher-Reeves method */
-        b = r1norm2 / r0norm2;
-#else
-        /* use Polak-Ribiere (generally converges in fewer iterations) */
-        b = 0.;
-        for (i = 0; i < D; i++) b += r1[i] * (r1[i] - r0[i]);
-        b /= r0norm2;
-        if (b < 0.) b = 0.;
-#endif
-        for (i = 0; i < D; i++) d[i] = r1[i] + b*d[i];  /* update search direction */
-        for (i = 0; i < D; i++) r0[i] = r1[i];  /* save residual for next iteration */
-        r0norm2 = r1norm2;
+        nlcg_iterate(gradient, line_min, x, d, r, &r2);
+        if (r2 < r2max) break;   /* are we done? */
     }
 
     return iter;

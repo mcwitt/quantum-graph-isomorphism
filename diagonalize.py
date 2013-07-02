@@ -45,9 +45,5 @@ if __name__=='__main__':
     a = np.array(a, dtype=int)
     assert(a.shape[0] == a.shape[1])
     h = np.ones(a.shape[0])
-    H = hamiltonian(a, h, s=0.9)
+    H = hamiltonian(a, h, s=0.8)
     print min(scipy.linalg.eig(H, right=False))
-
-
-
-
