@@ -19,16 +19,43 @@
 double d[D];
 double s[MAX_S_VALS];
 int s_index;
-double f;
+double psi2, tmp;
 
 /* wrappers for gradient and line minimization functions
  * to be passed to NLCG routine */
 void gradient(double *x, double *grad) {
-    qgi_energy_grad(s[s_index], d, x, grad, &f);
+    qgi_energy_grad(s[s_index], d, x, grad, &psi2, &tmp);
 }
 
 double line_min(double *x, double *delta) {
     return qgi_line_min(s[s_index], d, x, delta);
+}
+
+
+int minimize(int max_iter, double eps, double psi[D])
+{
+    double d[D], r[D], r2, r2max;
+    int iter;
+    index_t i;
+
+    nlcg_init(gradient, psi, d, r, &r2);
+    r2max = eps * r2;   /* stop when we've reached some small fraction of
+                           the initial residual */
+
+    for (iter = 0; iter < max_iter; iter++)
+    {
+        nlcg_iterate(gradient, line_min, psi, d, r, &r2);
+        if (r2 < r2max) break;   /* are we done? */
+
+        if (psi2 > RENORM_THRESHOLD)
+        {
+            for (i = 0; i < D; i++)
+
+
+        }
+    }
+
+    return iter;
 }
 
 int main(int argc, char *argv[])

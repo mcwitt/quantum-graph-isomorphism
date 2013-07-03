@@ -17,6 +17,8 @@
  * SPIN(i, j)       returns the eigenvalue of sigma^z_j for state |i>
  */
 
+#define PSI2_MAX    10e6
+
 #define NEIGHBOR(i, j)  ((1UL << (j)) ^ (i))
 #define SPIN(i, j)      (((int) (((1UL << (j)) & (i)) >> (j)))*2 - 1)
 
@@ -80,16 +82,17 @@ double qgi_matrix_element(double s, double d[D], double u[D], double v[D], doubl
                + s  * qgi_problem_matrix_element(d, u, v, udotv);
 }
 
-double qgi_energy_grad(double s, double d[D], double psi[D], double grad[D], double *eod)
+double qgi_energy_grad(double s, double d[D], double psi[D],
+        double grad[D], double *psi2, double *edrvr)
 {
-    double psi2, energy;
+    double energy;
     int j, k;
 
     /* compute the energy */
-    *eod = qgi_driver_matrix_element(psi, psi);
-    energy = qgi_problem_matrix_element(d, psi, psi, &psi2);
-    energy = (1. - s) * (*eod) + s * energy;
-    energy /= psi2;
+    *edrvr = qgi_driver_matrix_element(psi, psi);
+    energy = qgi_problem_matrix_element(d, psi, psi, psi2);
+    energy = (1. - s) * (*edrvr) + s * energy;
+    energy /= *psi2;
 
     /* compute the gradient */
     for (k = 0; k < D; k++)
@@ -97,7 +100,7 @@ double qgi_energy_grad(double s, double d[D], double psi[D], double grad[D], dou
         double sum = 0.;
 
         for (j = 0; j < N; j++) sum += psi[NEIGHBOR(k, j)];
-        grad[k] = 2. * (psi[k] * (s * d[k] - energy) + (1. - s) * sum) / psi2;
+        grad[k] = 2. * (psi[k] * (s * d[k] - energy) + (1. - s) * sum) / *psi2;
     }
 
     return energy;
@@ -125,4 +128,50 @@ double qgi_line_min(double s, double d[D], double psi[D], double delta[D])
     if (2*a*alpha + b < 0.) alpha = coef * (b + sqr);
 
     return alpha;
+}
+
+int qgi_minimize_energy(double s, double d[D], int max_iter, double eps,
+        double *energy, double psi[D])
+{
+    double delta[D], r[D], rprev[D];
+    double a, b, edrvr, psi2, r2, r2prev, r2stop;
+    index_t i;
+    int iter;
+
+    *energy = qgi_energy_grad(s, d, psi, rprev, &psi2, &edrvr);
+    r2prev = 0.; for (i = 0; i < D; i++) r2prev += rprev[i] * rprev[i];
+    r2stop = eps * r2prev;
+    for (i = 0; i < D; i++) delta[i] = rprev[i];
+
+    for (iter = 0; iter < max_iter; iter++)
+    {
+        a = qgi_line_min(s, d, psi, delta);
+        for (i = 0; i < D; i++) psi[i] += a * delta[i];
+        *energy = qgi_energy_grad(s, d, psi, r, &psi2, &edrvr);
+        r2 = 0.; for (i = 0; i < D; i++) r2 += r[i] * r[i];
+        if (r2 < r2stop) break;   /* are we done? */
+        /* else update search direction and continue... */
+#ifdef USE_FLETCHER_REEVES
+        /* compute b (\beta) using the simpler Fletcher-Reeves method */
+        b = r2 / r2prev;
+#else
+        /* use Polak-Ribiere (generally converges faster) */
+        b = 0.;
+        for (i = 0; i < D; i++) b += r[i] * (r[i] - rprev[i]);
+        b /= r2prev;
+        if (b < 0.) b = 0.;
+#endif
+        for (i = 0; i < D; i++) delta[i] = r[i] + b * delta[i];
+        for (i = 0; i < D; i++) rprev[i] = r[i];
+        r2prev = r2;
+
+        /* renormalize wavefunction if necessary */
+        if (psi2 > PSI2_MAX)
+        {
+            psi2 = sqrt(psi2);
+            for (i = 0; i < D; i++) psi[i] /= psi2;
+        }
+    }
+
+    return iter;
 }

@@ -10,19 +10,21 @@
 #define X_0_i       1.
 #define MAX_ITER    1000
 #define EPS         1e-16
+#define RENORM_THRESH   10e6
 
 double d[D];
+double psi2, tmp;
 
 /* wrappers for gradient and line minimization functions
  * to be passed to NLCG routine */
-void gradient(double *x, double *grad) { qgi_energy_grad(S, d, x, grad); }
+void gradient(double *x, double *grad) { qgi_energy_grad(S, d, x, grad, &psi2, &tmp); }
 double line_min(double *x, double *delta) { return qgi_line_min(S, d, x, delta); }
 
 int main(int argc, char *argv[])
 {
     char **file_names;
     double h[N];
-    double x[D], grad[D];
+    double x[D];
     double energy;
     index_t i;
     int a[N][N], ifile, j, iter;
@@ -50,8 +52,7 @@ int main(int argc, char *argv[])
         for (j = 0; j < N; j++) h[j] = H_0;
         qgi_compute_problem_hamiltonian(a, h, d);
         for (i = 0; i < D; i++) x[i] = X_0_i;
-        iter = nlcg_minimize(gradient, line_min, MAX_ITER, EPS, x);
-        energy = qgi_energy_grad(S, d, x, grad);
+        iter = qgi_minimize_energy(S, d, MAX_ITER, EPS, &energy, x);
         printf("%12s %12.9g %12d\n", file_names[ifile], energy, iter);
     }
 
