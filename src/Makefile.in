@@ -6,11 +6,12 @@ CFLAGS = -Wall -O3
 
 CFLAGS += -I.
 CFLAGS += -DVERSION=\"$(shell git describe)\"
+#CFLAGS += -DUSE_POLAK_RIBIERE
 LDLIBS = -lm
 
 test: qgi.o amatrix.o
 
-measure: qgi.o amatrix.o
+measure: qgi.o nlcg.o amatrix.o
 
 .PHONY: clean
 

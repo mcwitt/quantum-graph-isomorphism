@@ -1,28 +1,21 @@
-/*
- * N        number of vertices (spins)
- * D        dimension of Hilbert space
- * a        adjacency matrix describing graph G
- * psi      state vector in the \sigma^z basis
- * d        diagonal elements of H_P
+/**
+ * @file    qgi.c
+ * @author  Matt Wittmann
+ * @brief   Implementations of quantum graph isomorphism algorithms.
  */
 
 #include "qgi.h"
 
 #include <math.h>
-#include <stdint.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 /*
  * NEIGHBOR(i, j)   returns the jth neighbor state of |i>
  * SPIN(i, j)       returns the eigenvalue of sigma^z_j for state |i>
  */
-
-#define PSI2_MAX    10e6
-
 #define NEIGHBOR(i, j)  ((1UL << (j)) ^ (i))
 #define SPIN(i, j)      (((int) (((1UL << (j)) & (i)) >> (j)))*2 - 1)
-
-typedef uint64_t index_t;
 
 void qgi_compute_problem_hamiltonian(int a[N][N], double h[N], double d[D])
 {
@@ -151,26 +144,18 @@ int qgi_minimize_energy(double s, double d[D], int max_iter, double eps,
         r2 = 0.; for (i = 0; i < D; i++) r2 += r[i] * r[i];
         if (r2 < r2stop) break;   /* are we done? */
         /* else update search direction and continue... */
-#ifdef USE_FLETCHER_REEVES
+#ifndef USE_POLAK_RIBIERE
         /* compute b (\beta) using the simpler Fletcher-Reeves method */
         b = r2 / r2prev;
 #else
         /* use Polak-Ribiere (generally converges faster) */
-        b = 0.;
-        for (i = 0; i < D; i++) b += r[i] * (r[i] - rprev[i]);
-        b /= r2prev;
+        b = 0.; for (i = 0; i < D; i++) b += r[i] * rprev[i];
+        b = (r2 - b) / r2prev;
         if (b < 0.) b = 0.;
 #endif
         for (i = 0; i < D; i++) delta[i] = r[i] + b * delta[i];
         for (i = 0; i < D; i++) rprev[i] = r[i];
         r2prev = r2;
-
-        /* renormalize wavefunction if necessary */
-        if (psi2 > PSI2_MAX)
-        {
-            psi2 = sqrt(psi2);
-            for (i = 0; i < D; i++) psi[i] /= psi2;
-        }
     }
 
     return iter;

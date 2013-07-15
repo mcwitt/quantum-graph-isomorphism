@@ -2,30 +2,22 @@
 #include <stdint.h>
 #include "amatrix.h"
 #include "qgi.h"
-#include "nlcg.h"
 #include "params.h"
 
-#define S           0.9
-#define H_0         1.
-#define X_0_i       1.
+#define DS          0.01
+#define SMIN        DS
+#define SMAX        1.
+
 #define MAX_ITER    1000
 #define EPS         1e-16
-#define RENORM_THRESH   10e6
-
-double d[D];
-double psi2, tmp;
-
-/* wrappers for gradient and line minimization functions
- * to be passed to NLCG routine */
-void gradient(double *x, double *grad) { qgi_energy_grad(S, d, x, grad, &psi2, &tmp); }
-double line_min(double *x, double *delta) { return qgi_line_min(S, d, x, delta); }
 
 int main(int argc, char *argv[])
 {
     char **file_names;
-    double h[N];
-    double x[D];
-    double energy;
+    double h[N];    /* fields */
+    double d[D];    /* diagonal elements of H_p */
+    double psi[D];  /* wavefunction */
+    double s, energy;
     index_t i;
     int a[N][N], ifile, j, iter;
 
@@ -37,7 +29,7 @@ int main(int argc, char *argv[])
 
     file_names = &argv[1];
 
-    printf("#%11s %12s %12s\n", "file", "E_0", "iterations");
+    printf("%16s %6s %12s %12s\n", "file", "s", "E_0", "iterations");
 
     for (ifile = 0; ifile < argc - 1; ifile++)
     {
@@ -49,11 +41,14 @@ int main(int argc, char *argv[])
             return EXIT_FAILURE;
         }
 
-        for (j = 0; j < N; j++) h[j] = H_0;
-        qgi_compute_problem_hamiltonian(a, h, d);
-        for (i = 0; i < D; i++) x[i] = X_0_i;
-        iter = qgi_minimize_energy(S, d, MAX_ITER, EPS, &energy, x);
-        printf("%12s %12.9g %12d\n", file_names[ifile], energy, iter);
+        for (s = SMIN; s < SMAX; s += DS)
+        {
+            for (j = 0; j < N; j++) h[j] = 1.;
+            qgi_compute_problem_hamiltonian(a, h, d);
+            for (i = 0; i < D; i++) psi[i] = 1.;
+            iter = qgi_minimize_energy(s, d, MAX_ITER, EPS, &energy, psi);
+            printf("%16s %6.3f %12g %12d\n", file_names[ifile], s, energy, iter);
+        }
     }
 
     return EXIT_SUCCESS;
