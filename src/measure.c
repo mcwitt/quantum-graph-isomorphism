@@ -23,39 +23,28 @@ double psi2, tmp;
 
 /* wrappers for gradient and line minimization functions
  * to be passed to NLCG routine */
-void gradient(double *x, double *grad) {
-    qgi_energy_grad(s[s_index], d, x, grad, &psi2, &tmp);
+
+void gradient(double *psi, double *grad) {
+    qgi_energy_grad(s[s_index], d, psi, grad, &psi2, &tmp);
 }
 
-double line_min(double *x, double *delta) {
-    return qgi_line_min(s[s_index], d, x, delta);
+double line_min(double *psi, double *delta) {
+    return qgi_line_min(s[s_index], d, psi, delta);
 }
 
-
-int minimize(int max_iter, double eps, double psi[D])
+void process_graph(a, h, s)
 {
-    double d[D], r[D], r2, r2max;
-    int iter;
-    index_t i;
+    qgi_compute_problem_hamiltonian(a, h, d);
 
-    nlcg_init(gradient, psi, d, r, &r2);
-    r2max = eps * r2;   /* stop when we've reached some small fraction of
-                           the initial residual */
-
-    for (iter = 0; iter < max_iter; iter++)
+    for (s_index = 0; s_index < num_s_vals; s_index++)
     {
-        nlcg_iterate(gradient, line_min, psi, d, r, &r2);
-        if (r2 < r2max) break;   /* are we done? */
+        for (i = 0; i < D; i++) psi[i] = rand() / (RAND_MAX + 1.) * 2. - 1.;
+        iter = nlcg_minimize(gradient, line_min, max_iter, etol, psi);
+        energy = qgi_energy_grad(s[s_index], d, psi, grad, &eod);
 
-        if (psi2 > RENORM_THRESHOLD)
-        {
-            for (i = 0; i < D; i++)
-
-
-        }
+        printf("%12s %6g %12d %16.9g %16.9g\n",
+                file_names[ifile], s[s_index], iter, energy, eod);
     }
-
-    return iter;
 }
 
 int main(int argc, char *argv[])
@@ -71,7 +60,7 @@ int main(int argc, char *argv[])
     int max_iter;
 
     double h[N];
-    double x[D], grad[D];
+    double psi[D], grad[D];
     double energy, eod;
     index_t i;
     int a[N][N], ifile, s_index, iter, j, num_s_vals, num_files;
@@ -151,17 +140,6 @@ int main(int argc, char *argv[])
 
         for (j = 0; j < N; j++) h[j] = h0;
 
-        qgi_compute_problem_hamiltonian(a, h, d);
-
-        for (s_index = 0; s_index < num_s_vals; s_index++)
-        {
-            for (i = 0; i < D; i++) x[i] = rand() / (RAND_MAX + 1.) * 2. - 1.;
-            iter = nlcg_minimize(gradient, line_min, max_iter, etol, x);
-            energy = qgi_energy_grad(s[s_index], d, x, grad, &eod);
-
-            printf("%12s %6g %12d %16.9g %16.9g\n",
-                    file_names[ifile], s[s_index], iter, energy, eod);
-        }
     }
 
     return EXIT_SUCCESS;

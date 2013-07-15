@@ -158,5 +158,58 @@ int qgi_minimize_energy(double s, double d[D], int max_iter, double eps,
         r2prev = r2;
     }
 
+    /* normalize wavefunction */
+    psi2 = sqrt(psi2);
+    for (i = 0; i < D; i++) psi[i] /= psi2;
+
     return iter;
+}
+
+double qgi_sigma(double psi[D], int j)
+{
+    double result = 0.;
+    index_t i;
+
+    for (i = 0; i < D; i++)
+        result += psi[i] * psi[i] * SPIN(i, j);
+
+    return result;
+}
+
+double qgi_sigma2(double psi[D], int j, int k)
+{
+    double result = 0.;
+    index_t i;
+
+    for (i = 0; i < D; i++)
+        result += psi[i] * psi[i] * SPIN(i, j) * SPIN(i, k);
+
+    return result;
+}
+
+double qgi_magnetization(double psi[D])
+{
+    double result = 0.;
+    int j;
+
+    for (j = 0; j < N; j++) result += qgi_sigma(psi, j);
+
+    return result / N;
+}
+
+double qgi_overlap(double psi[D])
+{
+    double m, result = 0.;
+    int j, k;
+
+    for (j = 1; j < N; j++)
+    {
+        for (k = 0; k < j; k++)
+        {
+            m = qgi_sigma2(psi, j, k);
+            result += m*m;
+        }
+    }
+
+    return 2. * result / N / (N-1);
 }
