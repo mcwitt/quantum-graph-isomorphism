@@ -123,18 +123,19 @@ double qgi_line_min(double s, double d[D], double psi[D], double delta[D])
     return alpha;
 }
 
+/** @todo double check that simplification didn't break anything */
 int qgi_minimize_energy(double s, double d[D], int max_iter, double eps,
         double *energy, double psi[D])
 {
-    double delta[D], r[D], rprev[D];
+    double delta[D], r[D];
     double a, b, edrvr, psi2, r2, r2prev, r2stop;
     index_t i;
     int iter;
 
-    *energy = qgi_energy_grad(s, d, psi, rprev, &psi2, &edrvr);
-    r2prev = 0.; for (i = 0; i < D; i++) r2prev += rprev[i] * rprev[i];
+    *energy = qgi_energy_grad(s, d, psi, r, &psi2, &edrvr);
+    r2prev = 0.; for (i = 0; i < D; i++) r2prev += r[i] * r[i];
     r2stop = eps * r2prev;
-    for (i = 0; i < D; i++) delta[i] = rprev[i];
+    for (i = 0; i < D; i++) delta[i] = r[i];
 
     for (iter = 0; iter < max_iter; iter++)
     {
@@ -144,17 +145,8 @@ int qgi_minimize_energy(double s, double d[D], int max_iter, double eps,
         r2 = 0.; for (i = 0; i < D; i++) r2 += r[i] * r[i];
         if (r2 < r2stop) break;   /* are we done? */
         /* else update search direction and continue... */
-#ifndef USE_POLAK_RIBIERE
-        /* compute b (\beta) using the simpler Fletcher-Reeves method */
-        b = r2 / r2prev;
-#else
-        /* use Polak-Ribiere (generally converges faster) */
-        b = 0.; for (i = 0; i < D; i++) b += r[i] * rprev[i];
-        b = (r2 - b) / r2prev;
-        if (b < 0.) b = 0.;
-#endif
+        b = r2 / r2prev;    /* Fletcher-Reeves method */
         for (i = 0; i < D; i++) delta[i] = r[i] + b * delta[i];
-        for (i = 0; i < D; i++) rprev[i] = r[i];
         r2prev = r2;
     }
 

@@ -11,12 +11,13 @@
 #define MAX_ITER    1000
 #define EPS         1e-16
 
+double d[D];    /* diagonal elements of H_p */
+double psi[D];  /* wavefunction */
+
 int main(int argc, char *argv[])
 {
     char **file_names;
     double h[N];    /* fields */
-    double d[D];    /* diagonal elements of H_p */
-    double psi[D];  /* wavefunction */
     double s, energy, mx, mz, qz;
     index_t i;
     int a[N][N], ifile, j, iter;
