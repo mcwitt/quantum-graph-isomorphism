@@ -165,7 +165,7 @@ int qgi_minimize_energy(double s, double d[D], int max_iter, double eps,
     return iter;
 }
 
-double qgi_sigma(double psi[D], int j)
+double qgi_sigma_z(double psi[D], int j)
 {
     double result = 0.;
     index_t i;
@@ -176,7 +176,7 @@ double qgi_sigma(double psi[D], int j)
     return result;
 }
 
-double qgi_sigma2(double psi[D], int j, int k)
+double qgi_sigma2_z(double psi[D], int j, int k)
 {
     double result = 0.;
     index_t i;
@@ -187,12 +187,33 @@ double qgi_sigma2(double psi[D], int j, int k)
     return result;
 }
 
-double qgi_magnetization(double psi[D])
+double qgi_sigma_x(double psi[D], int j)
+{
+    double result = 0.;
+    index_t i;
+
+    for (i = 0; i < D; i++)
+        result += psi[i] * psi[NEIGHBOR(i, j)];
+
+    return result;
+}
+
+double qgi_mag_z(double psi[D])
 {
     double result = 0.;
     int j;
 
-    for (j = 0; j < N; j++) result += qgi_sigma(psi, j);
+    for (j = 0; j < N; j++) result += qgi_sigma_z(psi, j);
+
+    return result / N;
+}
+
+double qgi_mag_x(double psi[D])
+{
+    double result = 0.;
+    int j;
+
+    for (j = 0; j < N; j++) result += qgi_sigma_x(psi, j);
 
     return result / N;
 }
@@ -206,7 +227,7 @@ double qgi_overlap(double psi[D])
     {
         for (k = 0; k < j; k++)
         {
-            m = qgi_sigma2(psi, j, k);
+            m = qgi_sigma2_z(psi, j, k);
             result += m*m;
         }
     }

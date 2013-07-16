@@ -50,10 +50,14 @@ double qgi_line_min(double s, double d[D], double psi[D], double delta[D]);
 int qgi_minimize_energy(double s, double d[D], int max_iter, double eps,
         double *energy, double psi[D]);
 
-double qgi_sigma(double psi[D], int j);
+double qgi_sigma_z(double psi[D], int j);
 
-double qgi_sigma2(double psi[D], int j, int k);
+double qgi_sigma_x(double psi[D], int j);
 
-double qgi_magnetization(double psi[D]);
+double qgi_sigma2_z(double psi[D], int j, int k);
+
+double qgi_mag_z(double psi[D]);
+
+double qgi_mag_x(double psi[D]);
 
 double qgi_overlap(double psi[D]);

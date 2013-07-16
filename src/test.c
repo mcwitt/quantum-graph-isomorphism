@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     double h[N];    /* fields */
     double d[D];    /* diagonal elements of H_p */
     double psi[D];  /* wavefunction */
-    double s, energy, m, q;
+    double s, energy, mx, mz, qz;
     index_t i;
     int a[N][N], ifile, j, iter;
 
@@ -29,8 +29,8 @@ int main(int argc, char *argv[])
 
     file_names = &argv[1];
 
-    printf("%16s %6s %12s %12s %12s %12s\n",
-            "file", "s", "iterations", "E0", "m2", "q");
+    printf("%16s %6s %12s %12s %12s %12s %12s\n",
+            "file", "s", "iterations", "E0", "mz2", "mx2", "q");
 
     for (ifile = 0; ifile < argc - 1; ifile++)
     {
@@ -48,11 +48,12 @@ int main(int argc, char *argv[])
             qgi_compute_problem_hamiltonian(a, h, d);
             for (i = 0; i < D; i++) psi[i] = 1.;
             iter = qgi_minimize_energy(s, d, MAX_ITER, EPS, &energy, psi);
-            m = qgi_magnetization(psi);
-            q = qgi_overlap(psi);
+            mz = qgi_mag_z(psi);
+            mx = qgi_mag_x(psi);
+            qz = qgi_overlap(psi);
 
-            printf("%16s %6.3f %12d %12g %12g %12g\n",
-                    file_names[ifile], s, iter, energy, m*m, q);
+            printf("%16s %6.3f %12d %12g %12g %12g %12g\n",
+                    file_names[ifile], s, iter, energy, mz*mz, mx*mx, qz);
         }
     }
 
