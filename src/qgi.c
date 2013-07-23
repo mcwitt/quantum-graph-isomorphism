@@ -17,13 +17,6 @@
 #define NEIGHBOR(i, j)  ((1UL << (j)) ^ (i))
 #define SPIN(i, j)      (((int) (((1UL << (j)) & (i)) >> (j)))*2 - 1)
 
-#define MAX_CG_ITER 1000
-
-void qgi_init(qgi_t *qgi, int a[N][N], double h[N])
-{
-    qgi_compute_problem_hamiltonian(a, h, qgi->d);
-}
-
 void qgi_compute_problem_hamiltonian(int a[N][N], double h[N], double d[D])
 {
     index_t i;
@@ -130,36 +123,6 @@ double qgi_line_min(double s, double d[D], double psi[D], double delta[D])
     return alpha;
 }
 
-/** @todo split into clean CG code and problem-specific code */
-double qgi_minimize_energy(qgi_t *qgi, double s, double eps, int *num_iter)
-{
-    double a, b, energy, eod, psi2, r2, r2prev, r2stop;
-    index_t i;
-
-    energy = qgi_energy_grad(s, qgi->d, qgi->psi, qgi->r, &psi2, &eod);
-    r2prev = 0.; for (i = 0; i < D; i++) r2prev += qgi->r[i] * qgi->r[i];
-    r2stop = eps * r2prev;
-    for (i = 0; i < D; i++) qgi->delta[i] = qgi->r[i];
-
-    for (*num_iter = 0; *num_iter < MAX_CG_ITER; (*num_iter)++)
-    {
-        a = qgi_line_min(s, qgi->d, qgi->psi, qgi->delta);
-        for (i = 0; i < D; i++) qgi->psi[i] += a * qgi->delta[i];
-        energy = qgi_energy_grad(s, qgi->d, qgi->psi, qgi->r, &psi2, &eod);
-        r2 = 0.; for (i = 0; i < D; i++) r2 += qgi->r[i] * qgi->r[i];
-        if (r2 < r2stop) break;   /* are we done? */
-        /* else update search direction and continue... */
-        b = r2 / r2prev;    /* Fletcher-Reeves method */
-        for (i = 0; i < D; i++) qgi->delta[i] = qgi->r[i] + b * qgi->delta[i];
-        r2prev = r2;
-    }
-
-    /* normalize wavefunction */
-    psi2 = sqrt(psi2);
-    for (i = 0; i < D; i++) qgi->psi[i] /= psi2;
-
-    return energy;
-}
 
 double qgi_sigma_z(double psi[D], int j)
 {

@@ -10,27 +10,6 @@
 typedef uint64_t index_t;
 
 /**
- * A structure to store parameters and intermediate values for the CG energy
- * minimization
- * */
-typedef struct
-{
-    double d[D];        /**< diagonal elements of problem hamiltonian */
-    double psi[D];      /**< wavefunction */
-
-    double delta[D];    /**< CG search direction */
-    double r[D];        /**< residual */
-} qgi_t;
-
-/**
- * Initialize data structures.
- * @param[out]      qgi pointer to qgi_t data structure
- * @param[in]       a   adjacency matrix of graph
- * @param[in]       h   fields at each site (vertex)
- */
-void qgi_init(qgi_t *qgi, int a[N][N], double h[N]);
-
-/**
  * Compute the diagonal elements of the problem Hamiltonian.
  * @param[in]   a   adjacency matrix of graph
  * @param[in]   h   field at each site
@@ -58,15 +37,6 @@ double qgi_energy_grad(double s, double d[D], double psi[D],
  * @param[in]   delta   search direction
  */
 double qgi_line_min(double s, double d[D], double psi[D], double delta[D]);
-
-/**
- * Find the ground state using the nonlinear conjugate gradient algorithm.
- * @param[in,out]   qgi pointer to qgi_t data structure
- * @param[in]       s           adiabatic parameter
- * @param[in]       eps         stop when residual is reduced by this factor
- * @param[out]      num_iter    number of CG iterations used 
- */
-double qgi_minimize_energy(qgi_t *qgi, double s, double eps, int *num_iter);
 
 double qgi_sigma_z(double psi[D], int j);
 

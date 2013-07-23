@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "amatrix.h"
+#include "nlcg.h"
 #include "qgi.h"
 #include "params.h"
 
@@ -11,13 +12,29 @@
 #define MAX_ITER    1000
 #define EPS         1e-16
 
-qgi_t qgi;
+double d[D];        /* diagonal elements of problem hamiltonian */
+double psi[D];      /* wavefunction */
+double delta[D];    /* CG search direction */
+double r[D];        /* residual */
+double s;           /* adiabatic parameter */
+double psi2;        /* squared norm of wavefunction */
+double edrvr;       /* driver part of energy */
+
+double obj_grad(double psi[D], double grad[D])
+{
+    return qgi_energy_grad(s, d, psi, grad, &psi2, &edrvr);
+}
+
+double line_min(double psi[D], double delta[D])
+{
+    return qgi_line_min(s, d, psi, delta);
+}
 
 int main(int argc, char *argv[])
 {
     char **file_names;
     double h[N];    /* fields */
-    double s, energy, mx, mz, q2;
+    double energy, mx, mz, q2;
     index_t i;
     int a[N][N], ifile, ih, iter, j;
 
@@ -45,19 +62,21 @@ int main(int argc, char *argv[])
             return EXIT_FAILURE;
         }
 
-        for (i = 0; i < D; i++) qgi.psi[i] = 1.;
+        for (i = 0; i < D; i++) psi[i] = 1.;
 
         for (ih = 0; ih < nh; ih++)
         {
             for (j = 0; j < N; j++) h[j] = h0[ih];
-            qgi_init(&qgi, a, h);
+            qgi_compute_problem_hamiltonian(a, h, d);
                 
             for (s = SMIN; s < SMAX; s += DS)
             {
-                energy = qgi_minimize_energy(&qgi, s, EPS, &iter);
-                mz = qgi_mag_z(qgi.psi);
-                mx = qgi_mag_x(qgi.psi);
-                q2 = qgi_overlap(qgi.psi);
+                energy = nlcg_minimize(obj_grad, line_min, EPS, MAX_ITER,
+                        &iter, psi, delta, r);
+
+                mz = qgi_mag_z(psi);
+                mx = qgi_mag_x(psi);
+                q2 = qgi_overlap(psi);
 
                 printf("%16s %6.3f %6.3f %12d %12g %12g %12g %12g\n",
                         file_names[ifile], h0[ih], s, iter, energy, mz*mz, mx*mx, q2);
