@@ -17,6 +17,13 @@
 #define NEIGHBOR(i, j)  ((1UL << (j)) ^ (i))
 #define SPIN(i, j)      (((int) (((1UL << (j)) & (i)) >> (j)))*2 - 1)
 
+#define MAX_CG_ITER 1000
+
+void qgi_init(qgi_t *qgi, int a[N][N], double h[N])
+{
+    qgi_compute_problem_hamiltonian(a, h, qgi->d);
+}
+
 void qgi_compute_problem_hamiltonian(int a[N][N], double h[N], double d[D])
 {
     index_t i;
@@ -76,15 +83,15 @@ double qgi_matrix_element(double s, double d[D], double u[D], double v[D], doubl
 }
 
 double qgi_energy_grad(double s, double d[D], double psi[D],
-        double grad[D], double *psi2, double *edrvr)
+        double grad[D], double *psi2, double *eod)
 {
     double energy;
     int j, k;
 
     /* compute the energy */
-    *edrvr = qgi_driver_matrix_element(psi, psi);
+    *eod = qgi_driver_matrix_element(psi, psi);
     energy = qgi_problem_matrix_element(d, psi, psi, psi2);
-    energy = (1. - s) * (*edrvr) + s * energy;
+    energy = (1. - s) * (*eod) + s * energy;
     energy /= *psi2;
 
     /* compute the gradient */
@@ -123,38 +130,35 @@ double qgi_line_min(double s, double d[D], double psi[D], double delta[D])
     return alpha;
 }
 
-/** @todo double check that simplification didn't break anything */
-int qgi_minimize_energy(double s, double d[D], int max_iter, double eps,
-        double *energy, double psi[D])
+/** @todo split into clean CG code and problem-specific code */
+double qgi_minimize_energy(qgi_t *qgi, double s, double eps, int *num_iter)
 {
-    double delta[D], r[D];
-    double a, b, edrvr, psi2, r2, r2prev, r2stop;
+    double a, b, energy, eod, psi2, r2, r2prev, r2stop;
     index_t i;
-    int iter;
 
-    *energy = qgi_energy_grad(s, d, psi, r, &psi2, &edrvr);
-    r2prev = 0.; for (i = 0; i < D; i++) r2prev += r[i] * r[i];
+    energy = qgi_energy_grad(s, qgi->d, qgi->psi, qgi->r, &psi2, &eod);
+    r2prev = 0.; for (i = 0; i < D; i++) r2prev += qgi->r[i] * qgi->r[i];
     r2stop = eps * r2prev;
-    for (i = 0; i < D; i++) delta[i] = r[i];
+    for (i = 0; i < D; i++) qgi->delta[i] = qgi->r[i];
 
-    for (iter = 0; iter < max_iter; iter++)
+    for (*num_iter = 0; *num_iter < MAX_CG_ITER; (*num_iter)++)
     {
-        a = qgi_line_min(s, d, psi, delta);
-        for (i = 0; i < D; i++) psi[i] += a * delta[i];
-        *energy = qgi_energy_grad(s, d, psi, r, &psi2, &edrvr);
-        r2 = 0.; for (i = 0; i < D; i++) r2 += r[i] * r[i];
+        a = qgi_line_min(s, qgi->d, qgi->psi, qgi->delta);
+        for (i = 0; i < D; i++) qgi->psi[i] += a * qgi->delta[i];
+        energy = qgi_energy_grad(s, qgi->d, qgi->psi, qgi->r, &psi2, &eod);
+        r2 = 0.; for (i = 0; i < D; i++) r2 += qgi->r[i] * qgi->r[i];
         if (r2 < r2stop) break;   /* are we done? */
         /* else update search direction and continue... */
         b = r2 / r2prev;    /* Fletcher-Reeves method */
-        for (i = 0; i < D; i++) delta[i] = r[i] + b * delta[i];
+        for (i = 0; i < D; i++) qgi->delta[i] = qgi->r[i] + b * qgi->delta[i];
         r2prev = r2;
     }
 
     /* normalize wavefunction */
     psi2 = sqrt(psi2);
-    for (i = 0; i < D; i++) psi[i] /= psi2;
+    for (i = 0; i < D; i++) qgi->psi[i] /= psi2;
 
-    return iter;
+    return energy;
 }
 
 double qgi_sigma_z(double psi[D], int j)
@@ -224,5 +228,5 @@ double qgi_overlap(double psi[D])
         }
     }
 
-    return 2. * result / N / (N-1);
+    return sqrt(2. * result / N / (N-1));
 }
