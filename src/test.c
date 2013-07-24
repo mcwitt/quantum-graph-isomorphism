@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include "amatrix.h"
@@ -5,7 +6,7 @@
 #include "qgi.h"
 #include "params.h"
 
-#define DS          0.01
+#define DS          0.005
 #define SMIN        DS
 #define SMAX        1.
 
@@ -73,6 +74,10 @@ int main(int argc, char *argv[])
             {
                 energy = nlcg_minimize(obj_grad, line_min, EPS, MAX_ITER,
                         &iter, psi, delta, r);
+
+                /* normalize wavefunction */
+                psi2 = sqrt(psi2);
+                for (i = 0; i < D; i++) psi[i] /= psi2;
 
                 mz = qgi_mag_z(psi);
                 mx = qgi_mag_x(psi);
