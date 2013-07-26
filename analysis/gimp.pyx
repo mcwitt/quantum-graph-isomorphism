@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.sparse
 from libc.stdint cimport uint32_t
+from libc.math cimport sqrt
 cimport numpy as np
 
 def load_graph(filename):
@@ -12,10 +13,28 @@ def load_graph(filename):
     return a
 
 cdef inline int spin(uint32_t i, int j):
-    return (((1 << j) & i) >> j)*2 - 1
+    return (((1UL << j) & i) >> j)*2 - 1
 
 cdef inline uint32_t neighbor(uint32_t i, int j):
-    return (1 << j) ^ i
+    return (1UL << j) ^ i
+
+cdef double sigma_z(np.ndarray[double] psi, int j):
+    cdef double result = 0.
+    cdef uint32_t i
+    for i in range(len(psi)): result += psi[i]**2 * spin(i, j)
+    return result
+
+cdef double sigma2_z(np.ndarray[double] psi, int j, int k):
+    cdef double result = 0.
+    cdef uint32_t i
+    for i in range(len(psi)): result += psi[i]**2 * spin(i, j) * spin(i, k)
+    return result
+
+cdef double sigma_x(np.ndarray[double] psi, int j):
+    cdef double result = 0.
+    cdef uint32_t i
+    for i in range(len(psi)): result += psi[i] * psi[neighbor(i, j)]
+    return result
 
 def hamiltonian(np.ndarray[long, ndim=2] a,
                 np.ndarray[double] h,
@@ -60,3 +79,21 @@ def hamiltonian(np.ndarray[long, ndim=2] a,
                     inz += 1
 
     return scipy.sparse.coo_matrix((vals, (rows, cols)), shape=(d, d))
+
+def mag_z(int N, np.ndarray[double] psi):
+    result = 0.
+    for j in range(N): result += sigma_z(psi, j)
+    return result / N
+
+def mag_x(int N, np.ndarray[double] psi):
+    result = 0.
+    for j in range(N): result += sigma_x(psi, j)
+    return result / N
+
+def overlap(int N, np.ndarray[double] psi):
+    result = 0.
+    for j in range(1, N):
+        for k in range(j):
+            result += sigma2_z(psi, j, k)**2
+
+    return sqrt(2. * result / N / (N-1))
