@@ -30,7 +30,7 @@ void qgi_compute_problem_hamiltonian(int a[N][N], double h[N], double d[D])
         {
             int s_n = SPIN(i, n);
 
-            d[i] += h[n] * s_n;
+            d[i] -= h[n] * s_n;
 
             for (m = 0; m < n; m++)
                 if (a[n][m] == 1)
