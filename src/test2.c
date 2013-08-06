@@ -10,8 +10,8 @@
 #define SMAX    0.99
 #define NS      99
 
-#define HMIN    0.1
-#define HMAX    10
+#define HMIN    0.01
+#define HMAX    100
 #define NH      101
 
 #define MAX_ITER    300
@@ -39,7 +39,8 @@ int main(int argc, char *argv[])
 {
     char **file_names;
     double h[N];    /* fields */
-    double ds, h0, h0mult, energy, mx, mz, q2;
+    double h0, energy, mx, mz, q2;
+    double ds = 0., h0mult = 1.;
     index_t i;
     int a[N][N], ifile, ih, is, iter, j;
 
@@ -95,7 +96,7 @@ int main(int argc, char *argv[])
                 mx = qgi_mag_x(psi);
                 q2 = qgi_overlap(psi);
 
-                printf("%16s %9.6f %9.6f %12d %12g %12g %12g %12g\n",
+                printf("%16s %9g %9g %12d %12g %12g %12g %12g\n",
                         file_names[ifile], h0, s, iter, energy, mz, mx, q2);
 
                 s += ds;
