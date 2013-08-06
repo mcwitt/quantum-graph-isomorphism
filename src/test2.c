@@ -6,26 +6,16 @@
 #include "qgi.h"
 #include "params.h"
 
-/*
-#define DS      0.01
-#define SMIN    DS
-#define SMAX    0.999
+#define SMIN    0.01
+#define SMAX    0.99
+#define NS      99
 
-#define XH      1.0476157527896648
 #define HMIN    0.1
-#define HMAX    10.01
-*/
+#define HMAX    10
+#define NH      101
 
-#define DS      0.003
-#define SMIN    0.2
-#define SMAX    0.501
-
-#define XH      1.013959479790029
-#define HMIN    0.1
-#define HMAX    10.01
-
-#define MAX_ITER    1000
-#define EPS         1e-12
+#define MAX_ITER    300
+#define EPS         1e-20
 
 double d[D];        /* diagonal elements of problem hamiltonian */
 double psi[D];      /* wavefunction */
@@ -49,9 +39,16 @@ int main(int argc, char *argv[])
 {
     char **file_names;
     double h[N];    /* fields */
-    double h0, energy, mx, mz, q2;
+    double ds, h0, h0mult, energy, mx, mz, q2;
     index_t i;
-    int a[N][N], ifile, iter, j;
+    int a[N][N], ifile, ih, is, iter, j;
+
+#if (NS > 1)
+    ds = (SMAX - SMIN) / (NS - 1);
+#endif
+#if (NH > 1)
+    h0mult = pow((double) HMAX/HMIN, 1./(NH - 1));
+#endif
 
     if (argc < 2)
     {
@@ -62,7 +59,7 @@ int main(int argc, char *argv[])
     file_names = &argv[1];
 
     printf("%16s %9s %9s %12s %12s %12s %12s %12s\n",
-            "file", "h0", "s", "iterations", "energy", "mz2", "mx2", "q2");
+            "file", "h0", "s", "iterations", "energy", "mz", "mx", "q2");
 
     for (ifile = 0; ifile < argc - 1; ifile++)
     {
@@ -76,12 +73,16 @@ int main(int argc, char *argv[])
 
         for (i = 0; i < D; i++) psi[i] = 1.;
 
-        for (h0 = HMIN; h0 <= HMAX; h0 *= XH)
+        h0 = HMIN;
+
+        for (ih = 0; ih < NH; ih++)
         {
             for (j = 0; j < N; j++) h[j] = h0;
             qgi_compute_problem_hamiltonian(a, h, d);
+
+            s = SMIN;
                 
-            for (s = SMIN; s <= SMAX; s += DS)
+            for (is = 0; is < NS; is++)
             {
                 energy = nlcg_minimize(obj_grad, line_min, EPS, MAX_ITER,
                         &iter, psi, delta, r);
@@ -95,8 +96,12 @@ int main(int argc, char *argv[])
                 q2 = qgi_overlap(psi);
 
                 printf("%16s %9.6f %9.6f %12d %12g %12g %12g %12g\n",
-                        file_names[ifile], h0, s, iter, energy, mz*mz, mx*mx, q2);
+                        file_names[ifile], h0, s, iter, energy, mz, mx, q2);
+
+                s += ds;
             }
+
+            h0 *= h0mult;
         }
     }
 

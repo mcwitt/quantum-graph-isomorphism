@@ -18,7 +18,8 @@ double nlcg_minimize(
 
     obj = obj_grad(x, r);
     r2prev = 0.; for (i = 0; i < D; i++) r2prev += r[i] * r[i];
-    r2stop = eps * r2prev;
+    /* r2stop = eps * r2prev; */
+    r2stop = eps;
     for (i = 0; i < D; i++) d[i] = r[i];
 
     for (*num_iter = 0; *num_iter < max_iter; *num_iter += 1)
