@@ -2,23 +2,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "amatrix.h"
+#include "defs.h"
 #include "nlcg.h"
-#include "qgi.h"
 #include "params.h"
-
-#define SMIN    0.01
-#define SMAX    0.99
-#define DS      0.01
-
-#define HMIN    0.01
-#define NDEC    4
-#define NH_DEC  25
-
-#define MAX_ITER    300
-#define EPS         1e-16
-
-#define NS      (int) (1 + (SMAX - SMIN) / DS)
-#define NH      1 + NH_DEC * NDEC
+#include "qgi.h"
 
 double d[D];        /* diagonal elements of problem hamiltonian */
 double psi[D];      /* wavefunction */
@@ -40,48 +27,51 @@ double line_min(double psi[D], double delta[D])
 
 int main(int argc, char *argv[])
 {
-    char **file_names;
+    params_t p;
     double h[N];    /* fields */
-    double h0, h0mult, energy, mx, mz, q2, r2;
+    double energy, h0, h0mult, mx, mz, q2, r2;
     index_t i;
-    int a[N][N], ifile, ih, is, iter, j;
+    int a[N][N], ifile, ih, is, iter, j, nh, ns;
 
-    if (argc < 2)
+    params_from_cmd(&p, argc, argv);
+
+    if (p.num_files == 0)
     {
         fprintf(stderr, "%s: no input files\n", argv[0]);
         return EXIT_FAILURE;
     }
 
-    file_names = &argv[1];
+    ns = (int) (1 + (p.smax - p.smin) / p.ds);
+    nh = 1 + p.nh_dec * p.ndec;
 
     printf("%16s %9s %9s %12s %12s %12s %12s %12s %12s\n",
             "file", "h0", "s", "iterations", "res2", "energy", "mz", "mx", "q2");
 
     for (ifile = 0; ifile < argc - 1; ifile++)
     {
-        if (! amatrix_load(file_names[ifile], N, &a[0][0]))
+        if (! amatrix_load(p.files[ifile], N, &a[0][0]))
         {
             fprintf(stderr, "%s: error loading adjacency matrix from file \"%s\"\n",
-                    argv[0], file_names[ifile]);
+                    argv[0], p.files[ifile]);
 
             return EXIT_FAILURE;
         }
 
         for (i = 0; i < D; i++) psi[i] = 1.;
 
-        h0 = HMIN;
-        h0mult = pow(10., 1./NH_DEC);
+        h0 = p.hmin;
+        h0mult = pow(10., 1./p.nh_dec);
 
-        for (ih = 0; ih < NH; ih++)
+        for (ih = 0; ih < nh; ih++)
         {
             for (j = 0; j < N; j++) h[j] = h0;
             qgi_compute_problem_hamiltonian(a, h, d);
 
-            s = SMIN;
+            s = p.smin;
                 
-            for (is = 0; is < NS; is++)
+            for (is = 0; is < ns; is++)
             {
-                energy = nlcg_minimize(obj_grad, line_min, EPS, MAX_ITER,
+                energy = nlcg_minimize(obj_grad, line_min, p.eps, p.itermax,
                         &iter, psi, delta, r, &r2);
 
                 /* normalize wavefunction */
@@ -93,9 +83,9 @@ int main(int argc, char *argv[])
                 q2 = qgi_overlap(psi);
 
                 printf("%16s %9g %9g %12d %12g %12g %12g %12g %12g\n",
-                        file_names[ifile], h0, s, iter, r2, energy, mz, mx, q2);
+                        p.files[ifile], h0, s, iter, r2, energy, mz, mx, q2);
 
-                s += DS;
+                s += p.ds;
             }
 
             h0 *= h0mult;

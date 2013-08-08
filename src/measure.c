@@ -2,19 +2,10 @@
 #include <stdint.h>
 #include <unistd.h>
 #include "amatrix.h"
+#include "defs.h"
 #include "qgi.h"
 #include "nlcg.h"
 #include "params.h"
-#include "time.h"
-
-#define DEFAULT_INPUT_SVALS     "s_vals.in"
-#define DEFAULT_OUTPUT_SUSC     "susc.out"
-
-#define DEFAULT_FIELD       1.
-#define DEFAULT_MAX_ITER    1000
-#define DEFAULT_TOL         1e-16
-
-#define MAX_S_VALS  1000
 
 double d[D];
 double s[MAX_S_VALS];

@@ -4,7 +4,7 @@
  * @brief  Implementations of quantum graph isomorphism algorithms.
  */
 
-#include "params.h"
+#include "defs.h"
 #include <stdint.h>
 
 typedef uint64_t index_t;
