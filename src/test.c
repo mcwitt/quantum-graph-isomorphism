@@ -6,12 +6,19 @@
 #include "qgi.h"
 #include "params.h"
 
-#define DS          0.005
-#define SMIN        DS
-#define SMAX        1.
+#define SMIN    0.01
+#define SMAX    0.99
+#define DS      0.01
 
-#define MAX_ITER    1000
+#define HMIN    0.01
+#define NDEC    4
+#define NH_DEC  25
+
+#define MAX_ITER    300
 #define EPS         1e-16
+
+#define NS      (int) (1 + (SMAX - SMIN) / DS)
+#define NH      1 + NH_DEC * NDEC
 
 double d[D];        /* diagonal elements of problem hamiltonian */
 double psi[D];      /* wavefunction */
@@ -35,12 +42,9 @@ int main(int argc, char *argv[])
 {
     char **file_names;
     double h[N];    /* fields */
-    double energy, mx, mz, q2;
+    double h0, h0mult, energy, mx, mz, q2, r2;
     index_t i;
-    int a[N][N], ifile, ih, iter, j;
-
-    int nh = 5;
-    double h0[] = {0.25, 0.5, 1., 2., 4.};
+    int a[N][N], ifile, ih, is, iter, j;
 
     if (argc < 2)
     {
@@ -50,8 +54,8 @@ int main(int argc, char *argv[])
 
     file_names = &argv[1];
 
-    printf("%16s %6s %6s %12s %12s %12s %12s %12s\n",
-            "file", "h0", "s", "iterations", "energy", "mz2", "mx2", "q2");
+    printf("%16s %9s %9s %12s %12s %12s %12s %12s %12s\n",
+            "file", "h0", "s", "iterations", "res2", "energy", "mz", "mx", "q2");
 
     for (ifile = 0; ifile < argc - 1; ifile++)
     {
@@ -65,15 +69,20 @@ int main(int argc, char *argv[])
 
         for (i = 0; i < D; i++) psi[i] = 1.;
 
-        for (ih = 0; ih < nh; ih++)
+        h0 = HMIN;
+        h0mult = pow(10., 1./NH_DEC);
+
+        for (ih = 0; ih < NH; ih++)
         {
-            for (j = 0; j < N; j++) h[j] = h0[ih];
+            for (j = 0; j < N; j++) h[j] = h0;
             qgi_compute_problem_hamiltonian(a, h, d);
+
+            s = SMIN;
                 
-            for (s = SMIN; s < SMAX; s += DS)
+            for (is = 0; is < NS; is++)
             {
                 energy = nlcg_minimize(obj_grad, line_min, EPS, MAX_ITER,
-                        &iter, psi, delta, r);
+                        &iter, psi, delta, r, &r2);
 
                 /* normalize wavefunction */
                 psi2 = sqrt(psi2);
@@ -83,9 +92,13 @@ int main(int argc, char *argv[])
                 mx = qgi_mag_x(psi);
                 q2 = qgi_overlap(psi);
 
-                printf("%16s %6.3f %6.3f %12d %12g %12g %12g %12g\n",
-                        file_names[ifile], h0[ih], s, iter, energy, mz*mz, mx*mx, q2);
+                printf("%16s %9g %9g %12d %12g %12g %12g %12g %12g\n",
+                        file_names[ifile], h0, s, iter, r2, energy, mz, mx, q2);
+
+                s += DS;
             }
+
+            h0 *= h0mult;
         }
     }
 

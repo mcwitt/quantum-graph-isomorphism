@@ -11,10 +11,6 @@ LDLIBS = -lm
 
 test: qgi.o nlcg.o amatrix.o
 
-test2: qgi.o nlcg.o amatrix.o
-
-measure: qgi.o nlcg.o amatrix.o
-
 .PHONY: clean
 
 clean:

@@ -10,15 +10,16 @@ double nlcg_minimize(
         int     *num_iter,
         double  x[D],
         double  d[D],
-        double  r[D]
+        double  r[D],
+        double  *r2
         )
 {
-    double a, b, obj, r2, r2prev, r2stop;
+    double a, b, obj, r2prev, r2stop;
     index_t i;
 
     obj = obj_grad(x, r);
     r2prev = 0.; for (i = 0; i < D; i++) r2prev += r[i] * r[i];
-    /* r2stop = eps * r2prev; */
+    /*r2stop = eps * r2prev;*/
     r2stop = eps;
     for (i = 0; i < D; i++) d[i] = r[i];
 
@@ -27,12 +28,12 @@ double nlcg_minimize(
         a = line_min(x, d);
         for (i = 0; i < D; i++) x[i] += a * d[i];
         obj = obj_grad(x, r);
-        r2 = 0.; for (i = 0; i < D; i++) r2 += r[i] * r[i];
-        if (r2 < r2stop) break;   /* are we done? */
+        *r2 = 0.; for (i = 0; i < D; i++) *r2 += r[i] * r[i];
+        if (*r2 < r2stop) break;   /* are we done? */
         /* else update search direction and continue... */
-        b = r2 / r2prev;    /* Fletcher-Reeves */
+        b = *r2 / r2prev;    /* Fletcher-Reeves */
         for (i = 0; i < D; i++) d[i] = r[i] + b*d[i];
-        r2prev = r2;
+        r2prev = *r2;
     }
 
     return obj;

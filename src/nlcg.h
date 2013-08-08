@@ -14,6 +14,7 @@
  * @param[out]  x           solution vector
  * @param[out]  d           CG search direction
  * @param[out]  r           residual
+ * @param[out]  r2          squared norm of the residual
  */
 double nlcg_minimize(
         double  (*obj_grad)(double*, double*),
@@ -23,7 +24,8 @@ double nlcg_minimize(
         int     *num_iter,
         double  x[D],
         double  d[D],
-        double  r[D]
+        double  r[D],
+        double  *r2
         );
 
 /**
