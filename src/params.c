@@ -26,8 +26,8 @@ void params_defaults(params_t *p)
     p->ds   = 0.01;
 
     p->hmin   = 0.1;
-    p->nh_dec = 25;
-    p->ndec   = 4;
+    p->nh_dec = 50;
+    p->ndec   = 2;
 
     p->itermax = 300;
     p->eps = 1e-16;
