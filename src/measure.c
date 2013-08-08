@@ -1,136 +1,95 @@
+#include <math.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <unistd.h>
 #include "amatrix.h"
 #include "defs.h"
-#include "qgi.h"
 #include "nlcg.h"
 #include "params.h"
+#include "qgi.h"
 
-double d[D];
-double s[MAX_S_VALS];
-int s_index;
-double psi2, tmp;
+double d[D];        /* diagonal elements of problem hamiltonian */
+double psi[D];      /* wavefunction */
+double delta[D];    /* CG search direction */
+double r[D];        /* residual */
+double s;           /* adiabatic parameter */
+double psi2;        /* squared norm of wavefunction */
+double edrvr;       /* driver part of energy */
 
-/* wrappers for gradient and line minimization functions
- * to be passed to NLCG routine */
-
-void gradient(double *psi, double *grad) {
-    qgi_energy_grad(s[s_index], d, psi, grad, &psi2, &tmp);
-}
-
-double line_min(double *psi, double *delta) {
-    return qgi_line_min(s[s_index], d, psi, delta);
-}
-
-void process_graph(a, h, s)
+double obj_grad(double psi[D], double grad[D])
 {
-    qgi_compute_problem_hamiltonian(a, h, d);
+    return qgi_energy_grad(s, d, psi, grad, &psi2, &edrvr);
+}
 
-    for (s_index = 0; s_index < num_s_vals; s_index++)
-    {
-        for (i = 0; i < D; i++) psi[i] = rand() / (RAND_MAX + 1.) * 2. - 1.;
-        iter = nlcg_minimize(gradient, line_min, max_iter, etol, psi);
-        energy = qgi_energy_grad(s[s_index], d, psi, grad, &eod);
-
-        printf("%12s %6g %12d %16.9g %16.9g\n",
-                file_names[ifile], s[s_index], iter, energy, eod);
-    }
+double line_min(double psi[D], double delta[D])
+{
+    return qgi_line_min(s, d, psi, delta);
 }
 
 int main(int argc, char *argv[])
 {
-    extern char *optarg;
-    extern int optind;
-    int c, err = 0;
-
-    FILE *fp;
-
-    char *input_svals, *output_susc, **file_names;
-    double h0, etol;
-    int max_iter;
-
-    double h[N];
-    double psi[D], grad[D];
-    double energy, eod;
+    params_t p;
+    double h[N];    /* fields */
+    double energy, h0, h0mult, mx, mz, q2, r2;
     index_t i;
-    int a[N][N], ifile, s_index, iter, j, num_s_vals, num_files;
+    int a[N][N], ifile, ih, is, iter, j, nh, ns;
 
-    input_svals = DEFAULT_INPUT_SVALS;
-    output_susc = DEFAULT_OUTPUT_SUSC;
-    h0          = DEFAULT_FIELD;
-    max_iter    = DEFAULT_MAX_ITER;
-    etol        = DEFAULT_TOL;
+    params_from_cmd(&p, argc, argv);
 
-    while ((c = getopt(argc, argv, "e:h:i:o:s:")) != -1)
+    if (p.num_files == 0)
     {
-        switch (c)
-        {
-            case 'e':
-                etol = atof(optarg);
-                break;
-            case 'h':
-                h0 = atof(optarg);
-                break;
-            case 'i':
-                max_iter = atoi(optarg);
-                break;
-            case 'o':
-                output_susc = optarg;
-                break;
-            case 's':
-                input_svals = optarg;
-                break;
-            case '?':
-                err = 1;
-                break;
-        }
-    }
-
-    if (err || (optind == argc))
-    {
-        fprintf(stderr,
-                "Usage: %s [-ehios value] file [file ...]\n" \
-                "  -e   error tolerance\n" \
-                "  -h   external field\n" \
-                "  -i   max CG iterations\n" \
-                "  -o   output file for susceptibilities\n" \
-                "  -s   file with s values\n",
-                argv[0]);
-
+        fprintf(stderr, "%s: no input files\n", argv[0]);
         return EXIT_FAILURE;
     }
 
-    srand(time(NULL));
-    /*srand(123);*/
+    ns = (int) (1 + (p.smax - p.smin) / p.ds);
+    nh = 1 + p.nh_dec * p.ndec;
 
-    file_names = &argv[optind];
-    num_files = argc - optind;
+    printf("%16s %9s %9s %12s %12s %12s %12s %12s %12s\n",
+            "file", "h0", "s", "iterations", "res2", "energy", "mz", "mx", "q2");
 
-    if ((fp = fopen(input_svals, "r")) == NULL)
+    for (ifile = 0; ifile < argc - 1; ifile++)
     {
-        fprintf(stderr, "%s: error opening file %s\n", argv[0], input_svals);
-        return EXIT_FAILURE;
-    }
-
-    /* read s-values from file */
-    for (num_s_vals = 0; num_s_vals < MAX_S_VALS; num_s_vals++)
-        if (fscanf(fp, "%lf", &s[num_s_vals]) == EOF) break;
-
-    printf("#%11s %6s %12s %16s %16s\n", "file", "s", "iterations", "E_0", "E_0(offd)");
-
-    for (ifile = 0; ifile < num_files; ifile++)
-    {
-        if (! amatrix_load(file_names[ifile], N, &a[0][0]))
+        if (! amatrix_load(p.files[ifile], N, &a[0][0]))
         {
             fprintf(stderr, "%s: error loading adjacency matrix from file \"%s\"\n",
-                    argv[0], file_names[ifile]);
+                    argv[0], p.files[ifile]);
 
             return EXIT_FAILURE;
         }
 
-        for (j = 0; j < N; j++) h[j] = h0;
+        for (i = 0; i < D; i++) psi[i] = 1.;
 
+        h0 = p.hmin;
+        h0mult = pow(10., 1./p.nh_dec);
+
+        for (ih = 0; ih < nh; ih++)
+        {
+            for (j = 0; j < N; j++) h[j] = h0;
+            qgi_compute_problem_hamiltonian(a, h, d);
+
+            s = p.smin;
+                
+            for (is = 0; is < ns; is++)
+            {
+                energy = nlcg_minimize(obj_grad, line_min, p.eps, p.itermax,
+                        &iter, psi, delta, r, &r2);
+
+                /* normalize wavefunction */
+                psi2 = sqrt(psi2);
+                for (i = 0; i < D; i++) psi[i] /= psi2;
+
+                mz = qgi_mag_z(psi);
+                mx = qgi_mag_x(psi);
+                q2 = qgi_overlap(psi);
+
+                printf("%16s %9g %9g %12d %12g %12g %12g %12g %12g\n",
+                        p.files[ifile], h0, s, iter, r2, energy, mz, mx, q2);
+
+                s += p.ds;
+            }
+
+            h0 *= h0mult;
+        }
     }
 
     return EXIT_SUCCESS;
