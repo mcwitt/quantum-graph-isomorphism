@@ -7,13 +7,14 @@ CFLAGS = -Wall -O3
 
 CFLAGS += -I.
 CFLAGS += -DVERSION=\"$(shell git describe)\"
-LDLIBS = -lm
+#LDLIBS = -lm
+LDLIBS = -lm -lgsl
 
 cg: amatrix.o nlcg.o params.o qgi.o
 
 .PHONY: clean
 
 clean:
-	$(RM) *.o test
+	$(RM) *.o cg
 
 

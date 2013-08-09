@@ -1,3 +1,5 @@
+#include <gsl/gsl_randist.h>
+#include <gsl/gsl_rng.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -12,12 +14,11 @@ double psi[D];      /* wavefunction */
 double delta[D];    /* CG search direction */
 double r[D];        /* residual */
 double s;           /* adiabatic parameter */
-double psi2;        /* squared norm of wavefunction */
 double edrvr;       /* driver part of energy */
 
-double obj_grad(double psi[D], double grad[D])
+double obj_x2_grad(double psi[D], double *x2, double grad[D])
 {
-    return qgi_energy_grad(s, d, psi, grad, &psi2, &edrvr);
+    return qgi_energy_grad(s, d, psi, grad, x2, &edrvr);
 }
 
 double line_min(double psi[D], double delta[D])
@@ -27,9 +28,11 @@ double line_min(double psi[D], double delta[D])
 
 int main(int argc, char *argv[])
 {
+    const gsl_rng_type *T;
+    gsl_rng *rng;
     params_t p;
     double h[N];    /* fields */
-    double energy, h0, h0mult, mx, mz, q2, r2;
+    double energy, h0, h0mult, mx, mz, psi2, q2, r2;
     index_t i;
     int a[N][N], ifile, ih, is, iter, j, nh, ns;
 
@@ -57,7 +60,11 @@ int main(int argc, char *argv[])
             return EXIT_FAILURE;
         }
 
-        for (i = 0; i < D; i++) psi[i] = 1.;
+        /* generate random initial wavefunction */
+        gsl_rng_env_setup();
+        T = gsl_rng_default;
+        rng = gsl_rng_alloc(T);
+        for (i = 0; i < D; i++) psi[i] = gsl_ran_gaussian(rng, 1.) /sqrt(D);
 
         h0 = p.hmin;
         h0mult = pow(10., 1./p.nh_dec);
@@ -71,8 +78,8 @@ int main(int argc, char *argv[])
                 
             for (is = 0; is < ns; is++)
             {
-                energy = nlcg_minimize(obj_grad, line_min, p.eps, p.itermax,
-                        &iter, psi, delta, r, &r2);
+                energy = nlcg_minimize_norm_ind(obj_x2_grad, line_min, p.eps,
+                        p.itermax, &iter, psi, &psi2, delta, r, &r2);
 
                 /* normalize wavefunction */
                 psi2 = sqrt(psi2);

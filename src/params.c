@@ -30,7 +30,7 @@ void params_defaults(params_t *p)
     p->ndec   = 2;
 
     p->itermax = 300;
-    p->eps = 1e-16;
+    p->eps = 1e-12;
 
     p->num_files = 0;
     p->files = NULL;
