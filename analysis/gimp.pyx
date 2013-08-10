@@ -13,10 +13,10 @@ def load_graph(filename):
     return a
 
 cdef inline int spin(uint32_t i, int j):
-    return (((1UL << j) & i) >> j)*2 - 1
+    return (((i >> j) & 1) << 1) - 1
 
 cdef inline uint32_t neighbor(uint32_t i, int j):
-    return (1UL << j) ^ i
+    return i ^ (1UL << j)
 
 cdef double sigma_z(np.ndarray[double] psi, int j):
     cdef double result = 0.

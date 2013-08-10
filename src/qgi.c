@@ -14,8 +14,8 @@
  * NEIGHBOR(i, j)   returns the jth neighbor state of |i>
  * SPIN(i, j)       returns the eigenvalue of sigma^z_j for state |i>
  */
-#define NEIGHBOR(i, j)  ((1UL << (j)) ^ (i))
-#define SPIN(i, j)      (((int) (((1UL << (j)) & (i)) >> (j)))*2 - 1)
+#define NEIGHBOR(i, j)  ((i) ^ (1UL << (j)))
+#define SPIN(i, j)      (((((i) >> (j)) & 1) << 1) - 1)
 
 void qgi_compute_problem_hamiltonian(int a[N][N], double h[N], double d[D])
 {
