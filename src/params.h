@@ -1,9 +1,8 @@
 typedef struct
 {
-    double smin, smax, ds;
-
-    double hmin;
-    int nh_dec, ndec;
+    double smin, smax;
+    double pmin, pmax;
+    int ns, np;
 
     int itermax;
     double eps;

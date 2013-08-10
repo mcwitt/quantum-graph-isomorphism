@@ -32,9 +32,9 @@ int main(int argc, char *argv[])
     gsl_rng *rng;
     params_t p;
     double h[N];    /* fields */
-    double energy, h0, h0mult, mx, mz, psi2, q2, r2;
+    double energy, h0, mx, mz, psi2, q2, r2;
     index_t i;
-    int a[N][N], ifile, ih, is, iter, j, nh, ns;
+    int a[N][N], ifile, ip, is, iter, j;
 
     params_from_cmd(&p, argc, argv);
 
@@ -43,9 +43,6 @@ int main(int argc, char *argv[])
         fprintf(stderr, "%s: no input files\n", argv[0]);
         return EXIT_FAILURE;
     }
-
-    ns = (int) (1 + (p.smax - p.smin) / p.ds);
-    nh = 1 + p.nh_dec * p.ndec;
 
     printf("%16s %9s %9s %12s %12s %12s %12s %12s %12s\n",
             "file", "h0", "s", "iterations", "res2", "energy", "mz", "mx", "q2");
@@ -66,18 +63,15 @@ int main(int argc, char *argv[])
         rng = gsl_rng_alloc(T);
         for (i = 0; i < D; i++) psi[i] = gsl_ran_gaussian(rng, 1.) /sqrt(D);
 
-        h0 = p.hmin;
-        h0mult = pow(10., 1./p.nh_dec);
-
-        for (ih = 0; ih < nh; ih++)
+        for (ip = 0; ip < p.np; ip++)
         {
+            h0 = pow(10., p.pmin + (p.pmax - p.pmin)*ip/(p.np - 1.)) ;
             for (j = 0; j < N; j++) h[j] = h0;
             qgi_compute_problem_hamiltonian(a, h, d);
 
-            s = p.smin;
-                
-            for (is = 0; is < ns; is++)
+            for (is = 0; is < p.ns; is++)
             {
+                s = p.smin + (p.smax - p.smin)*is/(p.ns - 1.);
                 energy = nlcg_minimize_norm_ind(obj_x2_grad, line_min, p.eps,
                         p.itermax, &iter, psi, &psi2, delta, r, &r2);
 
@@ -91,11 +85,7 @@ int main(int argc, char *argv[])
 
                 printf("%16s %9g %9g %12d %12g %12g %12g %12g %12g\n",
                         p.files[ifile], h0, s, iter, r2, energy, mz, mx, q2);
-
-                s += p.ds;
             }
-
-            h0 *= h0mult;
         }
     }
 
