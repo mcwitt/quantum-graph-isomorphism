@@ -7,7 +7,7 @@
 #include "defs.h"
 #include <stdint.h>
 
-typedef uint64_t index_t;
+typedef uint64_t UINT;
 
 /**
  * Compute the diagonal elements of the problem Hamiltonian.

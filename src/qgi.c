@@ -10,17 +10,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-/*
- * NEIGHBOR(i, j)   returns the jth neighbor state of |i>
- * SPIN(i, j)       returns the eigenvalue of sigma^z_j for state |i>
- */
-#define NEIGHBOR(i, j)  ((1UL << (j)) ^ (i))
+/* SPIN(i, j) returns the eigenvalue of sigma^z_j for state |i> */
 #define SPIN(i, j)      ((int) ((((i) >> (j)) & 1) << 1) - 1)
 
 void qgi_compute_problem_hamiltonian(int a[N][N], double h[N], double d[D])
 {
-    index_t i;
     int m, n;
+    UINT i;
 
     for (i = 0; i < D; i++)
     {
@@ -39,31 +35,30 @@ void qgi_compute_problem_hamiltonian(int a[N][N], double h[N], double d[D])
     }
 }
 
-double qgi_driver_matrix_element(double u[D], double v[D])
+double qgi_driver_matrix_element_opt(double u[D], double v[D])
 {
     double result = 0.;
-    index_t i;
-    int j;
+    UINT i, m;
 
     for (i = 0; i < D; i++)
-        for (j = 0; j < N; j++)
-            result += u[i] * v[NEIGHBOR(i, j)];
+        for (m = 1; m < D; m <<= 1)
+            result += u[i] * v[i^m];
 
     return result;
 }
 
 double qgi_problem_matrix_element(double d[D], double u[D], double v[D], double *udotv)
 {
-    double udotv_i, result = 0.;
-    index_t i;
+    double prod, result = 0.;
+    UINT i;
 
     *udotv = 0.;
 
     for (i = 0; i < D; i++)
     {
-        udotv_i = u[i] * v[i];
-        *udotv += udotv_i;
-        result += d[i] * udotv_i;
+        prod = u[i] * v[i];
+        *udotv += prod;
+        result += prod * d[i];
     }
 
     return result;
@@ -71,21 +66,20 @@ double qgi_problem_matrix_element(double d[D], double u[D], double v[D], double 
 
 double qgi_matrix_element(double s, double d[D], double u[D], double v[D], double *udotv)
 {
-    return (1. - s) * qgi_driver_matrix_element(u, v)
+    return (1. - s) * qgi_driver_matrix_element_opt(u, v)
                + s  * qgi_problem_matrix_element(d, u, v, udotv);
 }
 
 double qgi_energy_grad(double s, double d[D], double psi[D],
-        double grad[D], double *psi2, double *eod)
+        double grad[D], double *psi2, double *edrvr)
 {
     double energy;
-    index_t i;
-    int j;
+    UINT i, m;
 
     /* compute the energy */
-    *eod = qgi_driver_matrix_element(psi, psi);
+    *edrvr = qgi_driver_matrix_element_opt(psi, psi);
     energy = qgi_problem_matrix_element(d, psi, psi, psi2);
-    energy = (1. - s) * (*eod) + s * energy;
+    energy = (1. - s) * (*edrvr) + s * energy;
     energy /= *psi2;
 
     /* compute the gradient */
@@ -93,7 +87,7 @@ double qgi_energy_grad(double s, double d[D], double psi[D],
     {
         double sum = 0.;
 
-        for (j = 0; j < N; j++) sum += psi[NEIGHBOR(i, j)];
+        for (m = 1; m < D; m <<= 1) sum += psi[i^m];
         grad[i] = 2. * (psi[i] * (s * d[i] - energy) + (1. - s) * sum) / *psi2;
     }
 
@@ -128,7 +122,7 @@ double qgi_line_min(double s, double d[D], double psi[D], double delta[D])
 double qgi_sigma_z(double psi[D], int j)
 {
     double result = 0.;
-    index_t i;
+    UINT i;
 
     for (i = 0; i < D; i++)
         result += psi[i] * psi[i] * SPIN(i, j);
@@ -139,7 +133,7 @@ double qgi_sigma_z(double psi[D], int j)
 double qgi_sigma2_z(double psi[D], int j, int k)
 {
     double result = 0.;
-    index_t i;
+    UINT i;
 
     for (i = 0; i < D; i++)
         result += psi[i] * psi[i] * SPIN(i, j) * SPIN(i, k);
@@ -150,10 +144,9 @@ double qgi_sigma2_z(double psi[D], int j, int k)
 double qgi_sigma_x(double psi[D], int j)
 {
     double result = 0.;
-    index_t i;
+    UINT i, m = 1UL << j;
 
-    for (i = 0; i < D; i++)
-        result += psi[i] * psi[NEIGHBOR(i, j)];
+    for (i = 0; i < D; i++) result += psi[i] * psi[i^m];
 
     return result;
 }

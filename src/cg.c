@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
     params_t p;
     double h[N];    /* fields */
     double energy, h0, mx, mz, psi2, q2, r2;
-    index_t i;
+    UINT i;
     int a[N][N], ifile, ip, is, iter, j;
 
     params_from_cmd(&p, argc, argv);
