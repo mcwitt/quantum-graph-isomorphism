@@ -44,10 +44,10 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    printf("%16s %9s %9s %12s %12s %12s %12s %12s %12s\n",
+    printf("%16s %12s %12s %12s %12s %12s %12s %12s %12s\n",
             "file", "h0", "s", "iterations", "res2", "energy", "mz", "mx", "q2");
 
-    for (ifile = 0; ifile < argc - 1; ifile++)
+    for (ifile = 0; ifile < p.num_files; ifile++)
     {
         if (! amatrix_load(p.files[ifile], N, &a[0][0]))
         {
@@ -65,13 +65,15 @@ int main(int argc, char *argv[])
 
         for (ip = 0; ip < p.np; ip++)
         {
-            h0 = pow(10., p.pmin + (p.pmax - p.pmin)*ip/(p.np - 1.)) ;
+            h0 = pow(10., p.emin + (p.emax - p.emin)*ip/(p.np - 1.)) ;
             for (j = 0; j < N; j++) h[j] = h0;
             qgi_compute_problem_hamiltonian(a, h, d);
 
             for (is = 0; is < p.ns; is++)
             {
-                s = p.smin + (p.smax - p.smin)*is/(p.ns - 1.);
+                s = p.smin;
+                if (p.ns > 1) s += (p.smax - p.smin)*is/(p.ns - 1.);
+
                 energy = nlcg_minimize_norm_ind(obj_x2_grad, line_min, p.eps,
                         p.itermax, &iter, psi, &psi2, delta, r, &r2);
 
@@ -83,7 +85,7 @@ int main(int argc, char *argv[])
                 mx = qgi_mag_x(psi);
                 q2 = qgi_overlap(psi);
 
-                printf("%16s %9g %9g %12d %12g %12g %12g %12g %12g\n",
+                printf("%16s %12g %12g %12d %12g %12g %12g %12g %12g\n",
                         p.files[ifile], h0, s, iter, r2, energy, mz, mx, q2);
             }
         }

@@ -1,7 +1,7 @@
 typedef struct
 {
     double smin, smax;
-    double pmin, pmax;
+    double emin, emax;
     int ns, np;
 
     int itermax;

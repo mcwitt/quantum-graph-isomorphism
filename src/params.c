@@ -11,11 +11,11 @@ static void print_usage(int argc, char *argv[])
             "  -s, --smin    : minimum value of adiabatic parameter s\n" \
             "  -S, --smax    : max value of s\n" \
             "  -n, --ns      : number of s values\n" \
-            "  -p, --pmin    : log_10 of minimum magnetic field\n" \
-            "  -P, --pmax    : log_10 of maximum magnetic field\n" \
-            "  -d, --np      : number of magnetic field values\n" \
+            "  -e, --emin    : log_10 of minimum magnetic field\n" \
+            "  -E, --emax    : log_10 of maximum magnetic field\n" \
+            "  -m, --np      : number of magnetic field values\n" \
             "  -i, --itermax : maxiumum number of CG iterations\n" \
-            "  -e, --eps     : error tolerance\n",
+            "  -t, --tol     : error tolerance\n",
             argv[0]);
 }
 
@@ -25,8 +25,8 @@ void params_defaults(params_t *p)
     p->smax = 0.99;
     p->ns   = 99;
 
-    p->pmin = -1.;
-    p->pmax = 1.;
+    p->emin = -1.;
+    p->emax = 1.;
     p->np   = 51;
 
     p->itermax = 300;
@@ -46,17 +46,17 @@ void params_from_cmd(params_t *p, int argc, char *argv[])
         {"smin",    required_argument,  0,  's' },
         {"smax",    required_argument,  0,  'S' },
         {"ns",      required_argument,  0,  'n' },
-        {"pmin",    required_argument,  0,  'p' },
-        {"pmax",    required_argument,  0,  'P' },
-        {"np",      required_argument,  0,  'd' },
+        {"emin",    required_argument,  0,  'e' },
+        {"emax",    required_argument,  0,  'E' },
+        {"np",      required_argument,  0,  'm' },
         {"itermax", required_argument,  0,  'i' },
-        {"eps",     required_argument,  0,  'e' },
+        {"tol",     required_argument,  0,  't' },
         {NULL, 0, 0, 0}
     };
 
     params_defaults(p);
 
-    while ((c = getopt_long(argc, argv, "s:S:n:p:P:d:i:e:",
+    while ((c = getopt_long(argc, argv, "s:S:n:e:E:m:i:t:",
                     long_options, &long_index)) != -1)
     {
         switch (c)
@@ -64,11 +64,11 @@ void params_from_cmd(params_t *p, int argc, char *argv[])
              case 's' : p->smin    = atof(optarg); break;
              case 'S' : p->smax    = atof(optarg); break;
              case 'n' : p->ns      = atoi(optarg); break;
-             case 'p' : p->pmin    = atof(optarg); break;
-             case 'P' : p->pmax    = atof(optarg); break;
-             case 'd' : p->np      = atoi(optarg); break;
+             case 'e' : p->emin    = atof(optarg); break;
+             case 'E' : p->emax    = atof(optarg); break;
+             case 'm' : p->np      = atoi(optarg); break;
              case 'i' : p->itermax = atoi(optarg); break;
-             case 'e' : p->eps     = atof(optarg); break;
+             case 't' : p->eps     = atof(optarg); break;
              default: print_usage(argc, argv); exit(EXIT_FAILURE);
         }
     }
