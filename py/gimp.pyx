@@ -13,10 +13,7 @@ def load_graph(filename):
     return a
 
 cdef inline int spin(uint32_t i, int j):
-    return (((i >> j) & 1) << 1) - 1
-
-cdef inline uint32_t neighbor(uint32_t i, int j):
-    return (1UL << j) ^ i
+    return ((int)((i >> j) & 1) << 1) - 1
 
 cdef double sigma_z(np.ndarray[double] psi, int j):
     cdef double result = 0.
@@ -32,8 +29,8 @@ cdef double sigma2_z(np.ndarray[double] psi, int j, int k):
 
 cdef double sigma_x(np.ndarray[double] psi, int j):
     cdef double result = 0.
-    cdef uint32_t i
-    for i in range(len(psi)): result += psi[i] * psi[neighbor(i, j)]
+    cdef uint32_t i, m = 1UL << j
+    for i in range(len(psi)): result += psi[i] * psi[i^m]
     return result
 
 def hamiltonian(np.ndarray[long, ndim=2] a,
@@ -48,34 +45,36 @@ def hamiltonian(np.ndarray[long, ndim=2] a,
     cdef np.ndarray[int]    cols = np.zeros(nnz, dtype=np.intc)
     cdef np.ndarray[double] vals = np.zeros(nnz, dtype=np.double)
     cdef double c
-    cdef int m, n
-    cdef uint32_t i, inz = 0
+    cdef int j, k
+    cdef uint32_t i, m, inz = 0
 
     # transverse field
     for i in range(d):
-        for m in range(N):
+        m = 1
+        for j in range(N):
             rows[inz] = i
-            cols[inz] = neighbor(i, m)
+            cols[inz] = i^m
             vals[inz] = 1. - s
             inz += 1
+            m <<= 1
             
     # longitudinal field
     for i in range(d):
-        for n in range(N):
+        for k in range(N):
             rows[inz] = i
             cols[inz] = i
-            vals[inz] = s * h[n] * spin(i, n)
+            vals[inz] = s * h[k] * spin(i, k)
             inz += 1
                     
     #  antiferromagnetic exchange
     for i in range(d):
-        for n in range(N):
-            c = s * spin(i, n)
-            for m in range(n):
-                if a[n, m] == 1:
+        for j in range(N):
+            c = s * spin(i, j)
+            for k in range(j):
+                if a[j, k] == 1:
                     rows[inz] = i
                     cols[inz] = i
-                    vals[inz] = c * spin(i, m)
+                    vals[inz] = c * spin(i, k)
                     inz += 1
 
     return scipy.sparse.coo_matrix((vals, (rows, cols)), shape=(d, d))
