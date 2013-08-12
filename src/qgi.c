@@ -79,7 +79,8 @@ double qgi_energy_grad(double s, double d[D], double psi[D],
         double grad[D], double *psi2, double *eod)
 {
     double energy;
-    int j, k;
+    index_t i;
+    int j;
 
     /* compute the energy */
     *eod = qgi_driver_matrix_element(psi, psi);
@@ -88,12 +89,12 @@ double qgi_energy_grad(double s, double d[D], double psi[D],
     energy /= *psi2;
 
     /* compute the gradient */
-    for (k = 0; k < D; k++)
+    for (i = 0; i < D; i++)
     {
         double sum = 0.;
 
-        for (j = 0; j < N; j++) sum += psi[NEIGHBOR(k, j)];
-        grad[k] = 2. * (psi[k] * (s * d[k] - energy) + (1. - s) * sum) / *psi2;
+        for (j = 0; j < N; j++) sum += psi[NEIGHBOR(i, j)];
+        grad[i] = 2. * (psi[i] * (s * d[i] - energy) + (1. - s) * sum) / *psi2;
     }
 
     return energy;
