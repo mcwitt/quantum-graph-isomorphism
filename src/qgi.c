@@ -35,7 +35,7 @@ void qgi_compute_problem_hamiltonian(int a[N][N], double h[N], double d[D])
     }
 }
 
-double qgi_driver_matrix_element_opt(double u[D], double v[D])
+double qgi_driver_matrix_element(double u[D], double v[D])
 {
     double result = 0.;
     UINT i, m;
@@ -66,7 +66,7 @@ double qgi_problem_matrix_element(double d[D], double u[D], double v[D], double 
 
 double qgi_matrix_element(double s, double d[D], double u[D], double v[D], double *udotv)
 {
-    return (1. - s) * qgi_driver_matrix_element_opt(u, v)
+    return (1. - s) * qgi_driver_matrix_element(u, v)
                + s  * qgi_problem_matrix_element(d, u, v, udotv);
 }
 
@@ -77,7 +77,7 @@ double qgi_energy_grad(double s, double d[D], double psi[D],
     UINT i, m;
 
     /* compute the energy */
-    *edrvr = qgi_driver_matrix_element_opt(psi, psi);
+    *edrvr = qgi_driver_matrix_element(psi, psi);
     energy = qgi_problem_matrix_element(d, psi, psi, psi2);
     energy = (1. - s) * (*edrvr) + s * energy;
     energy /= *psi2;
