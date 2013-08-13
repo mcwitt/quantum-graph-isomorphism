@@ -27,9 +27,9 @@ double nlcg_minimize(
         for (i = 0; i < D; i++) x[i] += a * d[i];
         obj = obj_grad(x, r);
         *r2 = 0.; for (i = 0; i < D; i++) *r2 += r[i] * r[i];
-        if (*r2 < r2stop) break;   /* are we done? */
+        if (*r2 < r2stop) break;    /* are we done? */
         /* else update search direction and continue... */
-        b = *r2 / r2prev;    /* Fletcher-Reeves */
+        b = *r2 / r2prev;   /* Fletcher-Reeves */
         for (i = 0; i < D; i++) d[i] = r[i] + b*d[i];
         r2prev = *r2;
     }
@@ -63,9 +63,9 @@ double nlcg_minimize_norm_ind(
         for (i = 0; i < D; i++) x[i] += a * d[i];
         obj = obj_x2_grad(x, x2, r);
         *r2 = 0.; for (i = 0; i < D; i++) *r2 += r[i] * r[i];
-        if (*r2 < eps2 * (*x2)) break;    /* are we done? */
+        if (*r2 < eps2 * (*x2)) break;  /* are we done? */
         /* else update search direction and continue... */
-        b = *r2 / r2prev;    /* Fletcher-Reeves */
+        b = *r2 / r2prev;   /* Fletcher-Reeves */
         for (i = 0; i < D; i++) d[i] = r[i] + b*d[i];
         r2prev = *r2;
     }
