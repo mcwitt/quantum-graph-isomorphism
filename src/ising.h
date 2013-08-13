@@ -1,51 +1,37 @@
 /**
- * @file   qgi.h
+ * @file   ising.h
  * @author Matt Wittmann
- * @brief  Implementations of quantum graph isomorphism algorithms.
+ * @brief  Algorithms related to the quantum Ising model.
  */
 
-#include "defs.h"
-#include <stdint.h>
-
-typedef uint64_t UINT;
+#include "global.h"
 
 /**
- * Compute the diagonal elements of the problem Hamiltonian.
+ * Compute the diagonal elements of the Hamiltonian.
  * @param[in]   a   adjacency matrix of graph
  * @param[in]   h   field at each site
- * @param[out]  d   diagonal elements of problem Hamiltonian
+ * @param[out]  d   diagonal elements of Hamiltonian
  */
-void qgi_compute_problem_hamiltonian(int a[N][N], double h[N], double d[D]);
+void ising_diagonals(int a[N][N], double h[N], double d[D]);
 
 /**
  * Compute the energy and energy gradient.
- * @param[in]   s       adiabatic parameter
- * @param[in]   d       diagonal elements of problem Hamiltonian
+ * @param[in]   d       diagonal elements of Hamiltonian
  * @param[in]   psi     wavefunction
  * @param[out]  grad    energy gradient
  * @param[out]  psi2    squared norm of wavefunction
- * @param[out]  edrvr   driver (off-diagonal) part of energy
  */
-double qgi_energy_grad(double s, double d[D], double psi[D],
-        double grad[D], double *psi2, double *edrvr);
+double ising_energy_grad(double d[D], double psi[D],
+        double grad[D], double *psi2);
 
-/**
- * Minimize the energy along a specified direction.
- * @param[in]   s       adiabatic parameter
- * @param[in]   d       diagonal elements of problem Hamiltonian
- * @param[in]   psi     wavefunction
- * @param[in]   delta   search direction
- */
-double qgi_line_min(double s, double d[D], double psi[D], double delta[D]);
+double ising_sigma_z(double psi[D], int j);
 
-double qgi_sigma_z(double psi[D], int j);
+double ising_sigma_x(double psi[D], int j);
 
-double qgi_sigma_x(double psi[D], int j);
+double ising_sigma2_z(double psi[D], int j, int k);
 
-double qgi_sigma2_z(double psi[D], int j, int k);
+double ising_mag_z(double psi[D]);
 
-double qgi_mag_z(double psi[D]);
+double ising_mag_x(double psi[D]);
 
-double qgi_mag_x(double psi[D]);
-
-double qgi_overlap(double psi[D]);
+double ising_overlap(double psi[D]);

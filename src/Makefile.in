@@ -10,7 +10,9 @@ CFLAGS += -DVERSION=\"$(shell git describe)\"
 #LDLIBS = -lm
 LDLIBS = -lm -lgsl -lgslcblas
 
-cg: amatrix.o nlcg.o params.o quim.o
+tests = basic
+
+cg: amatrix.o nlcg.o params.o qaa.o
 
 .PHONY: clean
 

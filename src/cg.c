@@ -5,10 +5,10 @@
 #include <stdint.h>
 #include <libgen.h>
 #include "amatrix.h"
-#include "defs.h"
+#include "global.h"
 #include "nlcg.h"
 #include "params.h"
-#include "quim.h"
+#include "qaa.h"
 
 double d[D];        /* diagonal elements of problem hamiltonian */
 double psi[D];      /* wavefunction */
@@ -19,12 +19,12 @@ double edrvr;       /* driver part of energy */
 
 double obj_x2_grad(double psi[D], double *x2, double grad[D])
 {
-    return qgi_energy_grad(s, d, psi, grad, x2, &edrvr);
+    return qaa_energy_grad(s, d, psi, grad, x2, &edrvr);
 }
 
 double line_min(double psi[D], double delta[D])
 {
-    return qgi_line_min(s, d, psi, delta);
+    return qaa_line_min(s, d, psi, delta);
 }
 
 int main(int argc, char *argv[])
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
         {
             h0 = pow(10., p.emin + (p.emax - p.emin)*ip/(p.np - 1.)) ;
             for (j = 0; j < N; j++) h[j] = h0;
-            qgi_compute_problem_hamiltonian(a, h, d);
+            qaa_compute_diagonals(a, h, d);
 
             for (is = 0; is < p.ns; is++)
             {
@@ -82,9 +82,9 @@ int main(int argc, char *argv[])
                 psi2 = sqrt(psi2);
                 for (i = 0; i < D; i++) psi[i] /= psi2;
 
-                mz = qgi_mag_z(psi);
-                mx = qgi_mag_x(psi);
-                q2 = qgi_overlap(psi);
+                mz = qaa_mag_z(psi);
+                mx = qaa_mag_x(psi);
+                q2 = qaa_overlap(psi);
 
                 printf("%16s %12g %12g %12d %12g %12g %12g %12g %12g\n",
                         basename(p.files[ifile]), h0, s, iter, r2, energy, mz, mx, q2);

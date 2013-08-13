@@ -4,8 +4,7 @@
  * @brief  Simple implementations of the nonlinear conjugate gradient algorithm.
  */
 
-#include "defs.h"
-#include <stdint.h>
+#include "global.h"
 
 /**
  * Minimize a function using the nonlinear conjugate gradient method with the

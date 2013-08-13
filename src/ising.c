@@ -1,10 +1,10 @@
 /**
- * @file    qgi.c
+ * @file    ising.c
  * @author  Matt Wittmann
- * @brief   Implementations of quantum graph isomorphism algorithms.
+ * @brief  Algorithms related to the quantum Ising model.
  */
 
-#include "qgi.h"
+#include "ising.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -13,7 +13,7 @@
 /* SPIN(i, j) returns the eigenvalue of sigma^z_j for state |i> */
 #define SPIN(i, j)      ((int) ((((i) >> (j)) & 1) << 1) - 1)
 
-void qgi_compute_problem_hamiltonian(int a[N][N], double h[N], double d[D])
+void ising_diagonals(int a[N][N], double h[N], double d[D]);
 {
     int j, k;
     UINT i;
@@ -35,19 +35,8 @@ void qgi_compute_problem_hamiltonian(int a[N][N], double h[N], double d[D])
     }
 }
 
-double qgi_driver_matrix_element(double u[D], double v[D])
-{
-    double result = 0.;
-    UINT i, m;
-
-    for (i = 0; i < D; i++)
-        for (m = 1; m < D; m <<= 1)
-            result += u[i] * v[i^m];
-
-    return result;
-}
-
-double qgi_problem_matrix_element(double d[D], double u[D], double v[D], double *udotv)
+double ising_matrix_element(double d[D], double u[D], double v[D],
+        double *udotv)
 {
     double prod, result = 0.;
     UINT i;
@@ -64,14 +53,8 @@ double qgi_problem_matrix_element(double d[D], double u[D], double v[D], double 
     return result;
 }
 
-double qgi_matrix_element(double s, double d[D], double u[D], double v[D], double *udotv)
-{
-    return (1. - s) * qgi_driver_matrix_element(u, v)
-               + s  * qgi_problem_matrix_element(d, u, v, udotv);
-}
-
-double qgi_energy_grad(double s, double d[D], double psi[D],
-        double grad[D], double *psi2, double *edrvr)
+double ising_energy_grad(double d[D], double psi[D],
+        double grad[D], double *psi2)
 {
     double energy;
     UINT i, m;
@@ -94,32 +77,7 @@ double qgi_energy_grad(double s, double d[D], double psi[D],
     return energy;
 }
 
-double qgi_line_min(double s, double d[D], double psi[D], double delta[D])
-{
-    double psi2, psi_dot_delta, delta2,
-           psi_H_psi, psi_H_delta, delta_H_delta,
-           a, b, c, coef, sqrd, x;
-
-    psi_H_psi     = qgi_matrix_element(s, d, psi,   psi,   &psi2);
-    psi_H_delta   = qgi_matrix_element(s, d, psi,   delta, &psi_dot_delta);
-    delta_H_delta = qgi_matrix_element(s, d, delta, delta, &delta2);
-
-    a = psi_dot_delta * delta_H_delta - delta2 * psi_H_delta;
-    b = psi2 * delta_H_delta - delta2 * psi_H_psi;
-    c = psi2 * psi_H_delta - psi_dot_delta * psi_H_psi;
-
-    coef = -0.5 / a;
-    sqrd = sqrt(b*b - 4.*a*c);
-    x = coef * (b - sqrd);
-
-    /* if critical point is a maximum, use other solution */
-    if (2*a*x + b < 0.) x = coef * (b + sqrd);
-
-    return x;
-}
-
-
-double qgi_sigma_z(double psi[D], int j)
+double ising_sigma_z(double psi[D], int j)
 {
     double result = 0.;
     UINT i;
@@ -130,7 +88,7 @@ double qgi_sigma_z(double psi[D], int j)
     return result;
 }
 
-double qgi_sigma2_z(double psi[D], int j, int k)
+double ising_sigma2_z(double psi[D], int j, int k)
 {
     double result = 0.;
     UINT i;
@@ -141,7 +99,7 @@ double qgi_sigma2_z(double psi[D], int j, int k)
     return result;
 }
 
-double qgi_sigma_x(double psi[D], int j)
+double ising_sigma_x(double psi[D], int j)
 {
     double result = 0.;
     UINT i, m = 1UL << j;
@@ -151,27 +109,27 @@ double qgi_sigma_x(double psi[D], int j)
     return result;
 }
 
-double qgi_mag_z(double psi[D])
+double ising_mag_z(double psi[D])
 {
     double result = 0.;
     int j;
 
-    for (j = 0; j < N; j++) result += qgi_sigma_z(psi, j);
+    for (j = 0; j < N; j++) result += ising_sigma_z(psi, j);
 
     return result / N;
 }
 
-double qgi_mag_x(double psi[D])
+double ising_mag_x(double psi[D])
 {
     double result = 0.;
     int j;
 
-    for (j = 0; j < N; j++) result += qgi_sigma_x(psi, j);
+    for (j = 0; j < N; j++) result += ising_sigma_x(psi, j);
 
     return result / N;
 }
 
-double qgi_overlap(double psi[D])
+double ising_overlap(double psi[D])
 {
     double m, result = 0.;
     int j, k;
@@ -180,7 +138,7 @@ double qgi_overlap(double psi[D])
     {
         for (k = 0; k < j; k++)
         {
-            m = qgi_sigma2_z(psi, j, k);
+            m = ising_sigma2_z(psi, j, k);
             result += m*m;
         }
     }

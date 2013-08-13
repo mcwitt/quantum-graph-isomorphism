@@ -1,7 +1,5 @@
 #include "nlcg.h"
 
-typedef uint64_t index_t;
-
 double nlcg_minimize(
         double  (*obj_grad)(double*, double*),
         double  (*line_min)(double*, double*),
@@ -15,7 +13,7 @@ double nlcg_minimize(
         )
 {
     double a, b, obj, r2prev, r2stop;
-    index_t i;
+    UINT i;
 
     obj = obj_grad(x, d);
     r2prev = 0.; for (i = 0; i < D; i++) r2prev += d[i] * d[i];
@@ -51,7 +49,7 @@ double nlcg_minimize_norm_ind(
         )
 {
     double a, b, eps2, obj, r2prev;
-    index_t i;
+    UINT i;
 
     eps2 = eps * eps;
     obj = obj_x2_grad(x, x2, d);
@@ -87,7 +85,7 @@ double nlcg_minimize_pr(
         )
 {
     double a, b, obj, r2prev, r2stop;
-    index_t i;
+    UINT i;
 
     obj = obj_grad(x, rprev);
     r2prev = 0.; for (i = 0; i < D; i++) r2prev += rprev[i] * rprev[i];
