@@ -14,18 +14,6 @@ double d[D];        /* diagonal elements of problem hamiltonian */
 double psi[D];      /* wavefunction */
 double delta[D];    /* CG search direction */
 double r[D];        /* residual */
-double s;           /* adiabatic parameter */
-double edrvr;       /* driver part of energy */
-
-double obj_x2_grad(double psi[D], double *x2, double grad[D])
-{
-    return qaa_energy_grad(s, d, psi, grad, x2, &edrvr);
-}
-
-double line_min(double psi[D], double delta[D])
-{
-    return qaa_line_min(s, d, psi, delta);
-}
 
 int main(int argc, char *argv[])
 {
@@ -33,9 +21,9 @@ int main(int argc, char *argv[])
     gsl_rng *rng;
     params_t p;
     double h[N];    /* fields */
-    double energy, h0, mx, mz, psi2, q2, r2;
-    UINT i;
+    double edrvr, energy, h0, mx, mz, psi2, q2, r2, s;
     int a[N][N], ifile, ip, is, iter, j;
+    UINT i;
 
     params_from_cmd(&p, argc, argv);
 
@@ -75,8 +63,8 @@ int main(int argc, char *argv[])
                 s = p.smin;
                 if (p.ns > 1) s += (p.smax - p.smin)*is/(p.ns - 1.);
 
-                energy = nlcg_minimize_norm_ind(obj_x2_grad, line_min, p.eps,
-                        p.itermax, &iter, psi, &psi2, delta, r, &r2);
+                energy = qaa_minimize_energy(s, d, p.eps, p.itermax, &iter,
+                        &edrvr, psi, &psi2, delta, r, &r2);
 
                 /* normalize wavefunction */
                 psi2 = sqrt(psi2);

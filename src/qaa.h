@@ -14,6 +14,20 @@
  */
 void qaa_compute_diagonals(int a[N][N], double h[N], double d[D]);
 
+double qaa_minimize_energy(
+        double  s,
+        double  d[D],
+        double  eps,
+        int     max_iter,
+        int     *num_iter,
+        double  *edrvr,
+        double  psi[D],
+        double  *psi2,
+        double  delta[D],
+        double  r[D],
+        double  *r2
+        );
+
 /**
  * Compute the energy and energy gradient.
  * @param[in]   s       adiabatic parameter

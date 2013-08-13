@@ -5,6 +5,7 @@
  */
 
 #include "qaa.h"
+#include "nlcg.h"
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -32,6 +33,41 @@ void qaa_compute_diagonals(int a[N][N], double h[N], double d[D])
                     d[i] += s_j * SPIN(i, k);
         }
     }
+}
+
+typedef struct { double s, *edrvr, *d; } arg_t;
+
+static double obj_x2_grad(void *arg, double psi[D], double *x2, double grad[D])
+{
+
+    arg_t args = *((arg_t*) arg);
+    return qaa_energy_grad(args.s, args.d, psi, grad, x2, args.edrvr);
+}
+
+static double line_min(void *arg, double psi[D], double delta[D])
+{
+    arg_t args = *((arg_t*) arg);
+    return qaa_line_min(args.s, args.d, psi, delta);
+}
+
+double qaa_minimize_energy(
+        double  s,
+        double  d[D],
+        double  eps,
+        int     max_iter,
+        int     *num_iter,
+        double  *edrvr,
+        double  psi[D],
+        double  *psi2,
+        double  delta[D],
+        double  r[D],
+        double  *r2
+        )
+{
+    arg_t args = {s, edrvr, d};
+
+    return nlcg_minimize_norm_ind(obj_x2_grad, line_min, &args, eps,
+            max_iter, num_iter, psi, psi2, delta, r, r2);
 }
 
 double qaa_driver_matrix_element(double u[D], double v[D])
