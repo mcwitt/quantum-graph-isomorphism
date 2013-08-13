@@ -3,11 +3,12 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <libgen.h>
 #include "amatrix.h"
 #include "defs.h"
 #include "nlcg.h"
 #include "params.h"
-#include "qgi.h"
+#include "quim.h"
 
 double d[D];        /* diagonal elements of problem hamiltonian */
 double psi[D];      /* wavefunction */
@@ -45,7 +46,7 @@ int main(int argc, char *argv[])
     }
 
     printf("%16s %12s %12s %12s %12s %12s %12s %12s %12s\n",
-            "file", "h0", "s", "iterations", "res2", "energy", "mz", "mx", "q2");
+            "graph", "h0", "s", "iterations", "res2", "energy", "mz", "mx", "q2");
 
     for (ifile = 0; ifile < p.num_files; ifile++)
     {
@@ -86,7 +87,7 @@ int main(int argc, char *argv[])
                 q2 = qgi_overlap(psi);
 
                 printf("%16s %12g %12g %12d %12g %12g %12g %12g %12g\n",
-                        p.files[ifile], h0, s, iter, r2, energy, mz, mx, q2);
+                        basename(p.files[ifile]), h0, s, iter, r2, energy, mz, mx, q2);
             }
         }
     }
