@@ -98,7 +98,7 @@ double qgi_line_min(double s, double d[D], double psi[D], double delta[D])
 {
     double psi2, psi_dot_delta, delta2,
            psi_H_psi, psi_H_delta, delta_H_delta,
-           a, b, c, coef, sqr, alpha;
+           a, b, c, coef, sqrd, x;
 
     psi_H_psi     = qgi_matrix_element(s, d, psi,   psi,   &psi2);
     psi_H_delta   = qgi_matrix_element(s, d, psi,   delta, &psi_dot_delta);
@@ -109,13 +109,13 @@ double qgi_line_min(double s, double d[D], double psi[D], double delta[D])
     c = psi2 * psi_H_delta - psi_dot_delta * psi_H_psi;
 
     coef = -0.5 / a;
-    sqr = sqrt(b*b - 4.*a*c);
-    alpha = coef * (b - sqr);
+    sqrd = sqrt(b*b - 4.*a*c);
+    x = coef * (b - sqrd);
 
     /* if critical point is a maximum, use other solution */
-    if (2*a*alpha + b < 0.) alpha = coef * (b + sqr);
+    if (2*a*x + b < 0.) x = coef * (b + sqrd);
 
-    return alpha;
+    return x;
 }
 
 
