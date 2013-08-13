@@ -1,0 +1,9 @@
+#ifndef GLOBAL_H
+#define GLOBAL_H
+
+typedef uint32_t UINT;
+
+static const int    N = @N@;    /* number of vertices (spins) */
+static const UINT   D = @D@;    /* dimension of Hilbert space = 2^N */
+
+#endif
