@@ -25,3 +25,20 @@ cdef double sigma_x(np.ndarray[double] psi, int j):
     for i in range(len(psi)): result += psi[i] * psi[i^m]
     return result
 
+def mag_z(int n, np.ndarray[double] psi):
+    result = 0.
+    for j in range(n): result += sigma_z(psi, j)
+    return result / N
+
+def mag_x(int n, np.ndarray[double] psi):
+    result = 0.
+    for j in range(n): result += sigma_x(psi, j)
+    return result / n
+
+def overlap(int n, np.ndarray[double] psi):
+    result = 0.
+    for j in range(1, n):
+        for k in range(j):
+            result += sigma2_z(psi, j, k)**2
+
+    return sqrt(2. * result / n / (n-1))

@@ -9,6 +9,6 @@ setup(
       author='Matt Wittmann',
       author_email='mwittman@ucsc.edu',
       url='http://people.ucsc.edu/~mwittman',
-      ext_modules = cythonize('gimp.pyx'), # accepts a glob pattern
+      ext_modules = cythonize('*.pyx'), # accepts a glob pattern
       include_dirs=[numpy.get_include()]
      )

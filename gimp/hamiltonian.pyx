@@ -53,21 +53,3 @@ def hamiltonian(np.ndarray[int, ndim=2] a,
                     inz += 1
 
     return scipy.sparse.coo_matrix((vals, (rows, cols)), shape=(d, d))
-
-def mag_z(int N, np.ndarray[double] psi):
-    result = 0.
-    for j in range(N): result += sigma_z(psi, j)
-    return result / N
-
-def mag_x(int N, np.ndarray[double] psi):
-    result = 0.
-    for j in range(N): result += sigma_x(psi, j)
-    return result / N
-
-def overlap(int N, np.ndarray[double] psi):
-    result = 0.
-    for j in range(1, N):
-        for k in range(j):
-            result += sigma2_z(psi, j, k)**2
-
-    return sqrt(2. * result / N / (N-1))
