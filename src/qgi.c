@@ -15,22 +15,22 @@
 
 void qgi_compute_problem_hamiltonian(int a[N][N], double h[N], double d[D])
 {
-    int m, n;
+    int j, k;
     UINT i;
 
     for (i = 0; i < D; i++)
     {
         d[i] = 0.;
 
-        for (n = 0; n < N; n++)
+        for (j = 0; j < N; j++)
         {
-            int s_n = SPIN(i, n);
+            int s_j = SPIN(i, j);
 
-            d[i] -= h[n] * s_n;
+            d[i] -= h[j] * s_j;
 
-            for (m = 0; m < n; m++)
-                if (a[n][m] == 1)
-                    d[i] += s_n * SPIN(i, m);
+            for (k = 0; k < j; k++)
+                if (a[j][k] == 1)
+                    d[i] += s_j * SPIN(i, k);
         }
     }
 }

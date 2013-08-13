@@ -1,39 +1,14 @@
 import numpy as np
 import scipy.sparse
+from gimp import *
+
 from libc.stdint cimport uint32_t
 from libc.math cimport sqrt
 cimport numpy as np
 
-def load_graph(filename):
-    f = open(filename, 'r')
-    a = []
-    for line in f: a.append(list(line.strip()))
-    a = np.array(a, dtype=int)
-    assert(a.shape[0] == a.shape[1])
-    return a
+ctypedef uint32_t UINT
 
-cdef inline int spin(uint32_t i, int j):
-    return ((int)((i >> j) & 1) << 1) - 1
-
-cdef double sigma_z(np.ndarray[double] psi, int j):
-    cdef double result = 0.
-    cdef uint32_t i
-    for i in range(len(psi)): result += psi[i]**2 * spin(i, j)
-    return result
-
-cdef double sigma2_z(np.ndarray[double] psi, int j, int k):
-    cdef double result = 0.
-    cdef uint32_t i
-    for i in range(len(psi)): result += psi[i]**2 * spin(i, j) * spin(i, k)
-    return result
-
-cdef double sigma_x(np.ndarray[double] psi, int j):
-    cdef double result = 0.
-    cdef uint32_t i, m = 1UL << j
-    for i in range(len(psi)): result += psi[i] * psi[i^m]
-    return result
-
-def hamiltonian(np.ndarray[long, ndim=2] a,
+def hamiltonian(np.ndarray[int, ndim=2] a,
                 np.ndarray[double] h,
                 double s):
     
@@ -46,7 +21,7 @@ def hamiltonian(np.ndarray[long, ndim=2] a,
     cdef np.ndarray[double] vals = np.zeros(nnz, dtype=np.double)
     cdef double c
     cdef int j, k
-    cdef uint32_t i, m, inz = 0
+    cdef UINT i, m, inz = 0
 
     # transverse field
     for i in range(d):
