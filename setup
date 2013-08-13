@@ -15,4 +15,6 @@ do
         " < "$f" > "$(basename "${f%.in}")"
 done
 
+ln -s $rootdir/graphs graphs
+
 #for f in *.sh; do chmod +x $f; done
