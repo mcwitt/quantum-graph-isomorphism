@@ -8,7 +8,6 @@
 #include "nlcg.h"
 #include <math.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 /* SPIN(i, j) returns the eigenvalue of sigma^z_j for state |i> */
 #define SPIN(i, j)      ((int) ((((i) >> (j)) & 1) << 1) - 1)
@@ -33,8 +32,7 @@ void qaa_compute_diagonals(int a[], double h[N], double d[D])
         }
 
         /* longitudinal field terms */
-        for (j = 0; j < N; j++)
-            d[i] -= h[j] * SPIN(i, j);
+        for (j = 0; j < N; j++) d[i] -= h[j] * SPIN(i, j);
     }
 }
 
