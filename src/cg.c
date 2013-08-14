@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     params_t p;
     double h[N];    /* fields */
     double edrvr, energy, h0, mx, mz, psi2, q2, r2, s;
-    int a[N*(N-1)/2], ifile, ip, is, iter, j;
+    int a[N*(N-1)/2], ifile, ih, is, iter, j;
     UINT i;
 
     params_from_cmd(&p, argc, argv);
@@ -53,9 +53,9 @@ int main(int argc, char *argv[])
         rng = gsl_rng_alloc(T);
         for (i = 0; i < D; i++) psi[i] = gsl_ran_gaussian(rng, 1.) /sqrt(D);
 
-        for (ip = 0; ip < p.np; ip++)
+        for (ih = 0; ih < p.nh; ih++)
         {
-            h0 = pow(10., p.emin + (p.emax - p.emin)*ip/(p.np - 1.)) ;
+            h0 = pow(10., p.emin + (p.emax - p.emin)*ih/(p.nh - 1.)) ;
             for (j = 0; j < N; j++) h[j] = h0;
             qaa_compute_diagonals(a, h, d);
 

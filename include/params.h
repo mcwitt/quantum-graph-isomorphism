@@ -2,7 +2,7 @@ typedef struct
 {
     double smin, smax;
     double emin, emax;
-    int ns, np;
+    int ns, nh;
 
     int itermax;
     double eps;
