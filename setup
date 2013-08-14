@@ -2,19 +2,21 @@
 
 rootdir="$(dirname "$0")"
 srcdir="$rootdir"/src
+incdir="$rootdir"/include
 
 echo -n 'N=? '; read N
 D=$((2**N))
 
-for f in $srcdir/*".in"
+for f in $rootdir/*".in"
 do
     sed "\
         s:@srcdir@:$srcdir:;\
+        s:@incdir@:$incdir:;\
         s:@N@:$N:;\
         s:@D@:$D:;\
         " < "$f" > "$(basename "${f%.in}")"
 done
 
+cp $rootdir/py/* .
 ln -s $rootdir/graphs graphs
 
-#for f in *.sh; do chmod +x $f; done

@@ -1,16 +1,15 @@
 srcdir = @srcdir@
-VPATH = $(srcdir)
+incdir = @incdir@
+VPATH = $(srcdir) $(incdir)
 
 CC = gcc
 CFLAGS = -Wall -O3
 #CFLAGS = -Wall -g
 
-CFLAGS += -I.
-CFLAGS += -DVERSION=\"$(shell git describe)\"
+CFLAGS += -I. -I$(incdir)
+CFLAGS += -DVERSION=\"$(shell git describe --abbrev=0)\"
 #LDLIBS = -lm
 LDLIBS = -lm -lgsl -lgslcblas
-
-tests = basic
 
 cg: amatrix.o nlcg.o params.o qaa.o
 

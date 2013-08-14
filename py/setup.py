@@ -7,8 +7,9 @@ from Cython.Distutils import build_ext
 ext_modules = [Extension(
     name="qaa",
     sources=["qaa.pyx"],
-        extra_objects=["qaa.o"],  # if you compile fc.cpp separately
+        extra_objects=["qaa.o", "nlcg.o"],  # if you compile fc.cpp separately
     include_dirs = [
+        '.',
         '../include',
         numpy.get_include()
         ],  # .../site-packages/numpy/core/include
