@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     gsl_rng *rng;
     params_t p;
     double h[N];    /* fields */
-    double edrvr, energy, h0, mx, mz, psi2, q2, r2, s;
+    double edrvr, energy, h0, mh0, mx, mz, psi2, q2, r2, s, ds;
     int a[N*(N-1)/2], ifile, ih, is, iter, j;
     UINT i;
 
@@ -32,6 +32,9 @@ int main(int argc, char *argv[])
         fprintf(stderr, "%s: no input files\n", argv[0]);
         return EXIT_FAILURE;
     }
+
+    if (p.ns > 1) ds  = (p.smax - p.smin)/(p.ns - 1.);
+    if (p.nh > 1) mh0 = pow(10., (p.emax - p.emin)/(p.nh - 1.)) ;
 
     printf("%12s %12s %12s %12s %12s %12s %12s %12s %12s %12s\n",
             "ver", "graph", "h0", "s",
@@ -52,18 +55,16 @@ int main(int argc, char *argv[])
         T = gsl_rng_default;
         rng = gsl_rng_alloc(T);
         for (i = 0; i < D; i++) psi[i] = gsl_ran_gaussian(rng, 1.) /sqrt(D);
+        h0 = pow(10., p.emin);
 
-        for (ih = 0; ih < p.nh; ih++)
+        for (ih = 0; ih < p.nh; ih++, h0 *= mh0)
         {
-            h0 = pow(10., p.emin + (p.emax - p.emin)*ih/(p.nh - 1.)) ;
             for (j = 0; j < N; j++) h[j] = h0;
             qaa_compute_diagonals(a, h, d);
+            s = p.smin;
 
-            for (is = 0; is < p.ns; is++)
+            for (is = 0; is < p.ns; is++, s += ds)
             {
-                s = p.smin;
-                if (p.ns > 1) s += (p.smax - p.smin)*is/(p.ns - 1.);
-
                 energy = qaa_minimize_energy(s, d, p.eps, p.itermax, &iter,
                         &edrvr, psi, &psi2, delta, r, &r2);
 
