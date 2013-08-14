@@ -8,11 +8,11 @@
 
 /**
  * Compute the diagonal elements of the Hamiltonian.
- * @param[in]   a   adjacency matrix of graph
+ * @param[in]   a   adjacency matrix entries (A_21, A_31, A_32, A_41, etc.)
  * @param[in]   h   field at each site
  * @param[out]  d   diagonal elements of problem Hamiltonian
  */
-void qaa_compute_diagonals(int a[N][N], double h[N], double d[D]);
+void qaa_compute_diagonals(int a[], double h[N], double d[D]);
 
 double qaa_minimize_energy(
         double  s,
