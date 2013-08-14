@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     params_t p;
     double h[N];    /* fields */
     double edrvr, energy, h0, mx, mz, psi2, q2, r2, s;
-    int a[N][N], ifile, ip, is, iter, j;
+    int a[N*(N-1)/2], ifile, ip, is, iter, j;
     UINT i;
 
     params_from_cmd(&p, argc, argv);
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 
     for (ifile = 0; ifile < p.num_files; ifile++)
     {
-        if (! amatrix_load(p.files[ifile], N, &a[0][0]))
+        if (! amatrix_load(p.files[ifile], N, a))
         {
             fprintf(stderr, "%s: error loading adjacency matrix from file \"%s\"\n",
                     argv[0], p.files[ifile]);

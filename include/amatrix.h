@@ -7,4 +7,4 @@
  * @param[out]  a               Array to store adjacency matrix
  */
 
-int amatrix_load(char *file, int num_vertices, int *a);
+int amatrix_load(char *file, int num_vertices, int a[]);

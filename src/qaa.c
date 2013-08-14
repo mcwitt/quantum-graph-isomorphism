@@ -15,21 +15,22 @@
 
 void qaa_compute_diagonals(int a[], double h[N], double d[D])
 {
-    int j, k;
     UINT i;
 
     for (i = 0; i < D; i++)
     {
+        int j, l = 0;
         d[i] = 0.;
 
         for (j = 0; j < N; j++)
-        {
-            int s_j = SPIN(i, j);
+            d[i] -= h[j] * SPIN(i, j);
 
-            d[i] -= h[j] * s_j;
+        for (j = 1; j < N; j++)
+        {
+            int k, s_j = SPIN(i, j);
 
             for (k = 0; k < j; k++)
-                if (a[j][k] == 1)
+                if (a[l++] == 1)
                     d[i] += s_j * SPIN(i, k);
         }
     }
