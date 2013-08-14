@@ -22,9 +22,7 @@ void qaa_compute_diagonals(int a[], double h[N], double d[D])
         int j, l = 0;
         d[i] = 0.;
 
-        for (j = 0; j < N; j++)
-            d[i] -= h[j] * SPIN(i, j);
-
+        /* interaction terms */
         for (j = 1; j < N; j++)
         {
             int k, s_j = SPIN(i, j);
@@ -33,6 +31,10 @@ void qaa_compute_diagonals(int a[], double h[N], double d[D])
                 if (a[l++] == 1)
                     d[i] += s_j * SPIN(i, k);
         }
+
+        /* longitudinal field terms */
+        for (j = 0; j < N; j++)
+            d[i] -= h[j] * SPIN(i, j);
     }
 }
 
