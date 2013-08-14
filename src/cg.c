@@ -33,8 +33,9 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    printf("%16s %12s %12s %12s %12s %12s %12s %12s %12s\n",
-            "graph", "h0", "s", "iterations", "res2", "energy", "mz", "mx", "q2");
+    printf("%12s %12s %12s %12s %12s %12s %12s %12s %12s %12s\n",
+            "ver", "graph", "h0", "s",
+            "iterations", "res2", "energy", "mz", "mx", "q2");
 
     for (ifile = 0; ifile < p.num_files; ifile++)
     {
@@ -74,8 +75,9 @@ int main(int argc, char *argv[])
                 mx = qaa_mag_x(psi);
                 q2 = qaa_overlap(psi);
 
-                printf("%16s %12g %12g %12d %12g %12g %12g %12g %12g\n",
-                        basename(p.files[ifile]), h0, s, iter, r2, energy, mz, mx, q2);
+                printf("%12s %12s %12g %12g %12d %12g %12g %12g %12g %12g\n",
+                        VERSION, basename(p.files[ifile]), h0, s,
+                        iter, r2, energy, mz, mx, q2);
             }
         }
     }
