@@ -21,7 +21,8 @@ int main(int argc, char *argv[])
     gsl_rng *rng;
     params_t p;
     double h[N];    /* fields */
-    double edrvr, energy, h0, mh0, mx, mz, psi2, q2, r2, s, ds;
+    double edrvr, energy, h0, mx, mz, psi2, q2, r2, s;
+    double ds = 0., mh0 = 0.;
     int a[N*(N-1)/2], ifile, ih, is, iter, j;
     UINT i;
 
