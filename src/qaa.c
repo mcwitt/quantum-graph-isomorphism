@@ -71,7 +71,7 @@ double qaa_minimize_energy(
             max_iter, num_iter, psi, psi2, delta, r, r2);
 }
 
-double qaa_driver_matrix_element(double u[D], double v[D])
+static double qaa_driver_matrix_element(double u[D], double v[D])
 {
     double result = 0.;
     UINT i, m;
@@ -83,7 +83,7 @@ double qaa_driver_matrix_element(double u[D], double v[D])
     return result;
 }
 
-double qaa_problem_matrix_element(double d[D], double u[D], double v[D], double *udotv)
+static double qaa_problem_matrix_element(double d[D], double u[D], double v[D], double *udotv)
 {
     double prod, result = 0.;
     UINT i;
@@ -100,7 +100,7 @@ double qaa_problem_matrix_element(double d[D], double u[D], double v[D], double 
     return result;
 }
 
-double qaa_matrix_element(double s, double d[D], double u[D], double v[D], double *udotv)
+static double qaa_matrix_element(double s, double d[D], double u[D], double v[D], double *udotv)
 {
     return (1. - s) * qaa_driver_matrix_element(u, v)
                + s  * qaa_problem_matrix_element(d, u, v, udotv);
