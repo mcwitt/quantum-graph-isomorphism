@@ -3,7 +3,7 @@ incdir = @incdir@
 VPATH = $(srcdir) $(incdir)
 
 CC = gcc
-CFLAGS = -Wall -O3
+CFLAGS = -Wall -O3 -fPIC
 #CFLAGS = -Wall -g
 
 CFLAGS += -I. -I$(incdir)
