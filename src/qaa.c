@@ -154,7 +154,6 @@ double qaa_line_min(double s, double d[D], double psi[D], double delta[D])
     return x;
 }
 
-
 double qaa_sigma_z(double psi[D], int j)
 {
     double result = 0.;
