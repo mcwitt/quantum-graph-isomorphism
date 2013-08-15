@@ -13,8 +13,8 @@ typedef uint32_t UINT;
 #define N @N@
 #define D @D@
 
-/* for Cython */
-static const int  n    = N;
-static const UINT ndim = D;
+/* defined in global.c */
+extern const int n;
+extern const UINT ndim;
 
 #endif

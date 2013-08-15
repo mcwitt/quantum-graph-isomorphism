@@ -15,11 +15,13 @@ cdef extern from "global.h":
     UINT ndim
 
 cdef extern from "qaa.h":
+
     void qaa_compute_diagonals(
         int a[],
         double h[],
         double d[]
         )
+
     double qaa_minimize_energy(
         double  s,
         double  d[],
@@ -33,6 +35,11 @@ cdef extern from "qaa.h":
         double  r[],
         double  *r2
         )
+
+    double qaa_mag_z(double psi[])
+    double qaa_mag_x(double psi[])
+    double qaa_overlap(double psi[])
+
 
 N = n
 D = ndim
@@ -52,11 +59,9 @@ def compute_diagonals(
         np.ndarray[np.int_t, ndim=1] b,
         np.ndarray[np.double_t, ndim=1] h,
         np.ndarray[np.double_t, ndim=1] d=None,
-        inplace=False
         ):
 
-    if not inplace:
-        d = np.empty(D, dtype=np.double)
+    if d is None: d = np.empty(D, dtype=np.double)
 
     qaa_compute_diagonals(
             <int*> b.data,
@@ -64,7 +69,7 @@ def compute_diagonals(
             <double*> d.data
             )
 
-    if not inplace: return d
+    return d
 
 def minimize_energy(
         s,
@@ -145,22 +150,13 @@ def hamiltonian(
     return scipy.sparse.coo_matrix((vals, (rows, cols)), shape=(d, d))
 
 def mag_z(np.ndarray[np.double_t, ndim=1] psi):
-    result = 0.
-    for j in range(N): result += sigma_z(psi, j)
-    return result / N
+    return qaa_mag_z(<double*> psi.data)
 
 def mag_x(np.ndarray[np.double_t, ndim=1] psi):
-    result = 0.
-    for j in range(N): result += sigma_x(psi, j)
-    return result / N
+    return qaa_mag_x(<double*> psi.data)
 
 def overlap(np.ndarray[np.double_t, ndim=1] psi):
-    result = 0.
-    for j in range(1, N):
-        for k in range(j):
-            result += sigma2_z(psi, j, k)**2
-
-    return sqrt(2. * result / N / (N-1))
+    return qaa_overlap(<double*> psi.data)
 
 cdef int spin(UINT i, int j):
     return ((int)((i >> j) & 1) << 1) - 1

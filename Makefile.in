@@ -1,21 +1,23 @@
-srcdir = @srcdir@
-incdir = @incdir@
-VPATH = $(srcdir) $(incdir)
+build = @build@
 
 CC = gcc
 CFLAGS = -Wall -O3 -fPIC
 #CFLAGS = -Wall -g
 
-CFLAGS += -I. -I$(incdir)
 CFLAGS += -DVERSION=\"$(shell git describe --abbrev=0)\"
-#LDLIBS = -lm
 LDLIBS = -lm -lgsl -lgslcblas
+OBJECTS = amatrix.o cg.o global.o nlcg.o params.o qaa.o
+OBJS = $(addprefix $(build)/, $(OBJECTS))
 
-cg: amatrix.o nlcg.o params.o qaa.o
+$(build)/%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(build)/cg: $(OBJS)
+	$(CC) $^ -o $@ $(LDLIBS) 
 
 .PHONY: clean
 
 clean:
-	$(RM) *.o cg
+	$(RM) *.o
 
 

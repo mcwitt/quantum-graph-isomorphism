@@ -1,22 +1,19 @@
 #! /bin/bash
 
-rootdir="$(dirname "$0")"
-srcdir="$rootdir"/src
-incdir="$rootdir"/include
-
 echo -n 'N=? '; read N
 D=$((2**N))
 
-for f in $rootdir/*".in"
+build=build-n$N
+mkdir -p $build
+
+for f in *".in"
 do
     sed "\
-        s:@srcdir@:$srcdir:;\
-        s:@incdir@:$incdir:;\
+        s:@build@:$build:;\
         s:@N@:$N:;\
         s:@D@:$D:;\
         " < "$f" > "$(basename "${f%.in}")"
 done
 
-cp $rootdir/py/* .
-ln -s $rootdir/graphs graphs
-
+cp global.h $build
+ln -s $(pwd)/graphs $build/graphs
