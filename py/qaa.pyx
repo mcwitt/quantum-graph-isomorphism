@@ -76,6 +76,8 @@ def minimize_energy(
         np.ndarray[np.double_t, ndim=1] resid
         ):
 
+    'returns: energy, edrvr, psi2, r2, num_iter'
+
     cdef double edrvr, psi2, r2
     cdef int num_iter
 
