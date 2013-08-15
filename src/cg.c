@@ -82,6 +82,8 @@ int main(int argc, char *argv[])
                         iter, r2, energy, mz, mx, q2);
             }
         }
+
+        gsl_rng_free(rng);
     }
 
     return EXIT_SUCCESS;
