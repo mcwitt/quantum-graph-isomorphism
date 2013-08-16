@@ -1,4 +1,7 @@
+source = @root@
 build = @build@
+
+VPATH = $(source):$(source)/..
 
 CC = gcc
 CFLAGS = -Wall -O3
@@ -7,24 +10,19 @@ CFLAGS = -Wall -O3
 CFLAGS += -DVERSION=\"$(shell git describe --abbrev=0)\"
 LDLIBS = -lm -lgsl -lgslcblas
 
-COMMON_OBJECTS = amatrix.o global.o nlcg.o params.o qaa.o
-OBJECTS = cg.o cgs.o $(COMMON_OBJECTS)
+COMM_OBJS = amatrix.o global.o nlcg.o params.o qaa.o
+OBJS = cg.o cgs.o $(COMM_OBJS)
 BINARIES = cg cgs
 
-OBJS 		= $(addprefix $(build)/, $(OBJECTS))
-COMM_OBJS 	= $(addprefix $(build)/, $(COMMON_OBJECTS))
-BINS 		= $(addprefix $(build)/, $(BINARIES))
+BINS = $(addprefix $(build)/, $(BINARIES))
 
 all: $(BINS)
 
 $(BINS): $(COMM_OBJS)
 
-$(build)/cg: $(build)/cg.o
+$(build)/cg: cg.o
 
-$(build)/cgs: $(build)/cgs.o
-
-$(build)/%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+$(build)/cgs: cgs.o
 
 .PHONY: clean
 

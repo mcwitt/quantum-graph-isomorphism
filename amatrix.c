@@ -1,20 +1,19 @@
 #include "amatrix.h"
+#include "global.h"
 
-#define MAX_LINE_LEN 100
-
-int amatrix_load(char *file, int n, int a[])
+int amatrix_load(char *file, int a[])
 {
     FILE *fp;
-    char line[MAX_LINE_LEN];
-    int i, j, k, m[n][n];
+    char line[N+2];
+    int i, j, k, m[N][N];
 
     if ((fp = fopen(file, "r")) == NULL) return 0;
 
-    for (j = 0; j < n; j++)
+    for (j = 0; j < N; j++)
     {
-        if (fgets(line, MAX_LINE_LEN, fp) == NULL) return 0;
+        if (fgets(line, N+2, fp) == NULL) return 0;
 
-        for (k = 0; k < n; k++)
+        for (k = 0; k < N; k++)
         {
             if (line[k] == '\0') return 0;
             m[j][k] = (line[k] == '0') ? 0 : 1;
@@ -23,7 +22,7 @@ int amatrix_load(char *file, int n, int a[])
 
     i = 0;
 
-    for (j = 1; j < n; j++)
+    for (j = 1; j < N; j++)
         for (k = 0; k < j; k++)
             a[i++] = m[j][k];
 
