@@ -10,7 +10,7 @@
 #include "params.h"
 #include "qaa.h"
 
-#define DH(h0)  1e-10
+#define DH(h)   1e-10
 
 double d[D];        /* diagonal elements of problem hamiltonian */
 double psi[D];      /* wavefunction */
@@ -24,9 +24,9 @@ int main(int argc, char *argv[])
     const gsl_rng_type *T = gsl_rng_default;
     gsl_rng *rng;
     params_t p;
-    double h[N], fj[N];
-    double edrvr, energy, f, h0, mx, mz, norm, psi2, q2, r2, s;
-    double ds = 0., mh0 = 0.;
+    double fj[N];
+    double edrvr, energy, f, h, mx, mz, norm, psi2, q2, r2, s;
+    double ds = 0., mh = 0., hprev = 0.;
     int a[N*(N-1)/2], ifile, ih, is, iter, j, k;
     UINT i;
 
@@ -38,13 +38,13 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    if (p.ns > 1) ds  = (p.smax - p.smin)/(p.ns - 1.);
-    if (p.nh > 1) mh0 = pow(10., (p.emax - p.emin)/(p.nh - 1.)) ;
+    if (p.ns > 1) ds = (p.smax - p.smin)/(p.ns - 1.);
+    if (p.nh > 1) mh = pow(10., (p.emax - p.emin)/(p.nh - 1.)) ;
 
     rng = gsl_rng_alloc(T);
 
     printf("%12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s\n",
-            "ver", "graph", "h0", "s",
+            "ver", "graph", "h", "s",
             "iterations", "res2", "energy", "mz", "mx", "q2", "q2p");
 
     for (ifile = 0; ifile < p.num_files; ifile++)
@@ -56,16 +56,18 @@ int main(int argc, char *argv[])
 
             return EXIT_FAILURE;
         }
+        
+        /* encode graph into diagonal elements of hamiltonian */
+        qaa_compute_diagonals(a, d);
 
         /* generate random initial wavefunction */
         gsl_rng_env_setup();
         for (i = 0; i < D; i++) psi[i] = gsl_ran_gaussian(rng, 1.) / sqrt_D;
-        h0 = pow(10., p.emin);
+        h = pow(10., p.emin);
 
-        for (ih = 0; ih < p.nh; ih++, h0 *= mh0)
+        for (ih = 0; ih < p.nh; ih++, hprev = h, h *= mh)
         {
-            for (j = 0; j < N; j++) h[j] = h0;
-            qaa_compute_diagonals(a, h, d);
+            qaa_update_diagonals(h - hprev, d);
             s = p.smin;
 
             for (is = 0; is < p.ns; is++, s += ds)
@@ -85,7 +87,7 @@ int main(int argc, char *argv[])
                 /* vary the field at each site to approximate susceptibilities */
                 for (j = 0; j < N; j++)
                 {
-                    qaa_update_diagonals(j, 0.5 * DH(h0), d);
+                    qaa_update_diagonals_1(j, 0.5 * DH(h), d);
                     for (i = 0; i < D; i++) psi1[i] = psi[i];
                     energy = qaa_minimize_energy(s, d, p.eps, p.itermax, &iter,
                             &edrvr, psi1, &psi2, delta, r, &r2);
@@ -93,24 +95,24 @@ int main(int argc, char *argv[])
                     for (i = 0; i < D; i++) psi1[i] /= norm;
                     for (k = 0; k < N; k++) fj[k] = qaa_sigma_z(psi1, k);
 
-                    qaa_update_diagonals(j, -DH(h0), d);
+                    qaa_update_diagonals_1(j, -DH(h), d);
                     for (i = 0; i < D; i++) psi1[i] = psi[i];
                     energy = qaa_minimize_energy(s, d, p.eps, p.itermax, &iter,
                             &edrvr, psi1, &psi2, delta, r, &r2);
                     norm = sqrt(psi2);
                     for (i = 0; i < D; i++) psi1[i] /= norm;
                     for (k = 0; k < N; k++)
-                        fj[k] = (fj[k] - qaa_sigma_z(psi1, k)) / DH(h0);
+                        fj[k] = (fj[k] - qaa_sigma_z(psi1, k)) / DH(h);
 
                     for (k = 0; k < N; k++) f += fj[k] * fj[k];
-                    qaa_update_diagonals(j, 0.5 * DH(h0), d);
+                    qaa_update_diagonals_1(j, 0.5 * DH(h), d);
                 }
 
                 f = sqrt(f) / N;
 
                 printf("%12s %12s %12g %12g " \
                        "%12d %12g %12g %12g %12g %12g %12g\n",
-                        VERSION, basename(p.files[ifile]), h0, s,
+                        VERSION, basename(p.files[ifile]), h, s,
                         iter, r2, energy, mz, mx, q2, f);
             }
         }

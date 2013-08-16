@@ -12,7 +12,7 @@
 /* SPIN(i, j) returns the eigenvalue of sigma^z_j for state |i> */
 #define SPIN(i, j)      ((int) ((((i) >> (j)) & 1) << 1) - 1)
 
-void qaa_compute_diagonals(int a[], double h[N], double d[D])
+void qaa_compute_diagonals(int a[], double d[D])
 {
     UINT i;
 
@@ -21,7 +21,6 @@ void qaa_compute_diagonals(int a[], double h[N], double d[D])
         int j, l = 0;
         d[i] = 0.;
 
-        /* interaction terms */
         for (j = 1; j < N; j++)
         {
             int k, s_j = SPIN(i, j);
@@ -30,17 +29,24 @@ void qaa_compute_diagonals(int a[], double h[N], double d[D])
                 if (a[l++] == 1)
                     d[i] += s_j * SPIN(i, k);
         }
-
-        /* longitudinal field terms */
-        for (j = 0; j < N; j++) d[i] -= h[j] * SPIN(i, j);
     }
 }
 
-void qaa_update_diagonals(int j, double delta, double d[D])
+void qaa_update_diagonals(double dh, double d[D])
+{
+    int j;
+    UINT i;
+
+    for (i = 0; i < D; i++)
+        for (j = 0; j < N; j++)
+            d[i] -= dh * SPIN(i, j);
+}
+
+void qaa_update_diagonals_1(int j, double dh, double d[D])
 {
     UINT i;
 
-    for (i = 0; i < D; i++) d[i] -= delta * SPIN(i, j);
+    for (i = 0; i < D; i++) d[i] -= dh * SPIN(i, j);
 }
 
 typedef struct { double s, *edrvr, *d; } arg_t;

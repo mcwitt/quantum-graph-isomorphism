@@ -21,9 +21,8 @@ int main(int argc, char *argv[])
     const gsl_rng_type *T = gsl_rng_default;
     gsl_rng *rng;
     params_t p;
-    double h[N];    /* fields */
-    double edrvr, energy, h0, mx, mz, norm, psi2, q2, r2, s;
-    double ds = 0., mh0 = 0.;
+    double edrvr, energy, h, mx, mz, norm, psi2, q2, r2, s;
+    double ds = 0., mh = 0., hprev = 0.;
     int a[N*(N-1)/2], ifile, ih, is, iter, j;
     UINT i;
 
@@ -35,13 +34,13 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    if (p.ns > 1) ds  = (p.smax - p.smin)/(p.ns - 1.);
-    if (p.nh > 1) mh0 = pow(10., (p.emax - p.emin)/(p.nh - 1.)) ;
+    if (p.ns > 1) ds = (p.smax - p.smin)/(p.ns - 1.);
+    if (p.nh > 1) mh = pow(10., (p.emax - p.emin)/(p.nh - 1.)) ;
 
     rng = gsl_rng_alloc(T);
 
     printf("%12s %12s %12s %12s %12s %12s %12s %12s %12s %12s\n",
-            "ver", "graph", "h0", "s",
+            "ver", "graph", "h", "s",
             "iterations", "res2", "energy", "mz", "mx", "q2");
 
     for (ifile = 0; ifile < p.num_files; ifile++)
@@ -53,16 +52,18 @@ int main(int argc, char *argv[])
 
             return EXIT_FAILURE;
         }
+        
+        /* encode graph into diagonal elements of hamiltonian */
+        qaa_compute_diagonals(a, d);
 
         /* generate random initial wavefunction */
         gsl_rng_env_setup();
         for (i = 0; i < D; i++) psi[i] = gsl_ran_gaussian(rng, 1.) / sqrt_D;
-        h0 = pow(10., p.emin);
+        h = pow(10., p.emin);
 
-        for (ih = 0; ih < p.nh; ih++, h0 *= mh0)
+        for (ih = 0; ih < p.nh; ih++, hprev = h, h *= mh)
         {
-            for (j = 0; j < N; j++) h[j] = h0;
-            qaa_compute_diagonals(a, h, d);
+            qaa_update_diagonals(h - hprev, d);
             s = p.smin;
 
             for (is = 0; is < p.ns; is++, s += ds)
@@ -80,7 +81,7 @@ int main(int argc, char *argv[])
 
                 printf("%12s %12s %12g %12g " \
                        "%12d %12g %12g %12g %12g %12g\n",
-                        VERSION, basename(p.files[ifile]), h0, s,
+                        VERSION, basename(p.files[ifile]), h, s,
                         iter, r2, energy, mz, mx, q2);
             }
         }
