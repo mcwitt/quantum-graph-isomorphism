@@ -10,7 +10,7 @@
 #include "params.h"
 #include "qaa.h"
 
-#define DH(h)   1e-10
+#define DH(h)   1e-3
 
 double d[D];        /* diagonal elements of problem hamiltonian */
 double psi[D];      /* wavefunction */

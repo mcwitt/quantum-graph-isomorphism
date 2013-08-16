@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     params_t p;
     double edrvr, energy, h, mx, mz, norm, psi2, q2, r2, s;
     double ds = 0., mh = 0., hprev = 0.;
-    int a[N*(N-1)/2], ifile, ih, is, iter, j;
+    int a[N*(N-1)/2], ifile, ih, is, iter;
     UINT i;
 
     params_from_cmd(&p, argc, argv);
