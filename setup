@@ -25,4 +25,4 @@ do
         " < "$f" > "$(basename "${f%.in}")"
 done
 
-if [ ! -e "$bindir"/graphs ]; then ln -s $(pwd)/graphs "$bindir"/graphs; fi
+if [ ! -e "$bindir"/graphs ]; then ln -s $root/graphs "$bindir"/graphs; fi
