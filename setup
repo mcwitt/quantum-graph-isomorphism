@@ -3,7 +3,7 @@
 echo -n 'N=? '; read N
 D=$((2**N))
 
-build=build-n$N
+build=build/n$N
 mkdir -p $build
 
 for f in *".in"
