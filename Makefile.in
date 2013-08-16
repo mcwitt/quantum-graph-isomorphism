@@ -1,7 +1,7 @@
 source = @root@
-build = @build@
+bindir = @bindir@
 
-VPATH = $(source):$(source)/..
+VPATH = $(source)
 
 CC = gcc
 CFLAGS = -Wall -O3
@@ -13,16 +13,15 @@ LDLIBS = -lm -lgsl -lgslcblas
 COMM_OBJS = amatrix.o global.o nlcg.o params.o qaa.o
 OBJS = cg.o cgs.o $(COMM_OBJS)
 BINARIES = cg cgs
-
-BINS = $(addprefix $(build)/, $(BINARIES))
+BINS = $(addprefix $(bindir)/, $(BINARIES))
 
 all: $(BINS)
 
-$(BINS): $(COMM_OBJS)
+$(bindir)/cg: $(COMM_OBJS) cg.o
+	$(CC) $^ -o $@ $(LDLIBS)
 
-$(build)/cg: cg.o
-
-$(build)/cgs: cgs.o
+$(bindir)/cgs: $(COMM_OBJS) cgs.o
+	$(CC) $^ -o $@ $(LDLIBS)
 
 .PHONY: clean
 

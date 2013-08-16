@@ -1,19 +1,28 @@
 #! /bin/bash
 
-echo -n 'N=? '; read N
+N=13
+bindir=.
+
+while getopts ":n:b:a" opt; do
+    case $opt in
+        n) N=$OPTARG;;
+        b) bindir=$(OPTARG);;
+        a) bindir=bin/n$N;;
+    esac
+done
+
+root="$(dirname "$0")"
+mkdir -p $bindir
 D=$((2**N))
 
-build=build/n$N
-mkdir -p $build
-
-for f in *".in"
+for f in $root/*".in"
 do
     sed "\
-        s:@build@:$build:;\
+        s:@root@:$root:;\
+        s:@bindir@:$bindir:;\
         s:@N@:$N:;\
         s:@D@:$D:;\
         " < "$f" > "$(basename "${f%.in}")"
 done
 
-cp global.h $build
-ln -s $(pwd)/graphs $build/graphs
+if [ ! -e "$bindir"/graphs ]; then ln -s $(pwd)/graphs "$bindir"/graphs; fi

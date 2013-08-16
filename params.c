@@ -1,4 +1,5 @@
 #include "params.h"
+#include "global.h"
 #include <getopt.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -6,6 +7,8 @@
 static void print_usage(int argc, char *argv[])
 {
     fprintf(stderr,
+            "Conjugate gradient energy minimization " \
+            "for graphs with N=%d vertices.\n" \
             "usage: %s [-option arg ...] file [file ...]\n" \
             "options:\n" \
             "  -s, --smin    : minimum value of adiabatic parameter s\n" \
@@ -16,7 +19,7 @@ static void print_usage(int argc, char *argv[])
             "  -m, --nh      : number of magnetic field values\n" \
             "  -i, --itermax : maxiumum number of CG iterations\n" \
             "  -t, --tol     : error tolerance\n",
-            argv[0]);
+            N, argv[0]);
 }
 
 void params_defaults(params_t *p)
@@ -51,12 +54,13 @@ void params_from_cmd(params_t *p, int argc, char *argv[])
         {"nh",      required_argument,  0,  'm' },
         {"itermax", required_argument,  0,  'i' },
         {"tol",     required_argument,  0,  't' },
+        {"help",    no_argument,        0,  'h' },
         {NULL, 0, 0, 0}
     };
 
     params_defaults(p);
 
-    while ((c = getopt_long(argc, argv, "s:S:n:e:E:m:i:t:",
+    while ((c = getopt_long(argc, argv, "s:S:n:e:E:m:i:t:h",
                     long_options, &long_index)) != -1)
     {
         switch (c)

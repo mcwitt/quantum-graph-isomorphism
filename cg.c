@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 
     for (ifile = 0; ifile < p.num_files; ifile++)
     {
-        if (! amatrix_load(p.files[ifile], N, a))
+        if (! amatrix_load(p.files[ifile], a))
         {
             fprintf(stderr, "%s: error loading adjacency matrix from file \"%s\"\n",
                     argv[0], p.files[ifile]);
