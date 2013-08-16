@@ -36,6 +36,13 @@ void qaa_compute_diagonals(int a[], double h[N], double d[D])
     }
 }
 
+void qaa_update_diagonals(int j, double delta, double d[D])
+{
+    UINT i;
+
+    for (i = 0; i < D; i++) d[i] += delta * SPIN(i, j);
+}
+
 typedef struct { double s, *edrvr, *d; } arg_t;
 
 static double obj_x2_grad(void *arg, double psi[D], double *x2, double grad[D])

@@ -14,6 +14,14 @@
  */
 void qaa_compute_diagonals(int a[], double h[N], double d[D]);
 
+/**
+ * Update diagonal elements when \f$h_j \rightarrow h_j + \delta\f$.
+ * @param[in]       j       index of modified field
+ * @param[in]       delta   change in field
+ * @param[in,out]   d       diagonal elements of problem Hamiltonian
+ */
+void qaa_update_diagonals(int j, double delta, double d[D]);
+
 double qaa_minimize_energy(
         double  s,
         double  d[D],
