@@ -1,23 +1,34 @@
 build = @build@
 
 CC = gcc
-CFLAGS = -Wall -O3 -fPIC
+CFLAGS = -Wall -O3
 #CFLAGS = -Wall -g
 
 CFLAGS += -DVERSION=\"$(shell git describe --abbrev=0)\"
 LDLIBS = -lm -lgsl -lgslcblas
-OBJECTS = amatrix.o cg.o global.o nlcg.o params.o qaa.o
-OBJS = $(addprefix $(build)/, $(OBJECTS))
+
+COMMON_OBJECTS = amatrix.o global.o nlcg.o params.o qaa.o
+OBJECTS = cg.o cgs.o $(COMMON_OBJECTS)
+BINARIES = cg cgs
+
+OBJS 		= $(addprefix $(build)/, $(OBJECTS))
+COMM_OBJS 	= $(addprefix $(build)/, $(COMMON_OBJECTS))
+BINS 		= $(addprefix $(build)/, $(BINARIES))
+
+all: $(BINS)
+
+$(BINS): $(COMM_OBJS)
+
+$(build)/cg: $(build)/cg.o
+
+$(build)/cgs: $(build)/cgs.o
 
 $(build)/%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(build)/cg: $(OBJS)
-	$(CC) $^ -o $@ $(LDLIBS) 
-
 .PHONY: clean
 
 clean:
-	$(RM) *.o
+	$(RM) $(OBJS)
 
 

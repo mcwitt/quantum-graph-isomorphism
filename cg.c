@@ -17,7 +17,8 @@ double r[D];        /* residual */
 
 int main(int argc, char *argv[])
 {
-    const gsl_rng_type *T;
+    const double sqrt_D = sqrt(D);
+    const gsl_rng_type *T = gsl_rng_default;
     gsl_rng *rng;
     params_t p;
     double h[N];    /* fields */
@@ -37,6 +38,8 @@ int main(int argc, char *argv[])
     if (p.ns > 1) ds  = (p.smax - p.smin)/(p.ns - 1.);
     if (p.nh > 1) mh0 = pow(10., (p.emax - p.emin)/(p.nh - 1.)) ;
 
+    rng = gsl_rng_alloc(T);
+
     printf("%12s %12s %12s %12s %12s %12s %12s %12s %12s %12s\n",
             "ver", "graph", "h0", "s",
             "iterations", "res2", "energy", "mz", "mx", "q2");
@@ -53,10 +56,7 @@ int main(int argc, char *argv[])
 
         /* generate random initial wavefunction */
         gsl_rng_env_setup();
-        T = gsl_rng_default;
-        rng = gsl_rng_alloc(T);
-        norm = sqrt(D);
-        for (i = 0; i < D; i++) psi[i] = gsl_ran_gaussian(rng, 1.) / norm;
+        for (i = 0; i < D; i++) psi[i] = gsl_ran_gaussian(rng, 1.) / sqrt_D;
         h0 = pow(10., p.emin);
 
         for (ih = 0; ih < p.nh; ih++, h0 *= mh0)
@@ -78,14 +78,14 @@ int main(int argc, char *argv[])
                 mx = qaa_mag_x(psi);
                 q2 = qaa_overlap(psi);
 
-                printf("%12s %12s %12g %12g %12d %12g %12g %12g %12g %12g\n",
+                printf("%12s %12s %12g %12g " \
+                       "%12d %12g %12g %12g %12g %12g\n",
                         VERSION, basename(p.files[ifile]), h0, s,
                         iter, r2, energy, mz, mx, q2);
             }
         }
-
-        gsl_rng_free(rng);
     }
 
+    gsl_rng_free(rng);
     return EXIT_SUCCESS;
 }
