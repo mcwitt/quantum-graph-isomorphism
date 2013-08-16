@@ -40,7 +40,7 @@ void qaa_update_diagonals(int j, double delta, double d[D])
 {
     UINT i;
 
-    for (i = 0; i < D; i++) d[i] += delta * SPIN(i, j);
+    for (i = 0; i < D; i++) d[i] -= delta * SPIN(i, j);
 }
 
 typedef struct { double s, *edrvr, *d; } arg_t;
