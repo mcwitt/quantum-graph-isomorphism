@@ -1,4 +1,3 @@
-#!python
 #cython: embedsignature=True
 
 import numpy as np
@@ -16,11 +15,9 @@ cdef extern from "global.h":
 
 cdef extern from "qaa.h":
 
-    void qaa_compute_diagonals(
-        int a[],
-        double h[],
-        double d[]
-        )
+    void qaa_compute_diagonals(int a[], double d[])
+    void qaa_update_diagonals(double dh, double d[])
+    void qaa_update_diagonals_1(int j, double dh, double d[])
 
     double qaa_minimize_energy(
         double  s,
@@ -44,6 +41,9 @@ cdef extern from "qaa.h":
 N = n
 D = ndim
 
+cdef int spin(UINT i, int j):
+    return ((int)((i >> j) & 1) << 1) - 1
+
 def load_graph(filename):
     f = open(filename, 'r')
     a = []
@@ -57,19 +57,25 @@ def tobitstr(a):
 
 def compute_diagonals(
         np.ndarray[np.int_t, ndim=1] b,
-        np.ndarray[np.double_t, ndim=1] h,
         np.ndarray[np.double_t, ndim=1] d=None,
         ):
 
     if d is None: d = np.empty(D, dtype=np.double)
-
-    qaa_compute_diagonals(
-            <int*> b.data,
-            <double*> h.data,
-            <double*> d.data
-            )
-
+    qaa_compute_diagonals(<int*> b.data, <double*> d.data)
     return d
+
+def update_diagonals(
+        double dh,
+        np.ndarray[np.double_t, ndim=1] d):
+
+    qaa_update_diagonals(dh, <double*> d.data)
+
+def update_diagonals_1(
+        int j,
+        double dh,
+        np.ndarray[np.double_t, ndim=1] d):
+
+    qaa_update_diagonals_1(j, dh, <double*> d.data)
 
 def minimize_energy(
         s,
@@ -158,24 +164,44 @@ def mag_x(np.ndarray[np.double_t, ndim=1] psi):
 def overlap(np.ndarray[np.double_t, ndim=1] psi):
     return qaa_overlap(<double*> psi.data)
 
-cdef int spin(UINT i, int j):
-    return ((int)((i >> j) & 1) << 1) - 1
-
-cdef double sigma_z(np.ndarray[np.double_t, ndim=1] psi, int j):
-    cdef double result = 0.
+def sigma_z(np.ndarray[np.double_t, ndim=1] psi):
+    cdef double c2
+    cdef int j
+    cdef np.ndarray[np.double_t, ndim=1] result = np.zeros(N, dtype=np.double)
     cdef UINT i
-    for i in range(len(psi)): result += psi[i]**2 * spin(i, j)
+
+    for i in range(D):
+        c2 = psi[i]**2
+        for j in range(N):
+            result[j] += c2 * spin(i, j)
+
     return result
 
-cdef double sigma2_z(np.ndarray[np.double_t, ndim=1] psi, int j, int k):
-    cdef double result = 0.
+def sigma2_z(np.ndarray[np.double_t, ndim=1] psi):
+    cdef double c2
+    cdef int j, k, s_j
+    cdef np.ndarray[np.double_t, ndim=2] result = np.zeros((N, N), dtype=np.double)
     cdef UINT i
-    for i in range(len(psi)): result += psi[i]**2 * spin(i, j) * spin(i, k)
+
+    for i in range(D):
+        c2 = psi[i]**2
+        for j in range(N):
+            s_j = spin(i, j)
+            for k in range(j):
+                result[j, k] += c2 * s_j * spin(i, k)
+
+    result = result + result.T - np.diag(result.diagonal)   # symmetrize result
     return result
 
-cdef double sigma_x(np.ndarray[np.double_t, ndim=1] psi, int j):
-    cdef double result = 0.
-    cdef UINT i, m = 1UL << j
-    for i in range(len(psi)): result += psi[i] * psi[i^m]
+def sigma_x(np.ndarray[np.double_t, ndim=1] psi):
+    cdef int j
+    cdef np.ndarray[np.double_t, ndim=1] result = np.zeros(N, dtype=np.double)
+    cdef UINT i, m
+
+    for i in range(D):
+        for j in range(N):
+            m = 1UL << j
+            result[j] += psi[i] * psi[i^m]
+
     return result
 
