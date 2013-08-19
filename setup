@@ -25,7 +25,13 @@ do
         " < "$f" > "$(basename "${f%.in}")"
 done
 
-if [ ! -e "$bindir"/graphs ]; then
-    absroot=$(cd "$root"; pwd)
-    ln -s "$absroot"/graphs "$bindir"/graphs
-fi
+absroot=$(cd "$root"; pwd)
+
+makelink() {
+    if [ ! -e "$bindir"/$1 ]; then
+        ln -s "$absroot"/$1 "$bindir"/$1
+    fi
+}
+
+makelink graphs
+makelink output
