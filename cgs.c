@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     gsl_rng *rng;
     params_t p;
     double fj[N];
-    double edrvr, energy, f, h, mx, mz, norm, psi2, q2, r2, s;
+    double edrvr, energy, h, mx, mz, norm, psi2, q2, q2p, r2, s;
     double ds = 0., mh = 0., hprev = 0.;
     int a[N*(N-1)/2], ifile, ih, is, iter, j, k;
     UINT i;
@@ -43,8 +43,9 @@ int main(int argc, char *argv[])
 
     rng = gsl_rng_alloc(T);
 
-    printf("%12s %12s %12s %12s %12s %12s %12s %12s %12s %12s %12s\n",
-            "ver", "graph", "h", "s",
+    printf("%12s %12s %12s %12s %12s " \
+           "%12s %12s %12s %12s %12s %12s %12s\n",
+            "ver", "graph", "h", "dh", "s",
             "iterations", "res2", "energy", "mz", "mx", "q2", "q2p");
 
     for (ifile = 0; ifile < p.num_files; ifile++)
@@ -82,7 +83,7 @@ int main(int argc, char *argv[])
                 mx = qaa_mag_x(psi0);
                 q2 = qaa_overlap(psi0);
 
-                f = 0.;
+                q2p = 0.;
 
                 /* vary the field at each site to approximate susceptibilities */
                 for (j = 0; j < N; j++)
@@ -106,16 +107,16 @@ int main(int argc, char *argv[])
                     for (k = 0; k < N; k++)
                         fj[k] = (fj[k] - qaa_sigma_z(psi, k)) / DH(h);
 
-                    for (k = 0; k < N; k++) f += fj[k] * fj[k];
+                    for (k = 0; k < N; k++) q2p += fj[k] * fj[k];
                     qaa_update_diagonals_1(j, 0.5 * DH(h), d);
                 }
 
-                f = sqrt(f) / N;
+                q2p = sqrt(q2p) / N;
 
-                printf("%12s %12s %12g %12g " \
+                printf("%12s %12s %12g %12g %12g " \
                        "%12d %12g %12g %12g %12g %12g %12g\n",
-                        VERSION, basename(p.files[ifile]), h, s,
-                        iter, r2, energy, mz, mx, q2, f);
+                        VERSION, basename(p.files[ifile]), h, DH(h), s,
+                        iter, r2, energy, mz, mx, q2, q2p);
             }
         }
     }
