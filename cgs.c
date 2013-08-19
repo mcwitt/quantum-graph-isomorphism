@@ -13,8 +13,8 @@
 #define DH(h)   1e-3
 
 double d[D];        /* diagonal elements of problem hamiltonian */
-double psi[D];      /* wavefunction */
-double psi1[D];
+double psi0[D];     /* ground state wavefunction for h_j = h_0 */
+double psi[D];      /* for h_j = h_0 +/- dh/2 */
 double delta[D];    /* CG search direction */
 double r[D];        /* residual */
 
@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
 
         /* generate random initial wavefunction */
         gsl_rng_env_setup();
-        for (i = 0; i < D; i++) psi[i] = gsl_ran_gaussian(rng, 1.) / sqrt_D;
+        for (i = 0; i < D; i++) psi0[i] = gsl_ran_gaussian(rng, 1.) / sqrt_D;
         h = pow(10., p.emin);
 
         for (ih = 0; ih < p.nh; ih++, hprev = h, h *= mh)
@@ -73,36 +73,38 @@ int main(int argc, char *argv[])
             for (is = 0; is < p.ns; is++, s += ds)
             {
                 energy = qaa_minimize_energy(s, d, p.eps, p.itermax, &iter,
-                        &edrvr, psi, &psi2, delta, r, &r2);
+                        &edrvr, psi0, &psi2, delta, r, &r2);
 
                 norm = sqrt(psi2);
-                for (i = 0; i < D; i++) psi[i] /= norm;
+                for (i = 0; i < D; i++) psi0[i] /= norm;
 
-                mz = qaa_mag_z(psi);
-                mx = qaa_mag_x(psi);
-                q2 = qaa_overlap(psi);
+                mz = qaa_mag_z(psi0);
+                mx = qaa_mag_x(psi0);
+                q2 = qaa_overlap(psi0);
 
                 f = 0.;
 
                 /* vary the field at each site to approximate susceptibilities */
                 for (j = 0; j < N; j++)
                 {
+                    /* h_j = h_0 + dh/2 */
                     qaa_update_diagonals_1(j, 0.5 * DH(h), d);
-                    for (i = 0; i < D; i++) psi1[i] = psi[i];
+                    for (i = 0; i < D; i++) psi[i] = psi0[i];
                     energy = qaa_minimize_energy(s, d, p.eps, p.itermax, &iter,
-                            &edrvr, psi1, &psi2, delta, r, &r2);
+                            &edrvr, psi, &psi2, delta, r, &r2);
                     norm = sqrt(psi2);
-                    for (i = 0; i < D; i++) psi1[i] /= norm;
-                    for (k = 0; k < N; k++) fj[k] = qaa_sigma_z(psi1, k);
+                    for (i = 0; i < D; i++) psi[i] /= norm;
+                    for (k = 0; k < N; k++) fj[k] = qaa_sigma_z(psi, k);
 
+                    /* h_j = h_0 - dh/2 */
                     qaa_update_diagonals_1(j, -DH(h), d);
-                    for (i = 0; i < D; i++) psi1[i] = psi[i];
+                    for (i = 0; i < D; i++) psi[i] = psi0[i];
                     energy = qaa_minimize_energy(s, d, p.eps, p.itermax, &iter,
-                            &edrvr, psi1, &psi2, delta, r, &r2);
+                            &edrvr, psi, &psi2, delta, r, &r2);
                     norm = sqrt(psi2);
-                    for (i = 0; i < D; i++) psi1[i] /= norm;
+                    for (i = 0; i < D; i++) psi[i] /= norm;
                     for (k = 0; k < N; k++)
-                        fj[k] = (fj[k] - qaa_sigma_z(psi1, k)) / DH(h);
+                        fj[k] = (fj[k] - qaa_sigma_z(psi, k)) / DH(h);
 
                     for (k = 0; k < N; k++) f += fj[k] * fj[k];
                     qaa_update_diagonals_1(j, 0.5 * DH(h), d);
