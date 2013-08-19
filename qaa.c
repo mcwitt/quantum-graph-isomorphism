@@ -53,7 +53,6 @@ typedef struct { double s, *edrvr, *d; } arg_t;
 
 static double obj_x2_grad(void *arg, double psi[D], double *x2, double grad[D])
 {
-
     arg_t args = *((arg_t*) arg);
     return qaa_energy_grad(args.s, args.d, psi, grad, x2, args.edrvr);
 }
