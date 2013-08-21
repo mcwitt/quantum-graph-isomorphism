@@ -14,16 +14,16 @@ symbols = {'energy': 'E_0',
 def symbol(s): return symbols[s] if s in symbols else s
 
 def load_files(files):
-    df = pandas.read_table(files[0], sep=' *', index_col=['graph', 'h', 's'])
+    index = ['ver', 'graph', 'h', 'dh', 's']
+    df = pandas.read_table(files[0], sep=' *', index_col=index)
     for f in files[1:]:
-        df = pandas.concat((df, pandas.read_table(f, sep=' *',
-            index_col=['graph', 'h', 's'])))
-    graphs = df.index.get_level_values('graph').unique()
-    return graphs, df
+        df = pandas.concat((df,
+            pandas.read_table(f, sep=' *', index_col=index)))
+    return df
 
 def plot_heatmap(df, logy=True):
     x, y = np.meshgrid(df.columns, df.index)
     plt.pcolormesh(x, y, df.values)
-    #plt.pcolormesh(x, y, df, norm=LogNorm())
+    #plt.pcolormesh(x, y, df.values, norm=LogNorm())
     if logy: plt.yscale('log')
     plt.colorbar()

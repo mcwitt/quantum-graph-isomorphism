@@ -48,7 +48,16 @@ def load_graph(filename):
     f = open(filename, 'r')
     a = []
     for line in f: a.append(list(line.strip()))
+    f.close()
     return np.array(a, dtype=np.int)
+
+def save_graph(filename, a):
+    f = open(filename, 'w')
+    for row in a:
+        for entry in row:
+            f.write('{:d}'.format(entry))
+        f.write('\n')
+    f.close()
 
 def tobitstr(a):
     N = a.shape[0]
@@ -117,8 +126,8 @@ def hamiltonian(
     d = 2**N
     nnz = d*N*(N+3)/2   # number of nonzero entries
     
-    cdef np.ndarray[np.int_t, ndim=1]    rows = np.zeros(nnz, dtype=np.int)
-    cdef np.ndarray[np.int_t, ndim=1]    cols = np.zeros(nnz, dtype=np.int)
+    cdef np.ndarray[np.int_t, ndim=1] rows = np.zeros(nnz, dtype=np.int)
+    cdef np.ndarray[np.int_t, ndim=1] cols = np.zeros(nnz, dtype=np.int)
     cdef np.ndarray[np.double_t, ndim=1] vals = np.zeros(nnz, dtype=np.double)
     cdef double c
     cdef int j, k
