@@ -64,13 +64,11 @@ def tobitstr(a):
     b = [a[i, j] for i in range(1, N) for j in range(i)]
     return np.array(b, dtype=int)
 
-def compute_diagonals(
-        np.ndarray[np.int_t, ndim=1] b,
-        np.ndarray[np.double_t, ndim=1] d=None,
-        ):
+def compute_diagonals(b, np.ndarray[np.double_t, ndim=1] d=None):
 
+    cdef np.ndarray[np.int32_t, ndim=1] buf = b.astype(np.int32)
     if d is None: d = np.empty(D, dtype=np.double)
-    qaa_compute_diagonals(<int*> b.data, <double*> d.data)
+    qaa_compute_diagonals(<int*> buf.data, <double*> d.data)
     return d
 
 def update_diagonals(
