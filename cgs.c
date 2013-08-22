@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 
     printf("%12s %12s %12s %12s %12s " \
            "%12s %12s %12s %12s %12s %12s %12s\n",
-            "ver", "graph", "h", "dh", "s",
+            "ver", "graph", "dh", "h", "s",
             "iterations", "res2", "energy", "mz", "mx", "q2", "q2p");
 
     for (ifile = 0; ifile < p.num_files; ifile++)
@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
 
                 printf("%12s %12s %12g %12g %12g " \
                        "%12d %12g %12g %12g %12g %12g %12g\n",
-                        VERSION, basename(p.files[ifile]), h, DH(h), s,
+                        VERSION, basename(p.files[ifile]), DH(h), h, s,
                         iter, r2, energy, mz, mx, q2, q2p);
             }
         }
