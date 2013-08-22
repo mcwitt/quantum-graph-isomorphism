@@ -21,9 +21,11 @@ def load_files(files):
             pandas.read_table(f, sep=' *', index_col=index)))
     return df
 
-def plot_heatmap(df, logy=True):
+def plot_heatmap(df, logy=True, xylab=['$s$', '$h$']):
     x, y = np.meshgrid(df.columns, df.index)
     plt.pcolormesh(x, y, df.values)
     #plt.pcolormesh(x, y, df.values, norm=LogNorm())
     if logy: plt.yscale('log')
+    plt.xlabel(xylab[0])
+    plt.ylabel(xylab[1])
     plt.colorbar()
