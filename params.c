@@ -24,9 +24,9 @@ static void print_usage(int argc, char *argv[])
 
 void params_defaults(params_t *p)
 {
-    p->smin = 0.;
+    p->smin = 0.02;
     p->smax = 0.98;
-    p->ns   = 50;
+    p->ns   = 49;
 
     p->emin = -1.;
     p->emax = 1.;
