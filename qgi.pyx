@@ -62,10 +62,9 @@ def save_graph(filename, a):
 def tobitstr(a):
     N = a.shape[0]
     b = [a[i, j] for i in range(1, N) for j in range(i)]
-    return np.array(b, dtype=int)
+    return np.array(b, dtype=np.int32)
 
 def compute_diagonals(b, np.ndarray[np.double_t, ndim=1] d=None):
-
     cdef np.ndarray[np.int32_t, ndim=1] buf = b.astype(np.int32)
     if d is None: d = np.empty(D, dtype=np.double)
     qaa_compute_diagonals(<int*> buf.data, <double*> d.data)
