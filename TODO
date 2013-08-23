@@ -1,1 +1,6 @@
-Add susceptibility measurements using finite difference method.
+All parameters needed to reproduce data point in output, e.g.:
+    representation of graph (e.g. as length N(N-1)/2 binary string in decimal format)
+    \Delta h
+    CG error tolerance
+
+Smarter scan of (s, h) space (e.g. raster scan)
