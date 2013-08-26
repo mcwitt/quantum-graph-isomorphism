@@ -60,8 +60,9 @@ int main(int argc, char *argv[])
         /* generate random initial wavefunction */
         gsl_rng_env_setup();
         for (i = 0; i < D; i++) psi[i] = gsl_ran_gaussian(rng, 1.) / sqrt_D;
+
         h = pow(10., p.emin);
-        s = p.smin;
+        s = (ds > 0.) ? p.smin : p.smax;
 
         for (ih = 0; ih < p.nh; ih++, hprev = h, h *= mh)
         {
