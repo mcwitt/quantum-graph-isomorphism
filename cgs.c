@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     double fj[N];
     double edrvr, energy, h, mx, mz, norm, psi2, q2, q2p, r2, s;
     double ds = 0., mh = 0., hprev = 0.;
-    int ifile, ih, is, iter, j, k;
+    int ifile, ih, is, iter, iter0, j, k;
     UINT i;
 
     params_from_cmd(&p, argc, argv);
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 
             for (is = 0; is < p.ns; is++, s += ds)
             {
-                energy = qaa_minimize_energy(s, d, p.eps, p.itermax, &iter,
+                energy = qaa_minimize_energy(s, d, p.eps, p.itermax, &iter0,
                         &edrvr, psi0, &psi2, delta, r, &r2);
 
                 norm = sqrt(psi2);
@@ -88,8 +88,9 @@ int main(int argc, char *argv[])
                 for (j = 0; j < N; j++)
                 {
                     /* h_j = h_0 + dh/2 */
-                    qaa_update_diagonals_1(j, 0.5 * p.dh, d);
+                    /* use solution at midpoint as initial guess */
                     for (i = 0; i < D; i++) psi[i] = psi0[i];
+                    qaa_update_diagonals_1(j, 0.5 * p.dh, d);
                     energy = qaa_minimize_energy(s, d, p.eps, p.itermax, &iter,
                             &edrvr, psi, &psi2, delta, r, &r2);
                     norm = sqrt(psi2);
@@ -97,8 +98,8 @@ int main(int argc, char *argv[])
                     for (k = 0; k < N; k++) fj[k] = qaa_sigma_z(psi, k);
 
                     /* h_j = h_0 - dh/2 */
-                    qaa_update_diagonals_1(j, -p.dh, d);
                     for (i = 0; i < D; i++) psi[i] = psi0[i];
+                    qaa_update_diagonals_1(j, -p.dh, d);
                     energy = qaa_minimize_energy(s, d, p.eps, p.itermax, &iter,
                             &edrvr, psi, &psi2, delta, r, &r2);
                     norm = sqrt(psi2);
@@ -115,7 +116,7 @@ int main(int argc, char *argv[])
                 printf("%12s %12s %12g %12g %12g " \
                        "%12d %12g %12g %12g %12g %12g %12g\n",
                         VERSION, basename(p.files[ifile]), p.dh, h, s,
-                        iter, r2, energy, mz, mx, q2, q2p);
+                        iter0, r2, energy, mz, mx, q2, q2p);
             }
 
             ds = -ds; s += ds;  /* reverse scan direction for next row*/
