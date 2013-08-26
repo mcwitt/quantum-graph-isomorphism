@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 
     rng = gsl_rng_alloc(T);
 
-    printf("%12s %12s %12s %12s %12s %12s %12s %12s %12s %12s\n",
+    printf("%16s %16s %16s %16s %16s %16s %16s %16s %16s %16s\n",
             "ver", "graph", "h", "s",
             "iterations", "res2", "energy", "mz", "mx", "q2");
 
@@ -80,8 +80,8 @@ int main(int argc, char *argv[])
                 mx = qaa_mag_x(psi);
                 q2 = qaa_overlap(psi);
 
-                printf("%12s %12s %12g %12g " \
-                       "%12d %12g %12g %12g %12g %12g\n",
+                printf("%16s %16s %16g %16g " \
+                       "%16d %16.9e %16.9e %16.9e %16.9e %16.9e\n",
                         VERSION, basename(p.files[ifile]), h, s,
                         iter, r2, energy, mz, mx, q2);
             }

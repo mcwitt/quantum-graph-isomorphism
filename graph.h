@@ -8,6 +8,7 @@ typedef struct
 {
     int b[N*(N-1)/2];   /* independent adjacency matrix entries
                            (A_21, A_31, A_32, A_41, etc.) */
+    char hex[N*(N-1)/8 + 2];
 } graph_t;
 
 /**
@@ -16,4 +17,3 @@ typedef struct
  * @param[in]   file    Input file.
  */
 int graph_read_amatrix(graph_t *g, char *file);
-

@@ -42,8 +42,8 @@ int main(int argc, char *argv[])
 
     rng = gsl_rng_alloc(T);
 
-    printf("%12s %12s %12s %12s %12s " \
-           "%12s %12s %12s %12s %12s %12s %12s\n",
+    printf("%16s %16s %16s %16s %16s " \
+           "%16s %16s %16s %16s %16s %16s %16s\n",
             "ver", "graph", "dh", "h", "s",
             "iterations", "res2", "energy", "mz", "mx", "q2", "q2p");
 
@@ -113,8 +113,8 @@ int main(int argc, char *argv[])
 
                 q2p = sqrt(q2p) / N;
 
-                printf("%12s %12s %12g %12g %12g " \
-                       "%12d %12g %12g %12g %12g %12g %12g\n",
+                printf("%16s %16s %16g %16g %16g " \
+                       "%16d %16.9e %16.9e %16.9e %16.9e %16.9e %16.9e\n",
                         VERSION, basename(p.files[ifile]), p.dh, h, s,
                         iter0, r2, energy, mz, mx, q2, q2p);
             }
