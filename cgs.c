@@ -87,8 +87,8 @@ int main(int argc, char *argv[])
                 /* vary the field at each site to approximate susceptibilities */
                 for (j = 0; j < N; j++)
                 {
-                    /* h_j = h_0 - dh/2 */
-                    qaa_update_diagonals_1(j, -0.5 * p.dh, d);
+                    /* h_j = h_0 + dh/2 */
+                    qaa_update_diagonals_1(j, 0.5 * p.dh, d);
                     for (i = 0; i < D; i++) psi[i] = psi0[i];
                     energy = qaa_minimize_energy(s, d, p.eps, p.itermax, &iter,
                             &edrvr, psi, &psi2, delta, r, &r2);
@@ -96,8 +96,8 @@ int main(int argc, char *argv[])
                     for (i = 0; i < D; i++) psi[i] /= norm;
                     for (k = 0; k < N; k++) fj[k] = qaa_sigma_z(psi, k);
 
-                    /* h_j = h_0 + dh/2 */
-                    qaa_update_diagonals_1(j, p.dh, d);
+                    /* h_j = h_0 - dh/2 */
+                    qaa_update_diagonals_1(j, -p.dh, d);
                     for (i = 0; i < D; i++) psi[i] = psi0[i];
                     energy = qaa_minimize_energy(s, d, p.eps, p.itermax, &iter,
                             &edrvr, psi, &psi2, delta, r, &r2);
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
                         fj[k] = (fj[k] - qaa_sigma_z(psi, k)) / p.dh;
 
                     for (k = 0; k < N; k++) q2p += fj[k] * fj[k];
-                    qaa_update_diagonals_1(j, -0.5 * p.dh, d);
+                    qaa_update_diagonals_1(j, 0.5 * p.dh, d);
                 }
 
                 q2p = sqrt(q2p) / N;
