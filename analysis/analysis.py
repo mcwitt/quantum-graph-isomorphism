@@ -11,6 +11,8 @@ symbols = {'energy': 'E_0',
            'res2'  : 'r^2',
            'iterations': r'\mathrm{iterations}'}
 
+measurements = ['q2p', 'q2', 'mz', 'mx', 'energy']
+
 def symbol(s): return symbols[s] if s in symbols else s
 
 def load_files(files):
