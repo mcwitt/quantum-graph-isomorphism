@@ -5,7 +5,6 @@ import scipy.sparse
 
 cimport numpy as np
 from libc.stdint cimport uint32_t
-from libc.math cimport sqrt
 
 ctypedef uint32_t UINT
 
@@ -62,7 +61,7 @@ def save_graph(filename, a):
 def tobitstr(a):
     N = a.shape[0]
     b = [a[i, j] for i in range(1, N) for j in range(i)]
-    return np.array(b, dtype=np.int32)
+    return np.array(b, dtype=np.int)
 
 def compute_diagonals(b, np.ndarray[np.double_t, ndim=1] d=None):
     cdef np.ndarray[np.int32_t, ndim=1] buf = b.astype(np.int32)
@@ -120,46 +119,42 @@ def hamiltonian(
         double s
         ):
     
-    d = 2**N
-    nnz = d*N*(N+3)/2   # number of nonzero entries
-    
-    cdef np.ndarray[np.int_t, ndim=1] rows = np.zeros(nnz, dtype=np.int)
-    cdef np.ndarray[np.int_t, ndim=1] cols = np.zeros(nnz, dtype=np.int)
-    cdef np.ndarray[np.double_t, ndim=1] vals = np.zeros(nnz, dtype=np.double)
-    cdef double c
+    cdef np.ndarray[np.int_t, ndim=1] rows, cols
+    cdef np.ndarray[np.double_t, ndim=1] vals
+    cdef double c, oms = 1. - s
     cdef int j, k
-    cdef UINT i, m, inz = 0
+    cdef UINT i, inz, m
+
+    nnz = (N+1)*D   # number of nonzero entries
+
+    rows = np.zeros(nnz, dtype=np.int)
+    cols = np.zeros(nnz, dtype=np.int)
+    vals = np.zeros(nnz, dtype=np.double)
+
+    # problem hamiltonian
+    for i in range(D):
+        rows[i] = cols[i] = i
+        for j in range(N):
+            c = s * spin(i, j)
+            vals[i] -= c * h[j]
+            for k in range(j):
+                if a[j, k] == 1:
+                    vals[i] += c * spin(i, k)
+
+    inz = D
 
     # transverse field
-    for i in range(d):
+    for i in range(D):
         m = 1
         for j in range(N):
             rows[inz] = i
             cols[inz] = i^m
-            vals[inz] = 1. - s
+            vals[inz] = oms
             inz += 1
             m <<= 1
-            
-    # longitudinal field
-    for i in range(d):
-        for k in range(N):
-            rows[inz] = i
-            cols[inz] = i
-            vals[inz] = s * h[k] * spin(i, k)
-            inz += 1
-                    
-    #  antiferromagnetic exchange
-    for i in range(d):
-        for j in range(N):
-            c = s * spin(i, j)
-            for k in range(j):
-                if a[j, k] == 1:
-                    rows[inz] = i
-                    cols[inz] = i
-                    vals[inz] = c * spin(i, k)
-                    inz += 1
 
-    return scipy.sparse.coo_matrix((vals, (rows, cols)), shape=(d, d))
+    H = scipy.sparse.coo_matrix((vals, (rows, cols)), shape=(D, D))
+    return H.tocsr()
 
 def mag_z(np.ndarray[np.double_t, ndim=1] psi):
     return qaa_mag_z(<double*> psi.data)
