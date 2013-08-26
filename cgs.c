@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <libgen.h>
-#include "amatrix.h"
 #include "global.h"
+#include "graph.h"
 #include "nlcg.h"
 #include "params.h"
 #include "qaa.h"
@@ -20,12 +20,13 @@ int main(int argc, char *argv[])
 {
     const double sqrt_D = sqrt(D);
     const gsl_rng_type *T = gsl_rng_default;
+    graph_t g;
     gsl_rng *rng;
     params_t p;
     double fj[N];
     double edrvr, energy, h, mx, mz, norm, psi2, q2, q2p, r2, s;
     double ds = 0., mh = 0., hprev = 0.;
-    int a[N*(N-1)/2], ifile, ih, is, iter, j, k;
+    int ifile, ih, is, iter, j, k;
     UINT i;
 
     params_from_cmd(&p, argc, argv);
@@ -48,7 +49,7 @@ int main(int argc, char *argv[])
 
     for (ifile = 0; ifile < p.num_files; ifile++)
     {
-        if (! amatrix_load(p.files[ifile], a))
+        if (! graph_read_amatrix(&g, p.files[ifile]))
         {
             fprintf(stderr, "%s: error loading adjacency matrix from file \"%s\"\n",
                     argv[0], p.files[ifile]);
@@ -57,7 +58,7 @@ int main(int argc, char *argv[])
         }
         
         /* encode graph into diagonal elements of hamiltonian */
-        qaa_compute_diagonals(a, d);
+        qaa_compute_diagonals(g.b, d);
 
         /* generate random initial wavefunction */
         gsl_rng_env_setup();

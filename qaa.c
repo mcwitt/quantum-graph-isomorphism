@@ -12,7 +12,7 @@
 /* SPIN(i, j) returns the eigenvalue of sigma^z_j for state |i> */
 #define SPIN(i, j)      ((int) ((((i) >> (j)) & 1) << 1) - 1)
 
-void qaa_compute_diagonals(int a[], double d[D])
+void qaa_compute_diagonals(int b[], double d[D])
 {
     UINT i;
 
@@ -26,7 +26,7 @@ void qaa_compute_diagonals(int a[], double d[D])
             int k, s_j = SPIN(i, j);
 
             for (k = 0; k < j; k++)
-                if (a[l++] == 1)
+                if (b[l++] == 1)
                     d[i] += s_j * SPIN(i, k);
         }
     }

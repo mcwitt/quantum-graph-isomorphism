@@ -8,10 +8,10 @@
 
 /**
  * Compute the diagonal elements of the Hamiltonian for h_j = 0.
- * @param[in]   a   adjacency matrix entries (A_21, A_31, A_32, A_41, etc.)
+ * @param[in]   b   independent adjacency matrix entries (A_21, A_31, A_32, A_41, etc.)
  * @param[out]  d   diagonal elements of problem Hamiltonian
  */
-void qaa_compute_diagonals(int a[], double d[D]);
+void qaa_compute_diagonals(int b[], double d[D]);
 
 /**
  * Update diagonal elements when \f$h_j \rightarrow h_j + \delta\f$.

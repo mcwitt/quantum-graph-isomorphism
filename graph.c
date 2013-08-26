@@ -1,7 +1,6 @@
-#include "amatrix.h"
-#include "global.h"
+#include "graph.h"
 
-int amatrix_load(char *file, int a[])
+int graph_read_amatrix(graph_t *g, char *file)
 {
     FILE *fp;
     char line[N+2];
@@ -24,7 +23,7 @@ int amatrix_load(char *file, int a[])
 
     for (j = 1; j < N; j++)
         for (k = 0; k < j; k++)
-            a[i++] = m[j][k];
+            g->b[i++] = m[j][k];
 
     return 1;
 }
