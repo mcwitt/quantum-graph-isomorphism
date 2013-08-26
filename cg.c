@@ -60,11 +60,11 @@ int main(int argc, char *argv[])
         gsl_rng_env_setup();
         for (i = 0; i < D; i++) psi[i] = gsl_ran_gaussian(rng, 1.) / sqrt_D;
         h = pow(10., p.emin);
+        s = p.smin;
 
         for (ih = 0; ih < p.nh; ih++, hprev = h, h *= mh)
         {
             qaa_update_diagonals(h - hprev, d);
-            s = p.smin;
 
             for (is = 0; is < p.ns; is++, s += ds)
             {
@@ -84,6 +84,8 @@ int main(int argc, char *argv[])
                         VERSION, basename(p.files[ifile]), h, s,
                         iter, r2, energy, mz, mx, q2);
             }
+
+            ds = -ds; s += ds;  /* reverse s scan direction for next row*/
         }
     }
 

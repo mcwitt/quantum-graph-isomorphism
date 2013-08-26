@@ -10,8 +10,6 @@
 #include "params.h"
 #include "qaa.h"
 
-#define DH(h)   1e-3
-
 double d[D];        /* diagonal elements of problem hamiltonian */
 double psi0[D];     /* ground state wavefunction for h_j = h_0 */
 double psi[D];      /* for h_j = h_0 +/- dh/2 */
@@ -65,11 +63,11 @@ int main(int argc, char *argv[])
         gsl_rng_env_setup();
         for (i = 0; i < D; i++) psi0[i] = gsl_ran_gaussian(rng, 1.) / sqrt_D;
         h = pow(10., p.emin);
+        s = p.smin;
 
         for (ih = 0; ih < p.nh; ih++, hprev = h, h *= mh)
         {
             qaa_update_diagonals(h - hprev, d);
-            s = p.smin;
 
             for (is = 0; is < p.ns; is++, s += ds)
             {
@@ -88,8 +86,8 @@ int main(int argc, char *argv[])
                 /* vary the field at each site to approximate susceptibilities */
                 for (j = 0; j < N; j++)
                 {
-                    /* h_j = h_0 + dh/2 */
-                    qaa_update_diagonals_1(j, 0.5 * DH(h), d);
+                    /* h_j = h_0 - dh/2 */
+                    qaa_update_diagonals_1(j, -0.5 * p.dh, d);
                     for (i = 0; i < D; i++) psi[i] = psi0[i];
                     energy = qaa_minimize_energy(s, d, p.eps, p.itermax, &iter,
                             &edrvr, psi, &psi2, delta, r, &r2);
@@ -97,27 +95,29 @@ int main(int argc, char *argv[])
                     for (i = 0; i < D; i++) psi[i] /= norm;
                     for (k = 0; k < N; k++) fj[k] = qaa_sigma_z(psi, k);
 
-                    /* h_j = h_0 - dh/2 */
-                    qaa_update_diagonals_1(j, -DH(h), d);
+                    /* h_j = h_0 + dh/2 */
+                    qaa_update_diagonals_1(j, p.dh, d);
                     for (i = 0; i < D; i++) psi[i] = psi0[i];
                     energy = qaa_minimize_energy(s, d, p.eps, p.itermax, &iter,
                             &edrvr, psi, &psi2, delta, r, &r2);
                     norm = sqrt(psi2);
                     for (i = 0; i < D; i++) psi[i] /= norm;
                     for (k = 0; k < N; k++)
-                        fj[k] = (fj[k] - qaa_sigma_z(psi, k)) / DH(h);
+                        fj[k] = (fj[k] - qaa_sigma_z(psi, k)) / p.dh;
 
                     for (k = 0; k < N; k++) q2p += fj[k] * fj[k];
-                    qaa_update_diagonals_1(j, 0.5 * DH(h), d);
+                    qaa_update_diagonals_1(j, -0.5 * p.dh, d);
                 }
 
                 q2p = sqrt(q2p) / N;
 
                 printf("%12s %12s %12g %12g %12g " \
                        "%12d %12g %12g %12g %12g %12g %12g\n",
-                        VERSION, basename(p.files[ifile]), DH(h), h, s,
+                        VERSION, basename(p.files[ifile]), p.dh, h, s,
                         iter, r2, energy, mz, mx, q2, q2p);
             }
+
+            ds = -ds; s += ds;  /* reverse scan direction for next row*/
         }
     }
 

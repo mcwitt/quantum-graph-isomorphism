@@ -17,6 +17,7 @@ static void print_usage(int argc, char *argv[])
             "  -e, --emin    : log_10 of minimum magnetic field\n" \
             "  -E, --emax    : log_10 of maximum magnetic field\n" \
             "  -m, --nh      : number of magnetic field values\n" \
+            "  -d, --dh      : delta for finite differences\n" \
             "  -i, --itermax : maxiumum number of CG iterations\n" \
             "  -t, --tol     : error tolerance\n",
             N, argv[0]);
@@ -31,6 +32,8 @@ void params_defaults(params_t *p)
     p->emin = -1.;
     p->emax = 1.;
     p->nh   = 51;
+
+    p->dh = 1e-3;
 
     p->itermax = 300;
     p->eps = 1e-12;
@@ -52,6 +55,7 @@ void params_from_cmd(params_t *p, int argc, char *argv[])
         {"emin",    required_argument,  0,  'e' },
         {"emax",    required_argument,  0,  'E' },
         {"nh",      required_argument,  0,  'm' },
+        {"dh",      required_argument,  0,  'd' },
         {"itermax", required_argument,  0,  'i' },
         {"tol",     required_argument,  0,  't' },
         {"help",    no_argument,        0,  'h' },
@@ -60,7 +64,7 @@ void params_from_cmd(params_t *p, int argc, char *argv[])
 
     params_defaults(p);
 
-    while ((c = getopt_long(argc, argv, "s:S:n:e:E:m:i:t:h",
+    while ((c = getopt_long(argc, argv, "s:S:n:e:E:m:d:i:t:h",
                     long_options, &long_index)) != -1)
     {
         switch (c)
@@ -71,6 +75,7 @@ void params_from_cmd(params_t *p, int argc, char *argv[])
              case 'e' : p->emin    = atof(optarg); break;
              case 'E' : p->emax    = atof(optarg); break;
              case 'm' : p->nh      = atoi(optarg); break;
+             case 'd' : p->dh      = atof(optarg); break;
              case 'i' : p->itermax = atoi(optarg); break;
              case 't' : p->eps     = atof(optarg); break;
              default: print_usage(argc, argv); exit(EXIT_FAILURE);

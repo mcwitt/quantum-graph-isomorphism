@@ -4,6 +4,8 @@ typedef struct
     double emin, emax;
     int ns, nh;
 
+    double dh;
+
     int itermax;
     double eps;
 
