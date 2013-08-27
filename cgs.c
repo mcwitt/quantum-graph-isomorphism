@@ -24,8 +24,7 @@ int main(int argc, char *argv[])
     gsl_rng *rng;
     params_t p;
     double fj[N];
-    double edrvr, energy, h, mx, mz, norm, psi2, q2, q2p, r2, s;
-    double ds = 0., mh = 0., hprev = 0.;
+    double edrvr, energy, h, mx, mz, norm, psi2, q2, q2p, r2;
     int ifile, ih, is, iter, iter0, j, k;
     UINT i;
 
@@ -36,9 +35,6 @@ int main(int argc, char *argv[])
         fprintf(stderr, "%s: no input files\n", argv[0]);
         return EXIT_FAILURE;
     }
-
-    if (p.ns > 1) ds = (p.smax - p.smin)/(p.ns - 1.);
-    if (p.nh > 1) mh = pow(10., (p.emax - p.emin)/(p.nh - 1.)) ;
 
     rng = gsl_rng_alloc(T);
 
@@ -59,20 +55,20 @@ int main(int argc, char *argv[])
         
         /* encode graph into diagonal elements of hamiltonian */
         qaa_compute_diagonals(g.b, d);
+        h = 0.;
 
         /* generate random initial wavefunction */
         gsl_rng_env_setup();
         for (i = 0; i < D; i++) psi0[i] = gsl_ran_gaussian(rng, 1.) / sqrt_D;
-        h = pow(10., p.emin);
-        s = (ds > 0.) ? p.smin : p.smax;
 
-        for (ih = 0; ih < p.nh; ih++, hprev = h, h *= mh)
+        for (ih = 0; ih < p.nh; ih++)
         {
-            qaa_update_diagonals(h - hprev, d);
+            qaa_update_diagonals(p.h[ih] - h, d);
+            h = p.h[ih];
 
-            for (is = 0; is < p.ns; is++, s += ds)
+            for (is = 0; is < p.ns; is++)
             {
-                energy = qaa_minimize_energy(s, d, p.eps, p.itermax, &iter0,
+                energy = qaa_minimize_energy(p.s[is], d, p.eps, p.itermax, &iter0,
                         &edrvr, psi0, &psi2, delta, r, &r2);
 
                 norm = sqrt(psi2);
@@ -91,7 +87,7 @@ int main(int argc, char *argv[])
                     /* use solution at midpoint as initial guess */
                     for (i = 0; i < D; i++) psi[i] = psi0[i];
                     qaa_update_diagonals_1(j, 0.5 * p.dh, d);
-                    energy = qaa_minimize_energy(s, d, p.eps, p.itermax, &iter,
+                    energy = qaa_minimize_energy(p.s[is], d, p.eps, p.itermax, &iter,
                             &edrvr, psi, &psi2, delta, r, &r2);
                     norm = sqrt(psi2);
                     for (i = 0; i < D; i++) psi[i] /= norm;
@@ -100,7 +96,7 @@ int main(int argc, char *argv[])
                     /* h_j = h_0 - dh/2 */
                     for (i = 0; i < D; i++) psi[i] = psi0[i];
                     qaa_update_diagonals_1(j, -p.dh, d);
-                    energy = qaa_minimize_energy(s, d, p.eps, p.itermax, &iter,
+                    energy = qaa_minimize_energy(p.s[is], d, p.eps, p.itermax, &iter,
                             &edrvr, psi, &psi2, delta, r, &r2);
                     norm = sqrt(psi2);
                     for (i = 0; i < D; i++) psi[i] /= norm;
@@ -115,14 +111,13 @@ int main(int argc, char *argv[])
 
                 printf("%16s %16s %16g %16g %16g " \
                        "%16d %16.9e %16.9e %16.9e %16.9e %16.9e %16.9e\n",
-                        VERSION, basename(p.files[ifile]), p.dh, h, s,
+                        VERSION, basename(p.files[ifile]), p.dh, p.h[ih], p.s[is],
                         iter0, r2, energy, mz, mx, q2, q2p);
             }
-
-            ds = -ds; s += ds;  /* reverse scan direction for next row*/
         }
     }
 
     gsl_rng_free(rng);
+    params_free(&p);
     return EXIT_SUCCESS;
 }

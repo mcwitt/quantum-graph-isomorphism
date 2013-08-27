@@ -3,6 +3,7 @@
 #include <getopt.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 static void print_usage(int argc, char *argv[])
 {
@@ -23,21 +24,39 @@ static void print_usage(int argc, char *argv[])
             N, argv[0]);
 }
 
+static double *linspace(double left, double right, int n)
+{
+    double *a, delta = (right - left) / (n - 1);
+    int i;
+
+    a = (double*) malloc(n * sizeof(double));
+    for (i = 0; i < n; i++) a[i] = left + i*delta;
+    return a;
+}
+
+static double *logspace(double left, double right, int n)
+{
+    double *a;
+    int i;
+
+    a = linspace(left, right, n);
+    for (i = 0; i < n; i++) a[i] = pow(10., a[i]);
+    return a;
+}
+
 void params_defaults(params_t *p)
 {
+    p->s = NULL;
+    p->h = NULL;
     p->smin = 0.02;
     p->smax = 0.98;
-    p->ns   = 49;
-
-    p->emin = -1.;
-    p->emax = 1.;
-    p->nh   = 51;
-
+    p->emin = -2;
+    p->emax = 1;
+    p->ns = 49;
+    p->nh = 51;
     p->dh = 1e-3;
-
     p->itermax = 300;
     p->eps = 1e-12;
-
     p->num_files = 0;
     p->files = NULL;
 }
@@ -82,6 +101,14 @@ void params_from_cmd(params_t *p, int argc, char *argv[])
         }
     }
 
+    p->s = linspace(p->smin, p->smax, p->ns);
+    p->h = logspace(p->emin, p->emax, p->nh);
     p->num_files = argc - optind;
     p->files = argv + optind;
+}
+
+void params_free(params_t *p)
+{
+    free(p->s);
+    free(p->h);
 }
