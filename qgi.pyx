@@ -43,14 +43,14 @@ D = ndim
 cdef int spin(UINT i, int j):
     return ((int)((i >> j) & 1) << 1) - 1
 
-def load_graph(filename):
+def load_amatrix(filename):
     f = open(filename, 'r')
     a = []
     for line in f: a.append(list(line.strip()))
     f.close()
-    return np.array(a, dtype=np.int)
+    return np.matrix(a, dtype=np.int)
 
-def save_graph(filename, a):
+def save_amatrix(filename, a):
     f = open(filename, 'w')
     for row in a:
         for entry in row:
