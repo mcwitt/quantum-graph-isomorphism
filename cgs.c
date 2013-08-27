@@ -11,7 +11,7 @@
 #include "qaa.h"
 
 double d[D];        /* diagonal elements of problem hamiltonian */
-double psi0[D];     /* ground state wavefunction for h_j = h_0 */
+double psi_0[D];     /* ground state wavefunction for h_j = h_0 */
 double psi[D];      /* for h_j = h_0 +/- dh/2 */
 double delta[D];    /* CG search direction */
 double r[D];        /* residual */
@@ -24,8 +24,8 @@ int main(int argc, char *argv[])
     gsl_rng *rng;
     params_t p;
     double fj[N];
-    double edrvr, energy, h, mx, mz, norm, psi2, q2, q2p, r2;
-    int ifile, ih, is, iter, iter0, j, k;
+    double edrvr, energy, h, mx, mz, norm, psi2, q2, q2p, r2, r2_0;
+    int ifile, ih, is, iter, iter_0, j, k;
     UINT i;
 
     params_from_cmd(&p, argc, argv);
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 
         /* generate random initial wavefunction */
         gsl_rng_env_setup();
-        for (i = 0; i < D; i++) psi0[i] = gsl_ran_gaussian(rng, 1.) / sqrt_D;
+        for (i = 0; i < D; i++) psi_0[i] = gsl_ran_gaussian(rng, 1.) / sqrt_D;
 
         for (ih = 0; ih < p.nh; ih++)
         {
@@ -68,15 +68,16 @@ int main(int argc, char *argv[])
 
             for (is = 0; is < p.ns; is++)
             {
-                energy = qaa_minimize_energy(p.s[is], d, p.eps, p.itermax, &iter0,
-                        &edrvr, psi0, &psi2, delta, r, &r2);
+                energy = qaa_minimize_energy(p.s[is], d, p.eps, p.itermax, &iter_0,
+                        &edrvr, psi_0, &psi2, delta, r, &r2_0);
 
+                r2_0 /= psi2;
                 norm = sqrt(psi2);
-                for (i = 0; i < D; i++) psi0[i] /= norm;
+                for (i = 0; i < D; i++) psi_0[i] /= norm;
 
-                mz = qaa_mag_z(psi0);
-                mx = qaa_mag_x(psi0);
-                q2 = qaa_overlap(psi0);
+                mz = qaa_mag_z(psi_0);
+                mx = qaa_mag_x(psi_0);
+                q2 = qaa_overlap(psi_0);
 
                 q2p = 0.;
 
@@ -85,7 +86,7 @@ int main(int argc, char *argv[])
                 {
                     /* h_j = h_0 + dh/2 */
                     /* use solution at midpoint as initial guess */
-                    for (i = 0; i < D; i++) psi[i] = psi0[i];
+                    for (i = 0; i < D; i++) psi[i] = psi_0[i];
                     qaa_update_diagonals_1(j, 0.5 * p.dh, d);
                     energy = qaa_minimize_energy(p.s[is], d, p.eps, p.itermax, &iter,
                             &edrvr, psi, &psi2, delta, r, &r2);
@@ -94,7 +95,7 @@ int main(int argc, char *argv[])
                     for (k = 0; k < N; k++) fj[k] = qaa_sigma_z(psi, k);
 
                     /* h_j = h_0 - dh/2 */
-                    for (i = 0; i < D; i++) psi[i] = psi0[i];
+                    for (i = 0; i < D; i++) psi[i] = psi_0[i];
                     qaa_update_diagonals_1(j, -p.dh, d);
                     energy = qaa_minimize_energy(p.s[is], d, p.eps, p.itermax, &iter,
                             &edrvr, psi, &psi2, delta, r, &r2);
@@ -112,7 +113,7 @@ int main(int argc, char *argv[])
                 printf("%16s %16s %16g %16g %16g " \
                        "%16d %16.9e %16.9e %16.9e %16.9e %16.9e %16.9e\n",
                         VERSION, basename(p.files[ifile]), p.dh, p.h[ih], p.s[is],
-                        iter0, r2, energy, mz, mx, q2, q2p);
+                        iter_0, r2_0, energy, mz, mx, q2, q2p);
             }
         }
     }

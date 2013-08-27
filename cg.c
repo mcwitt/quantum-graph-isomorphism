@@ -69,6 +69,7 @@ int main(int argc, char *argv[])
                         &edrvr, psi, &psi2, delta, r, &r2);
 
                 /* normalize wavefunction */
+                r2 /= psi2;
                 norm = sqrt(psi2);
                 for (i = 0; i < D; i++) psi[i] /= norm;
 

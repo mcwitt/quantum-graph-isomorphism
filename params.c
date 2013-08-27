@@ -50,8 +50,8 @@ void params_defaults(params_t *p)
     p->h = NULL;
     p->smin = 0.02;
     p->smax = 0.98;
-    p->emin = -2;
-    p->emax = 1;
+    p->emin = -2.;
+    p->emax = 1.;
     p->ns = 49;
     p->nh = 51;
     p->dh = 1e-3;
