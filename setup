@@ -2,15 +2,17 @@
 
 N=13
 bindir=.
+autodir=0
 
 while getopts ":n:b:a" opt; do
     case $opt in
         n) N=$OPTARG;;
         b) bindir=$(OPTARG);;
-        a) bindir=bin/n$N;;
+        a) autodir=1;;
     esac
 done
 
+if [ $autodir -eq 1 ]; then bindir=bin/n$N; fi
 root="$(dirname "$0")"
 mkdir -p $bindir
 D=$((2**N))
