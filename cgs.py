@@ -35,12 +35,12 @@ for graph, graph_file in zip(graphs, graph_files):
             for j in range(qgi.N):
                 h[j] += 0.5 * dh
                 H = qgi.hamiltonian(graph, h, s)
-                energy, psi = diagonalize(H, psi0)
+                _, psi = diagonalize(H, psi0)
                 fj = qgi.sigma_z(psi)
                 
                 h[j] -= dh
                 H = qgi.hamiltonian(graph, h, s)
-                energy, psi = diagonalize(H, psi0)
+                _, psi = diagonalize(H, psi0)
                 fj = (fj - qgi.sigma_z(psi)) / dh
                 q2p += np.sum(fj**2)
                 

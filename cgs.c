@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
                     /* use solution at midpoint as initial guess */
                     for (i = 0; i < D; i++) psi[i] = psi_0[i];
                     qaa_update_diagonals_1(j, 0.5 * p.dh, d);
-                    energy = qaa_minimize_energy(p.s[is], d, p.eps, p.itermax, &iter,
+                    qaa_minimize_energy(p.s[is], d, p.eps, p.itermax, &iter,
                             &edrvr, psi, &psi2, delta, r, &r2);
                     norm = sqrt(psi2);
                     for (i = 0; i < D; i++) psi[i] /= norm;
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
                     /* h_j = h_0 - dh/2 */
                     for (i = 0; i < D; i++) psi[i] = psi_0[i];
                     qaa_update_diagonals_1(j, -p.dh, d);
-                    energy = qaa_minimize_energy(p.s[is], d, p.eps, p.itermax, &iter,
+                    qaa_minimize_energy(p.s[is], d, p.eps, p.itermax, &iter,
                             &edrvr, psi, &psi2, delta, r, &r2);
                     norm = sqrt(psi2);
                     for (i = 0; i < D; i++) psi[i] /= norm;
