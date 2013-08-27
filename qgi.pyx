@@ -123,17 +123,18 @@ def hamiltonian(
     cdef np.ndarray[np.double_t, ndim=1] vals
     cdef double c, oms = 1. - s
     cdef int j, k
-    cdef UINT i, inz, m
+    cdef UINT i, ia, m
 
-    nnz = (N+1)*D   # number of nonzero entries
+    n = (N+1)*D # number of nonzero entries
 
-    rows = np.zeros(nnz, dtype=np.int)
-    cols = np.zeros(nnz, dtype=np.int)
-    vals = np.zeros(nnz, dtype=np.double)
+    rows = np.empty(n, dtype=np.int)
+    cols = np.empty(n, dtype=np.int)
+    vals = np.empty(n, dtype=np.double)
 
     # problem hamiltonian
     for i in range(D):
         rows[i] = cols[i] = i
+        vals[i] = 0.
         for j in range(N):
             c = s * spin(i, j)
             vals[i] -= c * h[j]
@@ -141,20 +142,19 @@ def hamiltonian(
                 if a[j, k] == 1:
                     vals[i] += c * spin(i, k)
 
-    inz = D
+    ia = D
 
     # transverse field
     for i in range(D):
         m = 1
         for j in range(N):
-            rows[inz] = i
-            cols[inz] = i^m
-            vals[inz] = oms
-            inz += 1
+            rows[ia] = i
+            cols[ia] = i^m
+            vals[ia] = oms
+            ia += 1
             m <<= 1
 
-    H = scipy.sparse.coo_matrix((vals, (rows, cols)), shape=(D, D))
-    return H.tocsr()
+    return scipy.sparse.coo_matrix((vals, (rows, cols)), shape=(D, D)).tocsr()
 
 def mag_z(np.ndarray[np.double_t, ndim=1] psi):
     return qaa_mag_z(<double*> psi.data)

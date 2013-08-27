@@ -53,7 +53,7 @@ void params_defaults(params_t *p)
     p->emin = -2.;
     p->emax = 1.;
     p->ns = 49;
-    p->nh = 51;
+    p->nh = 52;
     p->dh = 1e-3;
     p->itermax = 300;
     p->eps = 1e-12;

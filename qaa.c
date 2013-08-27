@@ -10,7 +10,7 @@
 #include <stdlib.h>
 
 /* SPIN(i, j) returns the eigenvalue of sigma^z_j for state |i> */
-#define SPIN(i, j)      ((int) ((((i) >> (j)) & 1) << 1) - 1)
+#define SPIN(i, j)  ((int) ((((i) >> (j)) & 1) << 1) - 1)
 
 void qaa_compute_diagonals(int b[], double d[D])
 {

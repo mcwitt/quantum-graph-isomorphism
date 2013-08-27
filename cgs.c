@@ -2,7 +2,6 @@
 #include <gsl/gsl_rng.h>
 #include <math.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <libgen.h>
 #include "global.h"
 #include "graph.h"
@@ -11,7 +10,7 @@
 #include "qaa.h"
 
 double d[D];        /* diagonal elements of problem hamiltonian */
-double psi_0[D];     /* ground state wavefunction for h_j = h_0 */
+double psi_0[D];    /* ground state wavefunction for h_j = h_0 */
 double psi[D];      /* for h_j = h_0 +/- dh/2 */
 double delta[D];    /* CG search direction */
 double r[D];        /* residual */

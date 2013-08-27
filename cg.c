@@ -2,7 +2,6 @@
 #include <gsl/gsl_rng.h>
 #include <math.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <libgen.h>
 #include "global.h"
 #include "graph.h"
