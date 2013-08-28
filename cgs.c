@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     printf("%16s %16s %16s %16s %16s " \
            "%16s %16s %16s %16s %16s %16s %16s\n",
             "ver", "graph", "dh", "h", "s",
-            "iterations", "res2", "energy", "mz", "mx", "q2", "q2p");
+            "iterations", "resid", "energy", "mz", "mx", "q2", "q2p");
 
     for (ifile = 0; ifile < p.num_files; ifile++)
     {
@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
                 printf("%16s %16s %16g %16g %16g " \
                        "%16d %16.9e %16.9e %16.9e %16.9e %16.9e %16.9e\n",
                         VERSION, basename(p.files[ifile]), p.dh, p.h[ih], p.s[is],
-                        iter_0, r2_0, energy, mz, mx, q2, q2p);
+                        iter_0, sqrt(r2_0), energy, mz, mx, q2, q2p);
             }
         }
     }
