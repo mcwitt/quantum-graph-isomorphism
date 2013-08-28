@@ -61,35 +61,27 @@ def save_amatrix(filename, a):
 def tobitstr(a):
     N = a.shape[0]
     b = [a[i, j] for i in range(1, N) for j in range(i)]
-    return np.array(b, dtype=np.int)
+    return np.array(b, dtype=np.dtype('i'))
 
-def compute_diagonals(b, np.ndarray[np.double_t, ndim=1] d=None):
-    cdef np.ndarray[np.int32_t, ndim=1] buf = b.astype(np.int32)
+def compute_diagonals(int[:] b, double[:] d=None):
     if d is None: d = np.empty(D, dtype=np.double)
-    qaa_compute_diagonals(<int*> buf.data, <double*> d.data)
-    return d
+    qaa_compute_diagonals(&b[0], &d[0])
+    return np.asarray(d)
 
-def update_diagonals(
-        double dh,
-        np.ndarray[np.double_t, ndim=1] d):
+def update_diagonals(double dh, double[:] d):
+    qaa_update_diagonals(dh, &d[0])
 
-    qaa_update_diagonals(dh, <double*> d.data)
-
-def update_diagonals_1(
-        int j,
-        double dh,
-        np.ndarray[np.double_t, ndim=1] d):
-
-    qaa_update_diagonals_1(j, dh, <double*> d.data)
+def update_diagonals_1(int j, double dh, double[:] d):
+    qaa_update_diagonals_1(j, dh, &d[0])
 
 def minimize_energy(
         s,
-        np.ndarray[np.double_t, ndim=1] d,
-        eps,
-        max_iter,
-        np.ndarray[np.double_t, ndim=1] psi,
-        np.ndarray[np.double_t, ndim=1] delta,
-        np.ndarray[np.double_t, ndim=1] resid
+        double[:] d,
+        eps = 1e-10,
+        max_iter = 300,
+        double[:] psi = None,
+        double[:] delta = None,
+        double[:] resid = None,
         ):
 
     'returns: energy, edrvr, psi2, r2, num_iter'
@@ -97,30 +89,19 @@ def minimize_energy(
     cdef double edrvr, psi2, r2
     cdef int num_iter
 
-    energy = qaa_minimize_energy(
-            s,
-            <double*> d.data,
-            eps,
-            max_iter,
-            &num_iter,
-            &edrvr,
-            <double*> psi.data,
-            &psi2,
-            <double*> delta.data,
-            <double*> resid.data,
-            &r2
-            )
+    if psi is None: psi = np.random.normal(scale=1./np.sqrt(D), size=D)
+    if delta is None: delta = np.empty(D, dtype=np.double)
+    if resid is None: resid = np.empty(D, dtype=np.double)
+
+    energy = qaa_minimize_energy(s, &d[0], eps, max_iter, &num_iter, &edrvr,
+            &psi[0], &psi2, &delta[0], &resid[0], &r2)
 
     return energy, edrvr, psi2, r2, num_iter
 
-def hamiltonian(
-        np.ndarray[np.int_t, ndim=2] a,
-        np.ndarray[np.double_t, ndim=1] h,
-        double s
-        ):
+def hamiltonian(int[:, :] a, double[:] h, double s):
     
-    cdef np.ndarray[np.int_t, ndim=1] rows, cols
-    cdef np.ndarray[np.double_t, ndim=1] vals
+    cdef int[:] rows, cols
+    cdef double[:] vals
     cdef double c, oms = 1. - s
     cdef int j, k
     cdef UINT i, ia, m
@@ -156,19 +137,19 @@ def hamiltonian(
 
     return scipy.sparse.coo_matrix((vals, (rows, cols)), shape=(D, D)).tocsr()
 
-def mag_z(np.ndarray[np.double_t, ndim=1] psi):
-    return qaa_mag_z(<double*> psi.data)
+def mag_z(double[:] psi):
+    return qaa_mag_z(&psi[0])
 
-def mag_x(np.ndarray[np.double_t, ndim=1] psi):
-    return qaa_mag_x(<double*> psi.data)
+def mag_x(double[:] psi):
+    return qaa_mag_x(&psi[0])
 
-def overlap(np.ndarray[np.double_t, ndim=1] psi):
-    return qaa_overlap(<double*> psi.data)
+def overlap(double[:] psi):
+    return qaa_overlap(&psi[0])
 
-def sigma_z(np.ndarray[np.double_t, ndim=1] psi):
+def sigma_z(double[:] psi):
     cdef double c2
+    cdef double[:] result = np.zeros(N, dtype=np.double)
     cdef int j
-    cdef np.ndarray[np.double_t, ndim=1] result = np.zeros(N, dtype=np.double)
     cdef UINT i
 
     for i in range(D):
@@ -178,10 +159,10 @@ def sigma_z(np.ndarray[np.double_t, ndim=1] psi):
 
     return result
 
-def sigma2_z(np.ndarray[np.double_t, ndim=1] psi):
+def sigma2_z(double[:] psi):
     cdef double c2
+    cdef double[:,:] result = np.zeros((N, N), dtype=np.double)
     cdef int j, k, s_j
-    cdef np.ndarray[np.double_t, ndim=2] result = np.zeros((N, N), dtype=np.double)
     cdef UINT i
 
     for i in range(D):
@@ -191,12 +172,13 @@ def sigma2_z(np.ndarray[np.double_t, ndim=1] psi):
             for k in range(j):
                 result[j, k] += c2 * s_j * spin(i, k)
 
-    result = result + result.T - np.diag(result.diagonal)   # symmetrize result
-    return result
+    a = np.asarray(result)
+    a = a + a.T - np.diag(a.diagonal()) # symmetrize result
+    return a
 
-def sigma_x(np.ndarray[np.double_t, ndim=1] psi):
+def sigma_x(double[:] psi):
+    cdef double[:] result = np.zeros(N, dtype=np.double)
     cdef int j
-    cdef np.ndarray[np.double_t, ndim=1] result = np.zeros(N, dtype=np.double)
     cdef UINT i, m
 
     for i in range(D):
