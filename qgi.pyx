@@ -82,9 +82,14 @@ def minimize_energy(
         double[:] psi = None,
         double[:] delta = None,
         double[:] resid = None,
+        normalize = True,
+        full_output = False
         ):
 
-    'returns: energy, edrvr, psi2, r2, num_iter'
+    '''
+    returns: energy, psi
+    full output: energy, psi, resid, delta, edrvr, num_iter
+    '''
 
     cdef double edrvr, psi2, r2
     cdef int num_iter
@@ -96,7 +101,16 @@ def minimize_energy(
     energy = qaa_minimize_energy(s, &d[0], eps, max_iter, &num_iter, &edrvr,
             &psi[0], &psi2, &delta[0], &resid[0], &r2)
 
-    return energy, edrvr, psi2, r2, num_iter
+    if normalize:
+        delta /= np.sqrt(np.dot(delta, delta))
+        norm = np.sqrt(np.dot(psi, psi))
+        psi /= norm
+        resid /= norm
+
+    if full_output:
+        return energy, np.asarray(psi), np.asarray(resid), np.asarray(delta), edrvr, num_iter
+
+    return energy, np.asarray(psi)
 
 def hamiltonian(int[:, :] a, double[:] h, double s):
     
