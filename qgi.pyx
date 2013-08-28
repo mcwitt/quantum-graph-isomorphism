@@ -171,7 +171,7 @@ def sigma_z(double[:] psi):
         for j in range(N):
             result[j] += c2 * spin(i, j)
 
-    return result
+    return np.asarray(result)
 
 def sigma2_z(double[:] psi):
     cdef double c2
@@ -200,5 +200,5 @@ def sigma_x(double[:] psi):
             m = 1UL << j
             result[j] += psi[i] * psi[i^m]
 
-    return result
+    return np.asarray(result)
 
