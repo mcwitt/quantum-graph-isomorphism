@@ -83,7 +83,7 @@ double qaa_minimize_energy(
             max_iter, num_iter, psi, psi2, delta, r, r2);
 }
 
-static double qaa_driver_matrix_element(double u[D], double v[D])
+static double driver_matrix_element(double u[D], double v[D])
 {
     double result = 0.;
     UINT i, m;
@@ -95,7 +95,7 @@ static double qaa_driver_matrix_element(double u[D], double v[D])
     return result;
 }
 
-static double qaa_problem_matrix_element(double d[D], double u[D], double v[D], double *udotv)
+static double problem_matrix_element(double d[D], double u[D], double v[D], double *udotv)
 {
     double prod, result = 0.;
     UINT i;
@@ -119,8 +119,8 @@ double qaa_energy_grad(double s, double d[D], double psi[D],
     UINT i, m;
 
     /* compute the energy */
-    *edrvr = qaa_driver_matrix_element(psi, psi);
-    energy = qaa_problem_matrix_element(d, psi, psi, psi2);
+    *edrvr = driver_matrix_element(psi, psi);
+    energy = problem_matrix_element(d, psi, psi, psi2);
     energy = (1. - s) * (*edrvr) + s * energy;
     energy /= *psi2;
 
@@ -142,13 +142,13 @@ double qaa_line_min(double s, double d[D], double psi[D], double delta[D])
            psi_H_psi, psi_H_delta, delta_H_delta,
            a, b, c, coef, sqrd, x, oms = 1. - s;
 
-    psi_H_psi     = s * qaa_problem_matrix_element(d, psi,   psi,   &psi2);
-    psi_H_delta   = s * qaa_problem_matrix_element(d, psi,   delta, &psi_dot_delta);
-    delta_H_delta = s * qaa_problem_matrix_element(d, delta, delta, &delta2);
+    psi_H_psi     = s * problem_matrix_element(d, psi,   psi,   &psi2);
+    psi_H_delta   = s * problem_matrix_element(d, psi,   delta, &psi_dot_delta);
+    delta_H_delta = s * problem_matrix_element(d, delta, delta, &delta2);
 
-    psi_H_psi     += oms * qaa_driver_matrix_element(psi, psi);
-    psi_H_delta   += oms * qaa_driver_matrix_element(psi, delta);
-    delta_H_delta += oms * qaa_driver_matrix_element(delta, delta);
+    psi_H_psi     += oms * driver_matrix_element(psi, psi);
+    psi_H_delta   += oms * driver_matrix_element(psi, delta);
+    delta_H_delta += oms * driver_matrix_element(delta, delta);
 
     a = psi_dot_delta * delta_H_delta - delta2 * psi_H_delta;
     b = psi2 * delta_H_delta - delta2 * psi_H_psi;
