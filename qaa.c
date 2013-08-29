@@ -5,6 +5,7 @@
  */
 
 #include "qaa.h"
+#include "global.h"
 #include "nlcg.h"
 #include <math.h>
 #include <stdlib.h>
@@ -12,7 +13,7 @@
 /* SPIN(i, j) returns the eigenvalue of sigma^z_j for state |i> */
 #define SPIN(i, j)  ((int) ((((i) >> (j)) & 1) << 1) - 1)
 
-void qaa_compute_diagonals(int b[], double d[D])
+void qaa_compute_diagonals(const int *b, double *d)
 {
     int ib, j, k, s_j;
     UINT i;
@@ -33,7 +34,7 @@ void qaa_compute_diagonals(int b[], double d[D])
     }
 }
 
-void qaa_update_diagonals(double dh, double d[D])
+void qaa_update_diagonals(double dh, double *d)
 {
     int j;
     UINT i;
@@ -43,38 +44,38 @@ void qaa_update_diagonals(double dh, double d[D])
             d[i] -= dh * SPIN(i, j);
 }
 
-void qaa_update_diagonals_1(int j, double dh, double d[D])
+void qaa_update_diagonals_1(int j, double dh, double *d)
 {
     UINT i;
     for (i = 0; i < D; i++) d[i] -= dh * SPIN(i, j);
 }
 
-typedef struct { double s, *edrvr, *d; } arg_t;
+typedef struct { double s, *edrvr; const double *d; } arg_t;
 
-static double obj_x2_grad(void *arg, double psi[D], double *x2, double grad[D])
+static double obj_x2_grad(void *arg, const double *psi, double *x2, double *grad)
 {
     arg_t args = *((arg_t*) arg);
     return qaa_energy_grad(args.s, args.d, psi, grad, x2, args.edrvr);
 }
 
-static double line_min(void *arg, double psi[D], double delta[D])
+static double line_min(void *arg, const double *psi, double *delta)
 {
     arg_t args = *((arg_t*) arg);
     return qaa_line_min(args.s, args.d, psi, delta);
 }
 
 double qaa_minimize_energy(
-        double  s,
-        double  d[D],
-        double  eps,
-        int     max_iter,
-        int     *num_iter,
-        double  *edrvr,
-        double  psi[D],
-        double  *psi2,
-        double  delta[D],
-        double  r[D],
-        double  *r2
+        double s,
+        const double *d,
+        double eps,
+        int max_iter,
+        int *num_iter,
+        double *edrvr,
+        double *psi,
+        double *psi2,
+        double *delta,
+        double *r,
+        double *r2
         )
 {
     arg_t args = {s, edrvr, d};
@@ -83,7 +84,7 @@ double qaa_minimize_energy(
             max_iter, num_iter, psi, psi2, delta, r, r2);
 }
 
-static double driver_matrix_element(double u[D], double v[D])
+static double driver_matrix_element(const double *u, const double *v)
 {
     double result = 0.;
     UINT i, m;
@@ -95,7 +96,11 @@ static double driver_matrix_element(double u[D], double v[D])
     return result;
 }
 
-static double problem_matrix_element(double d[D], double u[D], double v[D], double *udotv)
+static double problem_matrix_element(
+        const double *d,
+        const double *u,
+        const double *v,
+        double *udotv)
 {
     double prod, result = 0.;
     UINT i;
@@ -112,8 +117,13 @@ static double problem_matrix_element(double d[D], double u[D], double v[D], doub
     return result;
 }
 
-double qaa_energy_grad(double s, double d[D], double psi[D],
-        double grad[D], double *psi2, double *edrvr)
+double qaa_energy_grad(
+        double s,
+        const double *d,
+        const double *psi,
+        double *grad,
+        double *psi2,
+        double *edrvr)
 {
     double energy;
     UINT i, m;
@@ -136,7 +146,11 @@ double qaa_energy_grad(double s, double d[D], double psi[D],
     return energy;
 }
 
-double qaa_line_min(double s, double d[D], double psi[D], double delta[D])
+double qaa_line_min(
+        double s,
+        const double *d,
+        const double *psi,
+        const double *delta)
 {
     double psi2, psi_dot_delta, delta2,
            psi_H_psi, psi_H_delta, delta_H_delta,
@@ -164,7 +178,7 @@ double qaa_line_min(double s, double d[D], double psi[D], double delta[D])
     return x;
 }
 
-double qaa_sigma_z(double psi[D], int j)
+double qaa_sigma_z(const double *psi, int j)
 {
     double result = 0.;
     UINT i;
@@ -175,7 +189,7 @@ double qaa_sigma_z(double psi[D], int j)
     return result;
 }
 
-double qaa_sigma2_z(double psi[D], int j, int k)
+double qaa_sigma2_z(const double *psi, int j, int k)
 {
     double result = 0.;
     UINT i;
@@ -186,7 +200,7 @@ double qaa_sigma2_z(double psi[D], int j, int k)
     return result;
 }
 
-double qaa_sigma_x(double psi[D], int j)
+double qaa_sigma_x(const double *psi, int j)
 {
     double result = 0.;
     UINT i, m = 1UL << j;
@@ -196,7 +210,7 @@ double qaa_sigma_x(double psi[D], int j)
     return result;
 }
 
-double qaa_mag_z(double psi[D])
+double qaa_mag_z(const double *psi)
 {
     double result = 0.;
     int j;
@@ -206,7 +220,7 @@ double qaa_mag_z(double psi[D])
     return result / N;
 }
 
-double qaa_mag_x(double psi[D])
+double qaa_mag_x(const double *psi)
 {
     double result = 0.;
     int j;
@@ -216,7 +230,7 @@ double qaa_mag_x(double psi[D])
     return result / N;
 }
 
-double qaa_overlap(double psi[D])
+double qaa_overlap(const double *psi)
 {
     double m, result = 0.;
     int j, k;

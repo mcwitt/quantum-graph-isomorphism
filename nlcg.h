@@ -27,8 +27,8 @@
  * @param[out]  r2          Squared norm of the residual.
  */
 double nlcg_minimize(
-        double  (*obj_grad)(void*, double*, double*),
-        double  (*line_min)(void*, double*, double*),
+        double  (*obj_grad)(void*, const double*, double*),
+        double  (*line_min)(void*, const double*, double*),
         void    *arg,
         double  eps,
         int     max_iter,
@@ -62,8 +62,8 @@ double nlcg_minimize(
  * @param[out]  r2          Squared norm of the residual.
  */
 double nlcg_minimize_norm_ind(
-        double  (*obj_x2_grad)(void*, double*, double*, double*),
-        double  (*line_min)(void*, double*, double*),
+        double  (*obj_x2_grad)(void*, const double*, double*, double*),
+        double  (*line_min)(void*, const double*, double*),
         void    *arg,
         double  eps,
         int     max_iter,
@@ -97,8 +97,8 @@ double nlcg_minimize_norm_ind(
  * @param[out]  rprev       Residual from previous iteration.
  */
 double nlcg_minimize_pr(
-        double  (*obj_grad)(void*, double*, double*),
-        double  (*line_min)(void*, double*, double*),
+        double  (*obj_grad)(void*, const double*, double*),
+        double  (*line_min)(void*, const double*, double*),
         void    *arg,
         double  eps,
         int     max_iter,
