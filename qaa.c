@@ -14,19 +14,20 @@
 
 void qaa_compute_diagonals(int b[], double d[D])
 {
+    int ib, j, k, s_j;
     UINT i;
 
     for (i = 0; i < D; i++)
     {
-        int j, l = 0;
         d[i] = 0.;
+        ib = 0;
 
         for (j = 1; j < N; j++)
         {
-            int k, s_j = SPIN(i, j);
+            s_j = SPIN(i, j);
 
             for (k = 0; k < j; k++)
-                if (b[l++] == 1)
+                if (b[ib++] == 1)
                     d[i] += s_j * SPIN(i, k);
         }
     }
@@ -45,7 +46,6 @@ void qaa_update_diagonals(double dh, double d[D])
 void qaa_update_diagonals_1(int j, double dh, double d[D])
 {
     UINT i;
-
     for (i = 0; i < D; i++) d[i] -= dh * SPIN(i, j);
 }
 
