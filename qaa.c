@@ -112,12 +112,6 @@ static double qaa_problem_matrix_element(double d[D], double u[D], double v[D], 
     return result;
 }
 
-static double qaa_matrix_element(double s, double d[D], double u[D], double v[D], double *udotv)
-{
-    return (1. - s) * qaa_driver_matrix_element(u, v)
-               + s  * qaa_problem_matrix_element(d, u, v, udotv);
-}
-
 double qaa_energy_grad(double s, double d[D], double psi[D],
         double grad[D], double *psi2, double *edrvr)
 {
@@ -146,11 +140,15 @@ double qaa_line_min(double s, double d[D], double psi[D], double delta[D])
 {
     double psi2, psi_dot_delta, delta2,
            psi_H_psi, psi_H_delta, delta_H_delta,
-           a, b, c, coef, sqrd, x;
+           a, b, c, coef, sqrd, x, oms = 1. - s;
 
-    psi_H_psi     = qaa_matrix_element(s, d, psi,   psi,   &psi2);
-    psi_H_delta   = qaa_matrix_element(s, d, psi,   delta, &psi_dot_delta);
-    delta_H_delta = qaa_matrix_element(s, d, delta, delta, &delta2);
+    psi_H_psi     = s * qaa_problem_matrix_element(d, psi,   psi,   &psi2);
+    psi_H_delta   = s * qaa_problem_matrix_element(d, psi,   delta, &psi_dot_delta);
+    delta_H_delta = s * qaa_problem_matrix_element(d, delta, delta, &delta2);
+
+    psi_H_psi     += oms * qaa_driver_matrix_element(psi, psi);
+    psi_H_delta   += oms * qaa_driver_matrix_element(psi, delta);
+    delta_H_delta += oms * qaa_driver_matrix_element(delta, delta);
 
     a = psi_dot_delta * delta_H_delta - delta2 * psi_H_delta;
     b = psi2 * delta_H_delta - delta2 * psi_H_psi;
