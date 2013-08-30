@@ -5,7 +5,6 @@
 #include <libgen.h>
 #include "global.h"
 #include "graph.h"
-#include "nlcg.h"
 #include "params.h"
 #include "qaa.h"
 
