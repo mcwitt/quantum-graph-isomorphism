@@ -48,7 +48,7 @@ def load_amatrix(filename):
     a = []
     for line in f: a.append(list(line.strip()))
     f.close()
-    return np.matrix(a, dtype=np.int)
+    return np.matrix(a, dtype=np.dtype('i'))
 
 def save_amatrix(filename, a):
     f = open(filename, 'w')
@@ -64,7 +64,7 @@ def tobitstr(a):
     return np.array(b, dtype=np.dtype('i'))
 
 def compute_diagonals(int[:] b, double[:] d=None):
-    if d is None: d = np.empty(D, dtype=np.double)
+    if d is None: d = np.empty(D, dtype=np.dtype('d'))
     qaa_compute_diagonals(&b[0], &d[0])
     return np.asarray(d)
 
@@ -95,8 +95,8 @@ def minimize_energy(
     cdef int num_iter
 
     if psi is None: psi = np.random.normal(scale=1./np.sqrt(D), size=D)
-    if delta is None: delta = np.empty(D, dtype=np.double)
-    if resid is None: resid = np.empty(D, dtype=np.double)
+    if delta is None: delta = np.empty(D, dtype=np.dtype('d'))
+    if resid is None: resid = np.empty(D, dtype=np.dtype('d'))
 
     energy = qaa_minimize_energy(s, &d[0], eps, max_iter, &num_iter, &edrvr,
             &psi[0], &psi2, &delta[0], &resid[0], &r2)
@@ -122,9 +122,9 @@ def hamiltonian(int[:, :] a, double[:] h, double s):
 
     n = (N+1)*D # number of nonzero entries
 
-    rows = np.empty(n, dtype=np.int)
-    cols = np.empty(n, dtype=np.int)
-    vals = np.empty(n, dtype=np.double)
+    rows = np.empty(n, dtype=np.dtype('i'))
+    cols = np.empty(n, dtype=np.dtype('i'))
+    vals = np.empty(n, dtype=np.dtype('d'))
 
     # problem hamiltonian
     for i in range(D):
@@ -162,7 +162,7 @@ def overlap(double[:] psi):
 
 def sigma_z(double[:] psi):
     cdef double c2
-    cdef double[:] result = np.zeros(N, dtype=np.double)
+    cdef double[:] result = np.zeros(N, dtype=np.dtype('d'))
     cdef int j
     cdef UINT i
 
@@ -175,7 +175,7 @@ def sigma_z(double[:] psi):
 
 def sigma2_z(double[:] psi):
     cdef double c2
-    cdef double[:,:] result = np.zeros((N, N), dtype=np.double)
+    cdef double[:,:] result = np.zeros((N, N), dtype=np.dtype('d'))
     cdef int j, k, s_j
     cdef UINT i
 
@@ -191,7 +191,7 @@ def sigma2_z(double[:] psi):
     return a
 
 def sigma_x(double[:] psi):
-    cdef double[:] result = np.zeros(N, dtype=np.double)
+    cdef double[:] result = np.zeros(N, dtype=np.dtype('d'))
     cdef int j
     cdef UINT i, m
 
