@@ -1,7 +1,7 @@
 #cython: embedsignature=True
 
 import numpy as np
-import scipy.sparse
+import scipy.sparse as sp
 
 cimport numpy as np
 from libc.stdint cimport uint32_t
@@ -12,33 +12,33 @@ cdef extern from "global.h":
     int n
     UINT ndim
 
+N = n
+D = ndim
+
 cdef extern from "qaa.h":
 
-    void qaa_compute_diagonals(int a[], double d[])
-    void qaa_update_diagonals(double dh, double d[])
-    void qaa_update_diagonals_1(int j, double dh, double d[])
+    void qaa_compute_diagonals(int *a, double *d)
+    void qaa_update_diagonals(double dh, double *d)
+    void qaa_update_diagonals_1(int j, double dh, double *d)
 
     double qaa_minimize_energy(
         double  s,
-        double  d[],
+        double  *d,
         double  eps,
         int     max_iter,
         int     *num_iter,
         double  *edrvr,
-        double  psi[],
+        double  *psi,
         double  *psi2,
-        double  delta[],
-        double  r[],
+        double  *delta,
+        double  *r,
         double  *r2
         )
 
-    double qaa_mag_z(double psi[])
-    double qaa_mag_x(double psi[])
-    double qaa_overlap(double psi[])
+    double qaa_mag_z(double *psi)
+    double qaa_mag_x(double *psi)
+    double qaa_overlap(double *psi)
 
-
-N = n
-D = ndim
 
 cdef int spin(UINT i, int j):
     return ((int)((i >> j) & 1) << 1) - 1
@@ -149,7 +149,7 @@ def hamiltonian(int[:, :] a, double[:] h, double s):
             ia += 1
             m <<= 1
 
-    return scipy.sparse.coo_matrix((vals, (rows, cols)), shape=(D, D)).tocsr()
+    return sp.coo_matrix((vals, (rows, cols)), shape=(D, D)).tocsr()
 
 def mag_z(double[:] psi):
     return qaa_mag_z(&psi[0])
