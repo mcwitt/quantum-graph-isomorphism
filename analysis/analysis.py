@@ -8,19 +8,18 @@ symbols = {'energy': 'E_0',
            'mx'    : 'm_x',
            'q2'    : 'Q_2',
            'q2p'   : 'Q_2^{\prime}',
-           'res2'  : 'r^2',
+           'resid' : '|r|',
            'iterations': r'\mathrm{iterations}'}
 
 measurements = ['q2p', 'q2', 'mz', 'mx', 'energy']
 
 def symbol(s): return symbols[s] if s in symbols else s
 
-def load_files(files):
-    index = ['ver', 'graph', 'h', 'dh', 's']
-    df = pandas.read_table(files[0], sep=' *', index_col=index)
+def load_output(files):
+    kwargs = dict(sep='[ |,] *', index_col=['ver', 'graph', 'h', 'dh', 's'])
+    df = pandas.read_table(files[0], **kwargs)
     for f in files[1:]:
-        df = pandas.concat((df,
-            pandas.read_table(f, sep=' *', index_col=index)))
+        df = pandas.concat((df, pandas.read_table(f, **kwargs)))
     return df
 
 def plot_heatmap(df, logy=True, xylab=['$s$', '$h$']):

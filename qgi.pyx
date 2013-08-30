@@ -45,7 +45,7 @@ cdef extern from "qaa.h":
 cdef int spin(UINT i, int j):
     return ((int)((i >> j) & 1) << 1) - 1
 
-def load_amatrix(filename):
+def read_amatrix(filename):
     f = open(filename, 'r')
     a = []
     for line in f: a.append(list(line.strip()))
