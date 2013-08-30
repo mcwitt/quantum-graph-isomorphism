@@ -161,10 +161,12 @@ def overlap(double[:] psi):
     return qaa_overlap(&psi[0])
 
 def sigma_z(double[:] psi):
+    cdef double[:] result
     cdef double c2
-    cdef double[:] result = np.zeros(N, dtype=np.dtype('d'))
     cdef int j
     cdef UINT i
+
+    result = np.zeros(N, dtype=np.dtype('d'))
 
     for i in range(D):
         c2 = psi[i]**2
@@ -174,10 +176,12 @@ def sigma_z(double[:] psi):
     return np.asarray(result)
 
 def sigma2_z(double[:] psi):
+    cdef double[:,:] result
     cdef double c2
-    cdef double[:,:] result = np.zeros((N, N), dtype=np.dtype('d'))
     cdef int j, k, s_j
     cdef UINT i
+
+    result = np.zeros((N, N), dtype=np.dtype('d'))
 
     for i in range(D):
         c2 = psi[i]**2
@@ -191,9 +195,11 @@ def sigma2_z(double[:] psi):
     return a
 
 def sigma_x(double[:] psi):
-    cdef double[:] result = np.zeros(N, dtype=np.dtype('d'))
+    cdef double[:] result
     cdef int j
     cdef UINT i, m
+
+    result = np.zeros(N, dtype=np.dtype('d'))
 
     for i in range(D):
         for j in range(N):
