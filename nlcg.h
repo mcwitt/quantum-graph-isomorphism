@@ -4,8 +4,6 @@
  * @brief  Simple implementations of the nonlinear conjugate gradient algorithm.
  */
 
-#include "global.h"
-
 /**
  * Minimize a function using the nonlinear conjugate gradient method with the
  * Fletcher-Reeves update. Returns the minimum value.
@@ -22,9 +20,9 @@
  * @param[in]   max_iter    Maximum number of iterations.
  * @param[out]  num_iter    Number of iterations used to reach specified accuracy.
  * @param[out]  x           Solution vector.
- * @param[out]  d           CG search direction.
  * @param[out]  r           Residual.
  * @param[out]  r2          Squared norm of the residual.
+ * @param[out]  d           Final CG search direction.
  */
 double nlcg_minimize(
         double  (*obj_grad)(void*, const double*, double*),
@@ -33,10 +31,10 @@ double nlcg_minimize(
         double  eps,
         int     max_iter,
         int     *num_iter,
-        double  x[D],
-        double  d[D],
-        double  r[D],
-        double  *r2
+        double  *x,
+        double  *r,
+        double  *r2,
+        double  *d
         );
 
 /**
@@ -57,9 +55,9 @@ double nlcg_minimize(
  * @param[in]   max_iter    Maximum number of iterations.
  * @param[out]  num_iter    Number of iterations used to reach specified accuracy.
  * @param[out]  x           Solution vector.
- * @param[out]  d           CG search direction.
  * @param[out]  r           Residual.
  * @param[out]  r2          Squared norm of the residual.
+ * @param[out]  d           Final CG search direction.
  */
 double nlcg_minimize_norm_ind(
         double  (*obj_x2_grad)(void*, const double*, double*, double*),
@@ -68,11 +66,11 @@ double nlcg_minimize_norm_ind(
         double  eps,
         int     max_iter,
         int     *num_iter,
-        double  x[D],
+        double  *x,
         double  *x2,
-        double  d[D],
-        double  r[D],
-        double  *r2
+        double  *r,
+        double  *r2,
+        double  *d
         );
 
 /**
@@ -91,10 +89,10 @@ double nlcg_minimize_norm_ind(
  * @param[in]   max_iter    Maximum number of iterations.
  * @param[out]  num_iter    Number of iterations used to reach specified accuracy.
  * @param[out]  x           Solution vector.
- * @param[out]  d           CG search direction.
  * @param[out]  r           Residual.
  * @param[out]  r2          Squared norm of the residual.
  * @param[out]  rprev       Residual from previous iteration.
+ * @param[out]  d           Final CG search direction.
  */
 double nlcg_minimize_pr(
         double  (*obj_grad)(void*, const double*, double*),
@@ -103,9 +101,9 @@ double nlcg_minimize_pr(
         double  eps,
         int     max_iter,
         int     *num_iter,
-        double  x[D],
-        double  d[D],
-        double  r[D],
+        double  *x,
+        double  *r,
         double  *r2,
-        double  rprev[D]
+        double  *rprev,
+        double  *d
         );

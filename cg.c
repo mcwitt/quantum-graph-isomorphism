@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
             for (is = 0; is < p.ns; is++)
             {
                 energy = qaa_minimize_energy(p.s[is], d, p.eps, p.itermax, &iter,
-                        &edrvr, psi, &psi2, delta, r, &r2);
+                        &edrvr, psi, &psi2, r, &r2, delta);
 
                 /* normalize wavefunction */
                 r2 /= psi2;
@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
                 for (i = 0; i < D; i++) psi[i] /= norm;
 
                 mz = qaa_mag_z(psi);
-                mx = qaa_mag_x(psi);
+                mx = 2. * qaa_me_driver(psi, psi);
                 q2 = qaa_overlap(psi);
 
                 printf("%16s %16s %16g %16g " \

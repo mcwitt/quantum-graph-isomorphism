@@ -1,4 +1,5 @@
 #include "nlcg.h"
+#include "global.h"
 
 double nlcg_minimize(
         double  (*obj_grad)(void*, const double*, double*),
@@ -7,10 +8,10 @@ double nlcg_minimize(
         double  eps,
         int     max_iter,
         int     *num_iter,
-        double  x[D],
-        double  d[D],
-        double  r[D],
-        double  *r2
+        double  *x,
+        double  *r,
+        double  *r2,
+        double  *d
         )
 {
     double a, b, obj, r2prev, r2stop;
@@ -43,11 +44,11 @@ double nlcg_minimize_norm_ind(
         double  eps,
         int     max_iter,
         int     *num_iter,
-        double  x[D],
+        double  *x,
         double  *x2,
-        double  d[D],
-        double  r[D],
-        double  *r2
+        double  *r,
+        double  *r2,
+        double  *d
         )
 {
     double a, b, eps2, obj, r2prev;
@@ -80,11 +81,11 @@ double nlcg_minimize_pr(
         double  eps,
         int     max_iter,
         int     *num_iter,
-        double  x[D],
-        double  d[D],
-        double  r[D],
+        double  *x,
+        double  *r,
         double  *r2,
-        double  rprev[D]
+        double  *rprev,
+        double  *d
         )
 {
     double a, b, obj, r2prev, r2stop;

@@ -68,14 +68,14 @@ int main(int argc, char *argv[])
             for (is = 0; is < p.ns; is++)
             {
                 energy = qaa_minimize_energy(p.s[is], d, p.eps, p.itermax, &iter_0,
-                        &edrvr, psi_0, &psi2, delta, r, &r2_0);
+                        &edrvr, psi_0, &psi2, r, &r2_0, delta);
 
                 r2_0 /= psi2;
                 norm = sqrt(psi2);
                 for (i = 0; i < D; i++) psi_0[i] /= norm;
 
                 mz = qaa_mag_z(psi_0);
-                mx = qaa_mag_x(psi_0);
+                mx = 2. * qaa_me_driver(psi_0, psi_0);
                 q2 = qaa_overlap(psi_0);
 
                 q2p = 0.;
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
                     for (i = 0; i < D; i++) psi[i] = psi_0[i];
                     qaa_update_diagonals_1(j, 0.5 * p.dh, d);
                     qaa_minimize_energy(p.s[is], d, p.eps, p.itermax, &iter,
-                            &edrvr, psi, &psi2, delta, r, &r2);
+                            &edrvr, psi, &psi2, r, &r2, delta);
                     norm = sqrt(psi2);
                     for (i = 0; i < D; i++) psi[i] /= norm;
                     for (k = 0; k < N; k++) fj[k] = qaa_sigma_z(psi, k);
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
                     for (i = 0; i < D; i++) psi[i] = psi_0[i];
                     qaa_update_diagonals_1(j, -p.dh, d);
                     qaa_minimize_energy(p.s[is], d, p.eps, p.itermax, &iter,
-                            &edrvr, psi, &psi2, delta, r, &r2);
+                            &edrvr, psi, &psi2, r, &r2, delta);
                     norm = sqrt(psi2);
                     for (i = 0; i < D; i++) psi[i] /= norm;
                     for (k = 0; k < N; k++)

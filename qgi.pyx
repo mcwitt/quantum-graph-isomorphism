@@ -17,26 +17,28 @@ D = ndim
 
 cdef extern from "qaa.h":
 
-    void qaa_compute_diagonals(int *a, double *d)
+    void qaa_compute_diagonals(int *b, double *d)
     void qaa_update_diagonals(double dh, double *d)
     void qaa_update_diagonals_1(int j, double dh, double *d)
 
     double qaa_minimize_energy(
-        double  s,
-        double  *d,
-        double  eps,
-        int     max_iter,
-        int     *num_iter,
-        double  *edrvr,
-        double  *psi,
-        double  *psi2,
-        double  *delta,
-        double  *r,
-        double  *r2
+        double s,
+        double *d,
+        double eps,
+        int max_iter,
+        int *num_iter,
+        double *edrvr,
+        double *psi,
+        double *psi2,
+        double *r,
+        double *r2,
+        double *delta
         )
 
+    double qaa_me_driver(double *u, double *v)
+    double qaa_me_problem(double *d, double *u, double *v, double *udotv)
+
     double qaa_mag_z(double *psi)
-    double qaa_mag_x(double *psi)
     double qaa_overlap(double *psi)
 
 
@@ -99,7 +101,7 @@ def minimize_energy(
     if resid is None: resid = np.empty(D, dtype=np.dtype('d'))
 
     energy = qaa_minimize_energy(s, &d[0], eps, max_iter, &num_iter, &edrvr,
-            &psi[0], &psi2, &delta[0], &resid[0], &r2)
+            &psi[0], &psi2, &resid[0], &r2, &delta[0])
 
     if normalize:
         delta /= np.sqrt(np.dot(delta, delta))
@@ -116,7 +118,7 @@ def hamiltonian(int[:, :] a, double[:] h, double s):
     
     cdef int[:] rows, cols
     cdef double[:] vals
-    cdef double c, oms = 1. - s
+    cdef double c, ode = 0.5 * (1. - s)
     cdef int j, k
     cdef UINT i, ia, m
 
@@ -145,17 +147,24 @@ def hamiltonian(int[:, :] a, double[:] h, double s):
         for j in range(N):
             rows[ia] = i
             cols[ia] = i^m
-            vals[ia] = oms
+            vals[ia] = ode
             ia += 1
             m <<= 1
 
     return sp.coo_matrix((vals, (rows, cols)), shape=(D, D)).tocsr()
 
+def me_driver(double[:] u, double[:] v):
+    return qaa_me_driver(&u[0], &v[0])
+
+def me_problem(double[:] d, double[:] u, double[:] v):
+    cdef double udotv
+    return qaa_me_problem(&d[0], &u[0], &v[0], &udotv)
+
 def mag_z(double[:] psi):
     return qaa_mag_z(&psi[0])
 
 def mag_x(double[:] psi):
-    return qaa_mag_x(&psi[0])
+    return 2. * me_driver(psi, psi)
 
 def overlap(double[:] psi):
     return qaa_overlap(&psi[0])
