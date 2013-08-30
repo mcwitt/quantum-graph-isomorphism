@@ -15,7 +15,7 @@ measurements = ['q2p', 'q2', 'mz', 'mx', 'energy']
 
 def symbol(s): return symbols[s] if s in symbols else s
 
-def load_output(files):
+def read_output(files):
     kwargs = dict(sep='[ |,] *', index_col=['ver', 'graph', 'h', 'dh', 's'])
     df = pandas.read_table(files[0], **kwargs)
     for f in files[1:]:
