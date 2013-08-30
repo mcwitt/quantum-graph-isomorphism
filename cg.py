@@ -15,7 +15,7 @@ def diagonalize(H, v0):
     energy, psi = arp.eigsh(H, v0=v0, k=1, which='SA')
     return energy[0], psi.T[0]
 
-graphs = [qgi.load_amatrix(g) for g in graph_files]
+graphs = [qgi.read_amatrix(g) for g in graph_files]
 for g in graphs: assert len(g) == qgi.N
 output = []
 
