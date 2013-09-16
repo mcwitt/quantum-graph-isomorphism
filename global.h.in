@@ -5,6 +5,8 @@
 
 typedef uint32_t UINT;
 
+#define VERSION "@version@"
+
 /*
  * N = number of vertices (spins)
  * D = dimension of Hilbert space = 2^N

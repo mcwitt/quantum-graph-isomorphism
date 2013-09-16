@@ -7,7 +7,6 @@ CC = gcc
 CFLAGS = -Wall -O3
 #CFLAGS = -Wall -g
 
-CFLAGS += -DVERSION=\"$(shell git describe --abbrev=0)\"
 LDLIBS = -lm -lgsl -lgslcblas
 
 COMM_OBJS = global.o graph.o nlcg.o params.o qaa.o
