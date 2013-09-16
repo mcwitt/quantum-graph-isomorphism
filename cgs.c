@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 
     for (ifile = 0; ifile < p.num_files; ifile++)
     {
-        if (! graph_read_amatrix(&g, p.files[ifile]))
+        if (graph_read_amatrix(&g, p.files[ifile]) != 0)
         {
             fprintf(stderr, "%s: error loading adjacency matrix from file \"%s\"\n",
                     argv[0], p.files[ifile]);

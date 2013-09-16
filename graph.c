@@ -1,5 +1,11 @@
 #include "graph.h"
 
+enum
+{
+    ERR_OPEN = 1,
+    ERR_READ
+};
+
 void bin2hex(int *bin, int n, char *hex)
 {
     char b, d, i;
@@ -28,11 +34,11 @@ int graph_read_amatrix(graph_t *g, char *file)
     char line[N+2];
     int i, j, k, m[N][N];
 
-    if ((fp = fopen(file, "r")) == NULL) return 0;
+    if ((fp = fopen(file, "r")) == NULL) return ERR_OPEN;
 
     for (j = 0; j < N; j++)
     {
-        if (fgets(line, N+2, fp) == NULL) return 0;
+        if (fgets(line, N+2, fp) == NULL) return ERR_READ;
 
         for (k = 0; k < N; k++)
         {
@@ -49,6 +55,6 @@ int graph_read_amatrix(graph_t *g, char *file)
 
     bin2hex(g->b, N*(N-1)/2, g->hex);
 
-    return 1;
+    return 0;
 }
 
