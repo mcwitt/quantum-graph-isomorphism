@@ -1,31 +1,48 @@
 import numpy as np
 import pandas as pd
 import qgi
-import re
-import scipy.sparse.linalg as arp
 import sys
+from collections import namedtuple
 
-graph_files = sys.argv[1:]
-output_file = 'output/{}-arpack.out'
-s_vals = np.linspace(0.01, 0.99, 50)
-h0vals = np.logspace(-2, 1, 49)
-dh = 1e-3
+N = qgi.N
 
-def diagonalize(H, v0):
-    energy, psi = arp.eigsh(H, v0=v0, k=1, which='SA')
-    return energy[0], psi.T[0]
+def get_params():
+    p = namedtuple('params', 'graphs s h dh cg output_file')
+    p.cg = namedtuple('cg', 'max_iter eps')
 
-graphs = [qgi.read_amatrix(g) for g in graph_files]
-for g in graphs: assert len(g) == qgi.N
-output = []
+    p.dh = 1e-3
+    p.graphs = []
+    p.s = []
+    p.h = []
+    p.cg.eps = 1e-12
+    p.cg.max_iter = 300
 
-for graph, graph_file in zip(graphs, graph_files):
+    return p
+
+param_file = sys.argv[1] if len(sys.argv) > 1 else 'params.py'
+execfile(param_file)    # load parameters
+
+delta = np.empty(qgi.D, dtype=np.dtype('d'))
+resid = np.empty(qgi.D, dtype=np.dtype('d'))
+psi = np.empty(qgi.D, dtype=np.dtype('d'))
+data = []
+
+for igraph, graph in enumerate(p.graphs):
+
+    graph = list('{:0>{width}b}'.format(int(graph, 16), width=N*(N-1)/2))
+    graph = np.array(graph).astype(np.dtype('i'))
     psi0 = np.random.normal(size=qgi.D)
-    for h0 in h0vals:
-        for s in s_vals:
+    h0prev = 0.
+
+    for h0 in p.h:
+        for s in p.s:
             h = h0 * np.ones(qgi.N)
-            H = qgi.hamiltonian(graph, h, s)
-            energy, psi0 = diagonalize(H, psi0)
+            d = qgi.compute_diagonals(graph)
+            qgi.update_diagonals(h0 - h0prev, d)
+
+            energy, psi0 = qgi.minimize_energy(s, d, p.cg.eps, p.cg.max_iter,
+                    psi0, delta, resid)
+
             mz = qgi.mag_z(psi0)
             mx = qgi.mag_x(psi0)
             q2 = qgi.overlap(psi0)
@@ -33,28 +50,30 @@ for graph, graph_file in zip(graphs, graph_files):
             q2p = 0.
             
             for j in range(qgi.N):
-                h[j] += 0.5 * dh
-                H = qgi.hamiltonian(graph, h, s)
-                _, psi = diagonalize(H, psi0)
+                qgi.update_diagonals_1(j, 0.5 * p.dh, d)
+                np.copyto(psi, psi0)
+                _, psi = qgi.minimize_energy(s, d, p.cg.eps, p.cg.max_iter,
+                        psi, delta, resid)
                 fj = qgi.sigma_z(psi)
                 
-                h[j] -= dh
-                H = qgi.hamiltonian(graph, h, s)
-                _, psi = diagonalize(H, psi0)
-                fj = (fj - qgi.sigma_z(psi)) / dh
+                qgi.update_diagonals_1(j, -p.dh, d)
+                np.copyto(psi, psi0)
+                _, psi = qgi.minimize_energy(s, d, p.cg.eps, p.cg.max_iter,
+                        psi, delta, resid)
+                fj = (fj - qgi.sigma_z(psi)) / p.dh
                 q2p += np.sum(fj**2)
                 
-                h[j] += 0.5 * dh
+                qgi.update_diagonals_1(j, 0.5 * p.dh, d)
                 
             q2p = np.sqrt(q2p) / qgi.N
-            graph_file = re.sub(r'.*/(.*)$', r'\1', graph_file)
-            output.append((graph_file, h0, s, energy, mz, mx, q2, q2p))
+            data.append((igraph, h0, s, energy, mz, mx, q2, q2p))
             
-df = pd.DataFrame.from_records(output,
-    columns=['graph', 'h', 's', 'energy', 'mz', 'mx', 'q2', 'q2p'])
+data = pd.DataFrame.from_records(data,
+    columns=['igraph', 'h', 's', 'energy', 'mz', 'mx', 'q2', 'q2p'])
 
-df['ver'] = 'ARPACK'
-df['dh'] = dh
-df = df.set_index(['ver', 'graph', 'h', 'dh', 's'])
-graph_file = re.sub(r'.*/(.*)$', r'\1', graph_files[0])
-df.to_csv(output_file.format(graph_file))
+params = [qgi.__version__, p.dh, p.graphs]
+params = pd.Series(params, ['version', 'dh', 'graphs'])
+data.set_index(['igraph', 'h', 'dh', 's'], inplace=True)
+
+params.to_hdf(p.output_file, 'params')
+data.to_hdf(p.output_file, 'data')
