@@ -73,8 +73,8 @@ for igraph, graph in enumerate(p['graphs']):
 data = pd.DataFrame.from_records(data,
     columns=['igraph', 'h', 's', 'energy', 'mz', 'mx', 'q2', 'q2p'])
 
-params = [qgi.__version__, p['dh'], p['graphs']]
-params = pd.Series(params, ['version', 'dh', 'graphs'])
+params = [qgi.__version__, N, p['dh'], p['graphs']]
+params = pd.Series(params, ['version', 'N', 'dh', 'graphs'])
 data.set_index(['igraph', 'h', 'dh', 's'], inplace=True)
 
 params.to_hdf(p['output_file'], 'params')
