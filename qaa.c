@@ -216,16 +216,17 @@ double qaa_overlap(const double *psi)
     double m, result = 0.;
     int j, k;
 
-    for (j = 1; j < N; j++)
+    for (j = 0; j < N; j++)
     {
-        for (k = 0; k < j; k++)
+        for (k = 0; k < N; k++)
         {
             m = qaa_sigma2_z(psi, j, k);
-            result += m*m;
+            m -= qaa_sigma_z(psi, j) * qaa_sigma_z(psi, k);
+            result += m * m;
         }
     }
 
-    return sqrt(2. * result / N / (N-1));
+    return sqrt(result) / N;
 }
 
 static double obj_x2_grad(void *arg, const double *psi, double *x2, double *grad)
