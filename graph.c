@@ -1,51 +1,30 @@
 #include "graph.h"
+#include "hexbin.h"
+#include <math.h>
 
-enum
+void graph_to_hex(graph_t *g, char *hex)
 {
-    ERR_OPEN = 1,
-    ERR_READ
-};
-
-void bin2hex(int *bin, int n, char *hex)
-{
-    char b, d, i;
-
-    do
-    {
-        d = 0;
-
-        for (i = 0; i < 4; i++)
-        {
-            b = (*(bin++) == 1) ? 1 : 0;
-            d = (d << 1) | b;
-            if (--n == 0) break;
-        }
-
-        *(hex++) = (d < 10) ? '0'+d : 'a'+d-10;
-    }
-    while (n > 0);
-
-    *hex = '\0';
+    bin2hex(g->b, N*(N-1)/2, hex);
 }
 
-int graph_read_amatrix(graph_t *g, char *file)
+int graph_read_amatrix(graph_t *g, FILE *fp)
 {
-    FILE *fp;
     char line[N+2];
     int i, j, k, m[N][N];
 
-    if ((fp = fopen(file, "r")) == NULL) return ERR_OPEN;
-
     for (j = 0; j < N; j++)
     {
-        if (fgets(line, N+2, fp) == NULL) return ERR_READ;
+        if (fgets(line, N+2, fp) == NULL) return 1;
 
         for (k = 0; k < N; k++)
         {
-            if (line[k] == '\0') return 0;
+            if (line[k] == '\0') return 1;
             m[j][k] = (line[k] == '0') ? 0 : 1;
         }
     }
+
+    do fgets(line, N+2, fp); while (line[0] == '\n');
+    if (! feof(fp)) return 1;
 
     i = 0;
 
@@ -53,8 +32,10 @@ int graph_read_amatrix(graph_t *g, char *file)
         for (k = 0; k < j; k++)
             g->b[i++] = m[j][k];
 
-    bin2hex(g->b, N*(N-1)/2, g->hex);
-
     return 0;
 }
 
+void graph_read_hex(graph_t *g, char *hex)
+{
+    hex2bin(hex, (int) ceil(N*(N-1)/8), g->b);
+}
