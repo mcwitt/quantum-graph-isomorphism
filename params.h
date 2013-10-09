@@ -1,3 +1,15 @@
+#include "graph.h"
+
+enum
+{
+    PARAMS_SUC = 0,
+    PARAMS_SUC_USAGE,
+    PARAMS_ERR,
+    PARAMS_ERR_LOAD,
+    PARAMS_ERR_USAGE,
+    PARAMS_NUM_MSG 
+};
+
 typedef struct
 {
     double *s;
@@ -8,10 +20,13 @@ typedef struct
     double dh;
     int itermax;
     double eps;
-    int num_files;
-    char **files;
+    char *fname;
+    graph_t graph;
 } params_t;
 
+extern char *params_usage;
+extern char *params_errmsg[PARAMS_NUM_MSG];
+
 void params_defaults(params_t *p);
-void params_from_cmd(params_t *p, int argc, char *argv[]);
+int params_from_cmd(params_t *p, int argc, char *argv[]);
 void params_free(params_t *p);

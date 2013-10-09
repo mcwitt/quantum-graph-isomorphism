@@ -5,24 +5,24 @@
 #include <stdio.h>
 #include <math.h>
 
-static void print_usage(int argc, char *argv[])
-{
-    fprintf(stderr,
-            "Conjugate gradient energy minimization " \
-            "for graphs with N=%d vertices.\n" \
-            "usage: %s [-option arg ...] file [file ...]\n" \
-            "options:\n" \
-            "  -s, --smin    : minimum value of adiabatic parameter s\n" \
-            "  -S, --smax    : max value of s\n" \
-            "  -n, --ns      : number of s values\n" \
-            "  -e, --emin    : log_10 of minimum magnetic field\n" \
-            "  -E, --emax    : log_10 of maximum magnetic field\n" \
-            "  -m, --nh      : number of magnetic field values\n" \
-            "  -d, --dh      : delta for finite differences\n" \
-            "  -i, --itermax : maxiumum number of CG iterations\n" \
-            "  -t, --tol     : error tolerance\n",
-            N, argv[0]);
-}
+char *params_errmsg[] = {
+    [PARAMS_ERR_LOAD]   = "couldn't read input file",
+    [PARAMS_ERR_USAGE]  = "incorrect usage (use -h)"
+};
+
+char *params_usage = \
+        "Conjugate gradient energy minimization.\n" \
+        "Usage: %s [-option arg ...] adjmatrix\n" \
+        "Options:\n" \
+        "  -s, --smin    : minimum value of adiabatic parameter s\n" \
+        "  -S, --smax    : max value of s\n" \
+        "  -n, --ns      : number of s values\n" \
+        "  -e, --emin    : log_10 of minimum magnetic field\n" \
+        "  -E, --emax    : log_10 of maximum magnetic field\n" \
+        "  -m, --nh      : number of magnetic field values\n" \
+        "  -d, --dh      : delta for finite differences\n" \
+        "  -i, --itermax : maxiumum number of CG iterations\n" \
+        "  -t, --tol     : error tolerance";
 
 static double *linspace(double left, double right, int n)
 {
@@ -58,14 +58,13 @@ void params_defaults(params_t *p)
     p->dh = 1e-3;
     p->itermax = 300;
     p->eps = 1e-12;
-    p->num_files = 0;
-    p->files = NULL;
 }
 
-void params_from_cmd(params_t *p, int argc, char *argv[])
+int params_from_cmd(params_t *p, int argc, char *argv[])
 {
     extern char *optarg;
     extern int optind;
+    FILE *fp;
     int c, long_index;
 
     static struct option long_options[] = {
@@ -98,14 +97,23 @@ void params_from_cmd(params_t *p, int argc, char *argv[])
              case 'd' : p->dh      = atof(optarg); break;
              case 'i' : p->itermax = atoi(optarg); break;
              case 't' : p->eps     = atof(optarg); break;
-             default: print_usage(argc, argv); exit(EXIT_FAILURE);
+             case 'h' : return PARAMS_SUC_USAGE;   break;
+             default:   return PARAMS_ERR_USAGE;
         }
     }
 
     p->s = linspace(p->smin, p->smax, p->ns);
     p->h = logspace(p->emin, p->emax, p->nh);
-    p->num_files = argc - optind;
-    p->files = argv + optind;
+    if (argc == optind) return PARAMS_ERR_USAGE;
+    p->fname = argv[optind];
+    fp = fopen(p->fname, "r");
+
+    if (fp == NULL || graph_read_amatrix(&p->graph, fp) != 0)
+        return PARAMS_ERR_LOAD;
+
+    fclose(fp);
+
+    return PARAMS_SUC;
 }
 
 void params_free(params_t *p)
