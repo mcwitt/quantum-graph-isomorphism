@@ -1,4 +1,5 @@
 #include "range.h"
+#include <math.h>
 
 double *linspace(double left, double right, int n)
 {

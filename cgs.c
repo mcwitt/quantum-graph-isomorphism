@@ -40,10 +40,10 @@ int main(int argc, char *argv[])
     }
     rng = gsl_rng_alloc(T);
 
-    printf("%16s %16s %16s %16s %16s %16s " \
-           "%16s %16s %16s %16s %16s %16s %16s\n",
-            "ver", "N", "graph", "dh", "h", "s",
-            "iterations", "resid", "energy", "mz", "mx", "q2", "q2p");
+    printf("%8s %6s %8s %16s %16s %6s %6s "\
+           "%16s %16s %16s %16s %16s %16s\n",
+            "ver", "N", "tol", "graph", "h", "s", "iter",
+            "resid", "energy", "mz", "mx", "q2", "q2p");
 
     /* encode graph into diagonal elements of hamiltonian */
     qaa_compute_diagonals(p.graph.b, d);
@@ -102,10 +102,10 @@ int main(int argc, char *argv[])
 
             q2p = sqrt(q2p) / N;
 
-            printf("%16s %16d %16s %16g %16g %16g " \
-                   "%16d %16.9e %16.9e %16.9e %16.9e %16.9e %16.9e\n",
-                    VERSION, N, basename(p.fname), p.dh, p.h[ih], p.s[is],
-                    iter_0, sqrt(r2_0), energy, mz, mx, q2, q2p);
+            printf("%8s %6d %8g %16s %16g %6g %6d " \
+                   "%16.9e %16.9e %16.9e %16.9e %16.9e %16.9e\n",
+                    VERSION, N, p.eps, basename(p.fname), p.h[ih], p.s[is], iter,
+                    sqrt(r2), energy, mz, mx, q2, q2p);
         }
     }
 
