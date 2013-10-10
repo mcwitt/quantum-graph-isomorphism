@@ -14,7 +14,7 @@ while getopts ":n:b:a" opt; do
     esac
 done
 
-if [ $autodir -eq 1 ]; then bindir=bin/n$N; fi
+if [ $autodir -eq 1 ]; then bindir=build/bin/n$N; fi
 root="$(dirname "$0")"
 mkdir -p $bindir
 D=$((2**N))
