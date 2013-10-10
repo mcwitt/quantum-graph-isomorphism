@@ -20,7 +20,8 @@ typedef struct
     double dh;
     int itermax;
     double eps;
-    char *fname;
+    char hexs[GRAPH_BITS_LEN / 4];
+    char *file;
     graph_t graph;
 } params_t;
 

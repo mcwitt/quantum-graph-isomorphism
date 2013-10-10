@@ -1,10 +1,12 @@
 #include "params.h"
 #include "global.h"
+#include "graph.h"
 #include "range.h"
 #include <getopt.h>
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 char *params_errmsg[] = {
     [PARAMS_ERR_LOAD]   = "couldn't read input file",
@@ -13,7 +15,10 @@ char *params_errmsg[] = {
 
 char *params_usage = \
         "Conjugate gradient energy minimization.\n" \
-        "Usage: %s [-option arg ...] adjmatrix\n" \
+        "Usage: %s [-option arg ...] " \
+        "[(-f amatrix_file | -b bit_string | -x hex_string)]\n" \
+        "Reads graph in bit-string format from stdin if " \
+        "-f, -b or -x not specified.\n" \
         "Options:\n" \
         "  -s, --smin    : minimum value of adiabatic parameter s\n" \
         "  -S, --smax    : max value of s\n" \
@@ -23,7 +28,7 @@ char *params_usage = \
         "  -m, --nh      : number of magnetic field values\n" \
         "  -d, --dh      : delta for finite differences\n" \
         "  -i, --itermax : maxiumum number of CG iterations\n" \
-        "  -t, --tol     : error tolerance";
+        "  -t, --tol     : error tolerance\n";
 
 void params_defaults(params_t *p)
 {
@@ -38,13 +43,35 @@ void params_defaults(params_t *p)
     p->dh = 1e-3;
     p->itermax = 300;
     p->eps = 1e-12;
+    p->file = "";
+}
+
+enum read_mode { READ_FILE, READ_BITS, READ_HEXS };
+
+static int read_file(graph_t *g, char *file)
+{
+    FILE *fp;
+
+    fp = fopen(file, "r");
+    if (fp == NULL || graph_read_amatrix(g, fp) != 0) return 1;
+    fclose(fp);
+    return 0;
+}
+
+static int read_stdin(graph_t *g)
+{
+    char bits[GRAPH_BITS_LEN+1];
+
+    fgets(bits, GRAPH_BITS_LEN+1, stdin);
+    return graph_read_bits(g, bits);
 }
 
 int params_from_cmd(params_t *p, int argc, char *argv[])
 {
     extern char *optarg;
     extern int optind;
-    FILE *fp;
+    enum read_mode mode = READ_BITS;
+    char *arg;
     int c, long_index;
 
     static struct option long_options[] = {
@@ -63,35 +90,54 @@ int params_from_cmd(params_t *p, int argc, char *argv[])
 
     params_defaults(p);
 
-    while ((c = getopt_long(argc, argv, "s:S:n:e:E:m:d:i:t:h",
+    while ((c = getopt_long(argc, argv, "fxs:S:n:e:E:m:d:i:t:h",
                     long_options, &long_index)) != -1)
     {
         switch (c)
         {
-             case 's' : p->smin    = atof(optarg); break;
-             case 'S' : p->smax    = atof(optarg); break;
-             case 'n' : p->ns      = atoi(optarg); break;
-             case 'e' : p->emin    = atof(optarg); break;
-             case 'E' : p->emax    = atof(optarg); break;
-             case 'm' : p->nh      = atoi(optarg); break;
-             case 'd' : p->dh      = atof(optarg); break;
-             case 'i' : p->itermax = atoi(optarg); break;
-             case 't' : p->eps     = atof(optarg); break;
-             case 'h' : return PARAMS_SUC_USAGE;   break;
-             default:   return PARAMS_ERR_USAGE;
+            case 'f' : mode       = READ_FILE; break;
+            case 'x' : mode       = READ_HEXS; break;
+            case 's' : p->smin    = atof(optarg); break;
+            case 'S' : p->smax    = atof(optarg); break;
+            case 'n' : p->ns      = atoi(optarg); break;
+            case 'e' : p->emin    = atof(optarg); break;
+            case 'E' : p->emax    = atof(optarg); break;
+            case 'm' : p->nh      = atoi(optarg); break;
+            case 'd' : p->dh      = atof(optarg); break;
+            case 'i' : p->itermax = atoi(optarg); break;
+            case 't' : p->eps     = atof(optarg); break;
+            case 'h' : return PARAMS_SUC_USAGE;   break;
+            default  : return PARAMS_ERR_USAGE;
         }
     }
 
     p->s = linspace(p->smin, p->smax, p->ns);
     p->h = logspace(p->emin, p->emax, p->nh);
-    if (argc == optind) return PARAMS_ERR_USAGE;
-    p->fname = argv[optind];
-    fp = fopen(p->fname, "r");
 
-    if (fp == NULL || graph_read_amatrix(&p->graph, fp) != 0)
-        return PARAMS_ERR_LOAD;
+    if (argc > optind)  /* graph specified in command */
+    {
+        arg = argv[optind];
 
-    fclose(fp);
+        switch(mode)
+        {
+            case READ_BITS:
+                if (graph_read_bits(&p->graph, arg) != 0)
+                    return PARAMS_ERR_LOAD;
+                graph_to_hexs(&p->graph, p->hexs);
+                break;
+            case READ_HEXS:
+                if (graph_read_hexs(&p->graph, arg) != 0)
+                    return PARAMS_ERR_LOAD;
+                strcpy(p->hexs, arg);
+                break;
+            case READ_FILE:
+                if (read_file(&p->graph, arg) != 0) 
+                   return PARAMS_ERR_LOAD;
+                graph_to_hexs(&p->graph, p->hexs);
+                p->file = arg;
+        }
+    }
+    else if (read_stdin(&p->graph) != 0) return PARAMS_ERR_LOAD;
 
     return PARAMS_SUC;
 }

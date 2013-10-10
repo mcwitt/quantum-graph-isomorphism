@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 
     if (c > PARAMS_SUC)
     {
-        fprintf(stderr, "%s\n", params_usage);
+        fprintf(stderr, params_usage, argv[0]);
         exit(EXIT_SUCCESS);
     }
     rng = gsl_rng_alloc(T);
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
             for (i = 0; i < D; i++) psi_0[i] /= norm;
 
             mz = qaa_mag_z(psi_0);
-            mx = 2. * qaa_me_driver(psi_0, psi_0);
+            mx = 2. / N * qaa_me_driver(psi_0, psi_0);
             q2 = qaa_overlap(psi_0);
 
             q2p = 0.;
@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
 
             printf("%8s %6d %8g %16s %16g %6g %6d " \
                    "%16.9e %16.9e %16.9e %16.9e %16.9e %16.9e\n",
-                    VERSION, N, p.eps, basename(p.fname), p.h[ih], p.s[is], iter,
+                    VERSION, N, p.eps, basename(p.file), p.h[ih], p.s[is], iter,
                     sqrt(r2), energy, mz, mx, q2, q2p);
         }
     }

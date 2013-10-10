@@ -1,4 +1,4 @@
-void bin2hex(int *bin, int n, char *hex)
+int bin2hex(int *bin, int n, char *hex)
 {
     int d, i = (4 - n%4)%4;
 
@@ -17,9 +17,11 @@ void bin2hex(int *bin, int n, char *hex)
     }
 
     *hex = '\0';
+
+    return 0;
 }
 
-void hex2bin(char *hex, int n, int *bin)
+int hex2bin(char *hex, int n, int *bin)
 {
     int d, i;
 
@@ -34,4 +36,6 @@ void hex2bin(char *hex, int n, int *bin)
             d <<= 1;
         }
     }
+
+    return 0;
 }

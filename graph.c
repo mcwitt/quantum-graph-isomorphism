@@ -1,11 +1,7 @@
 #include "graph.h"
 #include "hexbin.h"
 #include <math.h>
-
-void graph_to_hex(graph_t *g, char *hex)
-{
-    bin2hex(g->b, N*(N-1)/2, hex);
-}
+#include <string.h>
 
 int graph_read_amatrix(graph_t *g, FILE *fp)
 {
@@ -35,7 +31,26 @@ int graph_read_amatrix(graph_t *g, FILE *fp)
     return 0;
 }
 
-void graph_read_hex(graph_t *g, char *hex)
+int graph_read_bits(graph_t *g, char *bits)
 {
-    hex2bin(hex, (int) ceil(N*(N-1)/8), g->b);
+    int i;
+
+    if (strlen(bits) != GRAPH_BITS_LEN) return 1;
+
+    for (i = 0; i < GRAPH_BITS_LEN; i++)
+        g->b[i] = (bits[i] == '0') ? 0 : 1;
+
+    return 0;
+}
+
+int graph_read_hexs(graph_t *g, char *hexs)
+{
+    int hexs_len = ceil(GRAPH_BITS_LEN / 4.);
+    if (strlen(hexs) != hexs_len) return 1;
+    return hex2bin(hexs, hexs_len, g->b);
+}
+
+void graph_to_hexs(graph_t *g, char *hexs)
+{
+    bin2hex(g->b, N*(N-1)/2, hexs);
 }
