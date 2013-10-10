@@ -9,7 +9,7 @@ CFLAGS = -Wall -O3
 
 LDLIBS = -lm -lgsl -lgslcblas
 
-COMM_OBJS = global.o graph.o hexbin.o nlcg.o params.o qaa.o
+COMM_OBJS = global.o graph.o hexbin.o nlcg.o params.o qaa.o range.o
 OBJS = cg.o cgs.o $(COMM_OBJS)
 BINARIES = cg cgs
 BINS = $(addprefix $(bindir)/, $(BINARIES))
