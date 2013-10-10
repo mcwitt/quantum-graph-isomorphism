@@ -1,13 +1,14 @@
 #include "params.h"
 #include "global.h"
+#include "range.h"
 #include <getopt.h>
+#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <math.h>
 
 char *params_errmsg[] = {
     [PARAMS_ERR_LOAD]   = "couldn't read input file",
-    [PARAMS_ERR_USAGE]  = "incorrect usage (use -h)"
+    [PARAMS_ERR_USAGE]  = "incorrect usage (use -h for info)"
 };
 
 char *params_usage = \
@@ -23,27 +24,6 @@ char *params_usage = \
         "  -d, --dh      : delta for finite differences\n" \
         "  -i, --itermax : maxiumum number of CG iterations\n" \
         "  -t, --tol     : error tolerance";
-
-static double *linspace(double left, double right, int n)
-{
-    double *a, delta;
-    int i;
-
-    delta = (n > 1) ? (right - left) / (n - 1) : 0.;
-    a = (double*) malloc(n * sizeof(double));
-    for (i = 0; i < n; i++) a[i] = left + i*delta;
-    return a;
-}
-
-static double *logspace(double left, double right, int n)
-{
-    double *a;
-    int i;
-
-    a = linspace(left, right, n);
-    for (i = 0; i < n; i++) a[i] = pow(10., a[i]);
-    return a;
-}
 
 void params_defaults(params_t *p)
 {
