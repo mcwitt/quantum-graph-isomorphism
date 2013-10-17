@@ -5,13 +5,14 @@
 #include <libgen.h>
 #include "global.h"
 #include "graph.h"
+#include "nlcg.h"
 #include "params.h"
 #include "qaa.h"
 
-double d[D];        /* diagonal elements of problem hamiltonian */
+double d[D];        /* diagonal elements of problem Hamiltonian */
 double psi[D];      /* wavefunction */
-double delta[D];    /* CG search direction */
-double r[D];        /* residual */
+nlcg_t nlcg;
+qaa_args_t args;    /* QAA-specific parameters */
 
 int main(int argc, char *argv[])
 {
@@ -19,7 +20,7 @@ int main(int argc, char *argv[])
     const gsl_rng_type *T = gsl_rng_default;
     gsl_rng *rng;
     params_t p;
-    double edrvr, energy, h, mx, mz, norm, psi2, q2, r2;
+    double edrvr, energy, h, mx, mz, norm, q2;
     int c, ih, is, iter;
     UINT i;
 
@@ -59,12 +60,11 @@ int main(int argc, char *argv[])
 
         for (is = 0; is < p.ns; is++)
         {
-            energy = qaa_minimize_energy(p.s[is], d, p.eps, p.itermax, &iter,
-                    &edrvr, psi, &psi2, r, &r2, delta);
+            qaa_nlcg_init(p.s[is], d, psi, &edrvr, &args, &nlcg);
+            energy = nlcg_minimize(&nlcg, p.tol, p.itermax, &iter);
 
             /* normalize wavefunction */
-            r2 /= psi2;
-            norm = sqrt(psi2);
+            norm = sqrt(nlcg.x2);
             for (i = 0; i < D; i++) psi[i] /= norm;
 
             mz = qaa_mag_z(psi);
@@ -73,8 +73,8 @@ int main(int argc, char *argv[])
 
             printf("%8s %6d %8g %16s %16g %6g %6d " \
                    "%16.9e %16.9e %16.9e %16.9e %16.9e\n",
-                    VERSION, N, p.eps, basename(p.file), p.h[ih], p.s[is], iter,
-                    sqrt(r2), energy, mz, mx, q2);
+                    VERSION, N, p.tol, basename(p.file), p.h[ih], p.s[is], iter,
+                    sqrt(nlcg.r2) / norm, energy, mz, mx, q2);
         }
     }
 

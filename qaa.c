@@ -6,14 +6,11 @@
 
 #include "qaa.h"
 #include "global.h"
-#include "nlcg.h"
 #include <math.h>
 #include <stdlib.h>
 
 /* SPIN(i, j) returns the eigenvalue of sigma^z_j for state |i> */
 #define SPIN(i, j)  ((int) ((((i) >> (j)) & 1) << 1) - 1)
-
-typedef struct { double s, *edrvr; const double *d; } arg_t;
 
 static double obj_x2_grad(void *arg, const double *psi, double *x2, double *grad);
 static double line_min(void *arg, const double *psi, double *delta);
@@ -55,24 +52,20 @@ void qaa_update_diagonals_1(int j, double dh, double *d)
     for (i = 0; i < D; i++) d[i] -= dh * SPIN(i, j);
 }
 
-double qaa_minimize_energy(
+double qaa_nlcg_init(
         double s,
         const double *d,
-        double eps,
-        int max_iter,
-        int *num_iter,
-        double *edrvr,
         double *psi,
-        double *psi2,
-        double *r,
-        double *r2,
-        double *delta
+        double *edrvr,
+        qaa_args_t *args,
+        nlcg_t *nlcg
         )
 {
-    arg_t args = {s, edrvr, d};
+    args->s = s;
+    args->d = d;
+    args->edrvr = edrvr;
 
-    return nlcg_minimize_norm_ind(obj_x2_grad, line_min, &args, eps,
-            max_iter, num_iter, psi, psi2, r, r2, delta);
+    return nlcg_init(nlcg, obj_x2_grad, line_min, args, psi);
 }
 
 double qaa_me_driver(const double *u, const double *v)
@@ -231,13 +224,13 @@ double qaa_overlap(const double *psi)
 
 static double obj_x2_grad(void *arg, const double *psi, double *x2, double *grad)
 {
-    arg_t args = *((arg_t*) arg);
-    return qaa_energy_grad(args.s, args.d, psi, grad, x2, args.edrvr);
+    qaa_args_t *args = arg;
+    return qaa_energy_grad(args->s, args->d, psi, grad, x2, args->edrvr);
 }
 
 static double line_min(void *arg, const double *psi, double *delta)
 {
-    arg_t args = *((arg_t*) arg);
-    return qaa_line_min(args.s, args.d, psi, delta);
+    qaa_args_t *args = arg;
+    return qaa_line_min(args->s, args->d, psi, delta);
 }
 

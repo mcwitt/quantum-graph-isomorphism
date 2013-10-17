@@ -5,14 +5,15 @@
 #include <libgen.h>
 #include "global.h"
 #include "graph.h"
+#include "nlcg.h"
 #include "params.h"
 #include "qaa.h"
 
 double d[D];        /* diagonal elements of problem hamiltonian */
 double psi_0[D];    /* ground state wavefunction for h_j = h_0 */
 double psi[D];      /* for h_j = h_0 +/- dh/2 */
-double delta[D];    /* CG search direction */
-double r[D];        /* residual */
+nlcg_t nlcg;
+qaa_args_t args;    /* QAA-specific parameters */
 
 int main(int argc, char *argv[])
 {
@@ -21,7 +22,7 @@ int main(int argc, char *argv[])
     gsl_rng *rng;
     params_t p;
     double fj[N];
-    double edrvr, energy, h, mx, mz, norm, psi2, q2, q2p, r2, r2_0;
+    double edrvr, energy, h, mx, mz, norm, q2, q2p, r2_0;
     int c, ih, is, iter, iter_0, j, k;
     UINT i;
 
@@ -60,11 +61,11 @@ int main(int argc, char *argv[])
 
         for (is = 0; is < p.ns; is++)
         {
-            energy = qaa_minimize_energy(p.s[is], d, p.eps, p.itermax, &iter_0,
-                    &edrvr, psi_0, &psi2, r, &r2_0, delta);
+            qaa_nlcg_init(p.s[is], d, psi_0, &edrvr, &args, &nlcg);
+            energy = nlcg_minimize(&nlcg, p.tol, p.itermax, &iter_0);
 
-            r2_0 /= psi2;
-            norm = sqrt(psi2);
+            r2_0 = nlcg.r2 / nlcg.x2;
+            norm = sqrt(nlcg.x2);
             for (i = 0; i < D; i++) psi_0[i] /= norm;
 
             mz = qaa_mag_z(psi_0);
@@ -80,18 +81,18 @@ int main(int argc, char *argv[])
                 /* use solution at midpoint as initial guess */
                 for (i = 0; i < D; i++) psi[i] = psi_0[i];
                 qaa_update_diagonals_1(j, 0.5 * p.dh, d);
-                qaa_minimize_energy(p.s[is], d, p.eps, p.itermax, &iter,
-                        &edrvr, psi, &psi2, r, &r2, delta);
-                norm = sqrt(psi2);
+                qaa_nlcg_init(p.s[is], d, psi, &edrvr, &args, &nlcg);
+                energy = nlcg_minimize(&nlcg, p.tol, p.itermax, &iter);
+                norm = sqrt(nlcg.x2);
                 for (i = 0; i < D; i++) psi[i] /= norm;
                 for (k = 0; k < N; k++) fj[k] = qaa_sigma_z(psi, k);
 
                 /* h_j = h_0 - dh/2 */
                 for (i = 0; i < D; i++) psi[i] = psi_0[i];
                 qaa_update_diagonals_1(j, -p.dh, d);
-                qaa_minimize_energy(p.s[is], d, p.eps, p.itermax, &iter,
-                        &edrvr, psi, &psi2, r, &r2, delta);
-                norm = sqrt(psi2);
+                qaa_nlcg_init(p.s[is], d, psi, &edrvr, &args, &nlcg);
+                energy = nlcg_minimize(&nlcg, p.tol, p.itermax, &iter);
+                norm = sqrt(nlcg.x2);
                 for (i = 0; i < D; i++) psi[i] /= norm;
                 for (k = 0; k < N; k++)
                     fj[k] = (fj[k] - qaa_sigma_z(psi, k)) / p.dh;
@@ -104,8 +105,8 @@ int main(int argc, char *argv[])
 
             printf("%8s %6d %8g %16s %16g %6g %6d " \
                    "%16.9e %16.9e %16.9e %16.9e %16.9e %16.9e\n",
-                    VERSION, N, p.eps, basename(p.file), p.h[ih], p.s[is], iter,
-                    sqrt(r2), energy, mz, mx, q2, q2p);
+                    VERSION, N, p.tol, basename(p.file), p.h[ih], p.s[is], iter_0,
+                    sqrt(r2_0), energy, mz, mx, q2, q2p);
         }
     }
 

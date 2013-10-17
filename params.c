@@ -44,7 +44,7 @@ void params_defaults(params_t *p)
     p->nh = 52;
     p->dh = 1e-3;
     p->itermax = 300;
-    p->eps = 1e-12;
+    p->tol = 1e-12;
     p->file = NULL;
 }
 
@@ -123,7 +123,7 @@ int params_from_cmd(params_t *p, int argc, char *argv[])
             case 'm' : p->nh      = atoi(optarg); break;
             case 'd' : p->dh      = atof(optarg); break;
             case 'c' : p->itermax = atoi(optarg); break;
-            case 't' : p->eps     = atof(optarg); break;
+            case 't' : p->tol     = atof(optarg); break;
             case 'h' : return PARAMS_SUC_USAGE;   break;
             default  : return PARAMS_ERR_USAGE;
         }

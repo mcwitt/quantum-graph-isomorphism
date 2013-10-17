@@ -19,7 +19,7 @@ typedef struct
     int ns, nh;
     double dh;
     int itermax;
-    double eps;
+    double tol;
     char hexs[GRAPH_BITS_LEN / 4 + 2];
     char *file;
     graph_t graph;
