@@ -13,16 +13,36 @@ double d[D];        /* diagonal elements of problem Hamiltonian */
 double psi[D];      /* wavefunction */
 nlcg_t nlcg;
 qaa_args_t args;    /* QAA-specific parameters */
+params_t p;
+double h, s, edrvr, energy;
+int iter;
+UINT i;
+
+void write_output()
+{
+    double norm, mx, mz, q2;
+
+    /* normalize wavefunction */
+    norm = sqrt(nlcg.x2);
+    for (i = 0; i < D; i++) psi[i] /= norm;
+
+    mz = qaa_mag_z(psi);
+    mx = 2. / N * qaa_me_driver(psi, psi);
+    q2 = qaa_overlap(psi);
+
+    printf("%8s %6d %8g %16s %16g %6g %6d " \
+           "%16.9e %16.9e %16.9e %16.9e %16.9e\n",
+            VERSION, N, p.tol, basename(p.file), h, s, iter,
+            sqrt(nlcg.r2) / norm, energy, mz, mx, q2);
+}
 
 int main(int argc, char *argv[])
 {
     const double sqrt_D = sqrt(D);
     const gsl_rng_type *T = gsl_rng_default;
+    double tol2;
     gsl_rng *rng;
-    params_t p;
-    double edrvr, energy, h, mx, mz, norm, q2;
-    int c, ih, is, iter;
-    UINT i;
+    int c, ih, is;
 
     c = params_from_cmd(&p, argc, argv);
 
@@ -38,6 +58,7 @@ int main(int argc, char *argv[])
         exit(EXIT_SUCCESS);
     }
 
+    tol2 = p.tol * p.tol;
     rng = gsl_rng_alloc(T);
 
     printf("%8s %6s %8s %16s %16s %6s %6s "\
@@ -53,32 +74,39 @@ int main(int argc, char *argv[])
     gsl_rng_env_setup();
     for (i = 0; i < D; i++) psi[i] = gsl_ran_gaussian(rng, 1.) / sqrt_D;
 
-    for (ih = 0; ih < p.nh; ih++)
+    for (h=p.h[ih=0]; ih < p.nh; h=p.h[++ih])
     {
         qaa_update_diagonals(p.h[ih] - h, d);
         h = p.h[ih];
 
-        for (is = 0; is < p.ns; is++)
+        for (s=p.s[is=0]; is < p.ns; s=p.s[++is])
         {
             qaa_nlcg_init(p.s[is], d, psi, &edrvr, &args, &nlcg);
-            energy = nlcg_minimize(&nlcg, p.tol, p.itermax, &iter);
 
-            /* normalize wavefunction */
-            norm = sqrt(nlcg.x2);
-            for (i = 0; i < D; i++) psi[i] /= norm;
+            if (p.fullout)
+            {
+                for (iter = 0; iter < p.itermax; iter++)
+                {
+                    if ((nlcg.r2 / nlcg.x2) < tol2) break;
+                    energy = nlcg_iterate(&nlcg);
+                    write_output();
+                }
+            }
+            else
+            {
+                for (iter = 0; iter < p.itermax; iter++)
+                {
+                    if ((nlcg.r2 / nlcg.x2) < tol2) break;
+                    energy = nlcg_iterate(&nlcg);
+                }
 
-            mz = qaa_mag_z(psi);
-            mx = 2. / N * qaa_me_driver(psi, psi);
-            q2 = qaa_overlap(psi);
-
-            printf("%8s %6d %8g %16s %16g %6g %6d " \
-                   "%16.9e %16.9e %16.9e %16.9e %16.9e\n",
-                    VERSION, N, p.tol, basename(p.file), p.h[ih], p.s[is], iter,
-                    sqrt(nlcg.r2) / norm, energy, mz, mx, q2);
+                write_output();
+            }
         }
     }
 
     gsl_rng_free(rng);
     params_free(&p);
+
     return EXIT_SUCCESS;
 }

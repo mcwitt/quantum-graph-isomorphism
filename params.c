@@ -18,19 +18,21 @@ char *params_usage = \
         "Usage: %s [-option arg ...]\n" \
         "Reads graph in bit-string format from stdin if " \
         "-f, -b or -x not specified.\n" \
-        "Options:\n" \
-        "  -f, --file   read adjacency matrix from file\n" \
-        "  -b, --bits   read graph in bit-string format \n" \
-        "  -x, --hexs   read graph in hex-string format \n" \
-        "  -s, --smin   set minimum value of adiabatic parameter s\n" \
-        "  -S, --smax   set max value of s\n" \
-        "  -n, --ns     set number of s values\n" \
-        "  -e, --emin   set log_10 of minimum magnetic field\n" \
-        "  -E, --emax   set log_10 of maximum magnetic field\n" \
-        "  -m, --nh     set number of magnetic field values\n" \
-        "  -d, --dh     set delta for finite differences\n" \
-        "  -c, --cutoff set maxiumum number of CG iterations\n" \
-        "  -t, --tol    set error tolerance\n";
+        "Flags:\n" \
+        "  -v, --fullout    show full output including all iterations\n"
+        "Parameters:\n" \
+        "  -f, --file       read adjacency matrix from file\n" \
+        "  -b, --bits       read graph in bit-string format \n" \
+        "  -x, --hexs       read graph in hex-string format \n" \
+        "  -s, --smin       set minimum value of adiabatic parameter s\n" \
+        "  -S, --smax       set max value of s\n" \
+        "  -n, --ns         set number of s values\n" \
+        "  -e, --emin       set log_10 of minimum magnetic field\n" \
+        "  -E, --emax       set log_10 of maximum magnetic field\n" \
+        "  -m, --nh         set number of magnetic field values\n" \
+        "  -d, --dh         set delta for finite differences\n" \
+        "  -c, --cutoff     set maxiumum number of CG iterations\n" \
+        "  -t, --tol        set error tolerance\n";
 
 void params_defaults(params_t *p)
 {
@@ -45,6 +47,7 @@ void params_defaults(params_t *p)
     p->dh = 1e-3;
     p->itermax = 300;
     p->tol = 1e-12;
+    p->fullout = 0;
     p->file = NULL;
 }
 
@@ -79,19 +82,20 @@ int params_from_cmd(params_t *p, int argc, char *argv[])
         {"smin",    required_argument, 0, 's'},
         {"smax",    required_argument, 0, 'S'},
         {"ns",      required_argument, 0, 'n'},
-        {"emin",    required_argument, 0, 'e' },
+        {"emin",    required_argument, 0, 'e'},
         {"emax",    required_argument, 0, 'E'},
         {"nh",      required_argument, 0, 'm'},
         {"dh",      required_argument, 0, 'd'},
         {"cutoff",  required_argument, 0, 'c'},
         {"tol",     required_argument, 0, 't'},
+        {"fullout", no_argument,       0, 'v'},
         {"help",    no_argument,       0, 'h'},
         {NULL, 0, 0, 0}
     };
 
     params_defaults(p);
 
-    while ((c = getopt_long(argc, argv, "f:b:x:s:S:n:e:E:m:d:c:t:h",
+    while ((c = getopt_long(argc, argv, "f:b:x:s:S:n:e:E:m:d:c:t:vh",
                     long_options, &long_index)) != -1)
     {
         switch (c)
@@ -124,6 +128,7 @@ int params_from_cmd(params_t *p, int argc, char *argv[])
             case 'd' : p->dh      = atof(optarg); break;
             case 'c' : p->itermax = atoi(optarg); break;
             case 't' : p->tol     = atof(optarg); break;
+            case 'v' : p->fullout = 1;            break;
             case 'h' : return PARAMS_SUC_USAGE;   break;
             default  : return PARAMS_ERR_USAGE;
         }
