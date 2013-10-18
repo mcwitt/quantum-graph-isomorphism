@@ -17,13 +17,12 @@ typedef struct
     /** Pointer to line minimization function */
     double  (*line_min)(void*, const double*, double*);
 
-    void    *arg;   /**< Optional first argument to *obj_grad* and *line_min*. */
-    double  *x;     /**< Solution vector. */
-    double  r[D];   /**< Residual. */
-    double  d[D];   /**< Search direction */
-    double  x2;     /**< Squared norm of solution vector. */
-    double  r2;     /**< Squared norm of the residual. */
-    double  r2p;    /**< Squared norm of previous residual */
+    void        *arg;   /**< Optional first argument to *obj_grad* and *line_min*. */
+    double      r[D];   /**< Residual. */
+    double      d[D];   /**< Search direction */
+    double      x2;     /**< Squared norm of solution vector. */
+    double      r2;     /**< Squared norm of the residual. */
+    double      r2p;    /**< Squared norm of previous residual */
 } nlcg_t;
 
 /**
@@ -49,27 +48,35 @@ typedef struct
  * Initial guess for solution vector.
  */
 double nlcg_init(
-        nlcg_t  *p,
-        double  (*obj_x2_grad)(void*, const double*, double*, double*),
-        double  (*line_min)(void*, const double*, double*),
-        void    *arg,
-        double  *x
+        nlcg_t          *p,
+        double          (*obj_x2_grad)(void*, const double*, double*, double*),
+        double          (*line_min)(void*, const double*, double*),
+        void            *arg,
+        const double    *x
         );
 
 /**
- * Do one iteration of the algorithm.
- * @param[in]   p   Pointer to nlcg_t instance.
+ * Reset algorithm following a change in the objective function.
+ * @param
  */
-double nlcg_iterate(nlcg_t *p);
+double nlcg_reset(nlcg_t *p, const double *x);
+
+/**
+ * Do one iteration of the algorithm.
+ * @param[in,out]   p   Pointer to nlcg_t instance.
+ * @param[in,out]   x   Approximate solution vector.
+ */
+double nlcg_iterate(nlcg_t *p, double *x);
 
 /**
  * Minimize a function using the nonlinear conjugate gradient method with the
  * Fletcher-Reeves update. Returns the minimum value.
- * @param[in]   p           Pointer to nlcg_t instance.
- * @param[in]   tol         Stop when \f$|r|/|x|\f$ is less than *tol*.
- * @param[in]   max_iter    Maximum number of iterations.
- * @param[out   num_iter    Number of iterations used.
+ * @param[in,out]   p           Pointer to nlcg_t instance.
+ * @param[in,out]   x           Solution vector.
+ * @param[in]       tol         Stop when \f$|r|/|x|\f$ is less than *tol*.
+ * @param[in]       max_iter    Maximum number of iterations.
+ * @param[out]      num_iter    Number of iterations used.
  */
-double nlcg_minimize(nlcg_t *p, double tol, int max_iter, int *num_iter);
+double nlcg_minimize(nlcg_t *p, double *x, double tol, int max_iter, int *num_iter);
 
 #endif

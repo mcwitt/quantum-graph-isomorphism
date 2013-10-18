@@ -5,24 +5,22 @@
 #include <libgen.h>
 #include "global.h"
 #include "graph.h"
-#include "nlcg.h"
 #include "params.h"
 #include "qaa.h"
 
-double d[D];        /* diagonal elements of problem hamiltonian */
+params_t p;
+qaa_t qaa;
 double psi_0[D];    /* ground state wavefunction for h_j = h_0 */
 double psi[D];      /* for h_j = h_0 +/- dh/2 */
-nlcg_t nlcg;
-qaa_args_t args;    /* QAA-specific parameters */
+UINT i;
 
 int main(int argc, char *argv[])
 {
     const double sqrt_D = sqrt(D);
     const gsl_rng_type *T = gsl_rng_default;
-    gsl_rng *rng;
-    params_t p;
     double fj[N];
-    double edrvr, energy, h, mx, mz, norm, q2, q2p, r2_0;
+    double energy, h, mx, mz, norm, q2, q2p, r2_0;
+    gsl_rng *rng;
     int c, ih, is, iter, iter_0, j, k;
     UINT i;
 
@@ -39,33 +37,32 @@ int main(int argc, char *argv[])
         fprintf(stderr, params_usage, argv[0]);
         exit(EXIT_SUCCESS);
     }
+
     rng = gsl_rng_alloc(T);
+
+    /* generate random initial wavefunction */
+    gsl_rng_env_setup();
+    for (i = 0; i < D; i++) psi_0[i] = gsl_ran_gaussian(rng, 1.) / sqrt_D;
+
+    qaa_init(&qaa, p.graph.b, psi_0);
+    h = 0.;
 
     printf("%8s %6s %8s %16s %16s %6s %6s "\
            "%16s %16s %16s %16s %16s %16s\n",
             "ver", "N", "tol", "graph", "h", "s", "iter",
             "resid", "energy", "mz", "mx", "q2", "q2p");
 
-    /* encode graph into diagonal elements of hamiltonian */
-    qaa_compute_diagonals(p.graph.b, d);
-    h = 0.;
-
-    /* generate random initial wavefunction */
-    gsl_rng_env_setup();
-    for (i = 0; i < D; i++) psi_0[i] = gsl_ran_gaussian(rng, 1.) / sqrt_D;
-
     for (ih = 0; ih < p.nh; ih++)
     {
-        qaa_update_diagonals(p.h[ih] - h, d);
+        qaa_shift_field(&qaa, p.h[ih] - h);
         h = p.h[ih];
 
-        for (is = 0; is < p.ns; is++)
+        for (qaa.s=p.s[is=0]; is < p.ns; qaa.s=p.s[++is], qaa_reset(&qaa, psi))
         {
-            qaa_nlcg_init(p.s[is], d, psi_0, &edrvr, &args, &nlcg);
-            energy = nlcg_minimize(&nlcg, p.tol, p.itermax, &iter_0);
+            energy = qaa_minimize(&qaa, psi_0, p.tol, p.itermax, &iter_0);
 
-            r2_0 = nlcg.r2 / nlcg.x2;
-            norm = sqrt(nlcg.x2);
+            r2_0 = qaa.cg.r2 / qaa.cg.x2;
+            norm = sqrt(qaa.cg.x2);
             for (i = 0; i < D; i++) psi_0[i] /= norm;
 
             mz = qaa_mag_z(psi_0);
@@ -80,25 +77,25 @@ int main(int argc, char *argv[])
                 /* h_j = h_0 + dh/2 */
                 /* use solution at midpoint as initial guess */
                 for (i = 0; i < D; i++) psi[i] = psi_0[i];
-                qaa_update_diagonals_1(j, 0.5 * p.dh, d);
-                qaa_nlcg_init(p.s[is], d, psi, &edrvr, &args, &nlcg);
-                energy = nlcg_minimize(&nlcg, p.tol, p.itermax, &iter);
-                norm = sqrt(nlcg.x2);
+                qaa_shift_field_1(&qaa, j, 0.5 * p.dh);
+                qaa_reset(&qaa, psi);
+                energy = qaa_minimize(&qaa, psi, p.tol, p.itermax, &iter);
+                norm = sqrt(qaa.cg.x2);
                 for (i = 0; i < D; i++) psi[i] /= norm;
                 for (k = 0; k < N; k++) fj[k] = qaa_sigma_z(psi, k);
 
                 /* h_j = h_0 - dh/2 */
                 for (i = 0; i < D; i++) psi[i] = psi_0[i];
-                qaa_update_diagonals_1(j, -p.dh, d);
-                qaa_nlcg_init(p.s[is], d, psi, &edrvr, &args, &nlcg);
-                energy = nlcg_minimize(&nlcg, p.tol, p.itermax, &iter);
-                norm = sqrt(nlcg.x2);
+                qaa_shift_field_1(&qaa, j, -p.dh);
+                qaa_reset(&qaa, psi);
+                energy = qaa_minimize(&qaa, psi, p.tol, p.itermax, &iter);
+                norm = sqrt(qaa.cg.x2);
                 for (i = 0; i < D; i++) psi[i] /= norm;
                 for (k = 0; k < N; k++)
                     fj[k] = (fj[k] - qaa_sigma_z(psi, k)) / p.dh;
 
                 for (k = 0; k < N; k++) q2p += fj[k] * fj[k];
-                qaa_update_diagonals_1(j, 0.5 * p.dh, d);
+                qaa_shift_field_1(&qaa, j, 0.5 * p.dh);
             }
 
             q2p = sqrt(q2p) / N;

@@ -8,48 +8,57 @@
 
 typedef struct
 {
-    double s, *edrvr;
-    const double *d;
-} qaa_args_t;
+    nlcg_t cg;
+    double s;
+    double d[D];    /* diagonal elements of problem Hamiltonian */
+    double edrvr;
+} qaa_t;
 
 /**
- * Compute the diagonal elements of the Hamiltonian for h_j = 0.
- * @param[in]   b   independent adjacency matrix entries (A_21, A_31, A_32, A_41, etc.)
- * @param[out]  d   diagonal elements of \f$H_d\f$
+ * Compute problem hamiltonian and initialize minimization algorithm. Initially
+ * all \f$h_j\f$ are set to zero. Return initial energy.
+ * @param[out]  p   qaa_t instance.
+ * @param[in]   b   Independent adjacency matrix entries (A_21, A_31, A_32, A_41, etc.)
  */
-void qaa_compute_diagonals(const int *b, double *d);
+double qaa_init(qaa_t *p, const int *b, const double *psi);
 
 /**
- * Update diagonal elements when \f$h_j \rightarrow h_j + \delta\f$.
- * @param[in]       dh  change in field
- * @param[in,out]   d   diagonal elements of \f$H_d\f$
+ * Update problem hamiltonian when \f$h_j \rightarrow h_j + \delta\f$.
+ * @param[in,out]   p   qaa_t instance.
+ * @param[in]       dh  Change in field.
  */
-void qaa_update_diagonals(double dh, double *d);
+void qaa_shift_field(qaa_t *p, double dh);
 
 /**
- * Update diagonal elements for a change in field at a single site.
- * @param[in]       j   index of modified field
- * @param[in]       dh  change in field
- * @param[in,out]   d   diagonal elements of \f$H_d\f$
+ * Update problem hamiltonian for a change in field at a single site.
+ * @param[in,out]   p   qaa_t instance.
+ * @param[in]       j   Index of modified field.
+ * @param[in]       dh  Change in field.
  */
-void qaa_update_diagonals_1(int j, double dh, double *d);
+void qaa_shift_field_1(qaa_t *p, int j, double dh);
 
 /**
- * Initialize conjugate gradient algorithm.
- * @param[in]       s       Adiabatic parameter.
- * @param[in]       d       Diagonal elements of \f$H_d\f$.
- * @param[in,out]   psi     Initial guess for wavefunction.
- * @param[out]      edrvr   Driver energy.
- * @param[out]      nlcg    nlcg_t instance.
+ * Reset the energy minimization algorithm. Return energy.
+ * @param   p       qaa_t instance.
+ * @param   psi     Wavefunction.
  */
-double qaa_nlcg_init(
-        double s,
-        const double *d,
-        double *psi,
-        double *edrvr,
-        qaa_args_t *args,
-        nlcg_t *nlcg
-        );
+double qaa_reset(qaa_t *p, const double *psi);
+
+/**
+ * Do one iteration of the energy-minimization algorithm. Return energy.
+ * @param[in,out]   p   qaa_t instance.
+ */
+double qaa_iterate(qaa_t *p, double *psi);
+
+/**
+ * Return the minimum energy.
+ * @param[in,out]   p           qaa_t instance.
+ * @param[in,out]   psi         Wavefunction.
+ * @param[in]       tol         Stop when \f$|r|/|\psi|\f$ is less than *tol*.
+ * @param[in]       max_iter    Maximum number of iterations.
+ * @param[out]      num_iter    Number of iterations used.
+ */
+double qaa_minimize(qaa_t *p, double *psi, double tol, int max_iter, int *num_iter);
 
 /**
  * Compute the energy and energy gradient.

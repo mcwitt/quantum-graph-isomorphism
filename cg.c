@@ -5,16 +5,13 @@
 #include <libgen.h>
 #include "global.h"
 #include "graph.h"
-#include "nlcg.h"
 #include "params.h"
 #include "qaa.h"
 
-double d[D];        /* diagonal elements of problem Hamiltonian */
-double psi[D];      /* wavefunction */
-nlcg_t nlcg;
-qaa_args_t args;    /* QAA-specific parameters */
 params_t p;
-double h, s, edrvr, energy;
+qaa_t qaa;
+double psi[D];
+double h, energy;
 int iter;
 UINT i;
 
@@ -23,7 +20,7 @@ void write_output()
     double norm, mx, mz, q2;
 
     /* normalize wavefunction */
-    norm = sqrt(nlcg.x2);
+    norm = sqrt(qaa.cg.x2);
     for (i = 0; i < D; i++) psi[i] /= norm;
 
     mz = qaa_mag_z(psi);
@@ -32,8 +29,8 @@ void write_output()
 
     printf("%8s %6d %8g %16s %16g %6g %6d " \
            "%16.9e %16.9e %16.9e %16.9e %16.9e\n",
-            VERSION, N, p.tol, basename(p.file), h, s, iter,
-            sqrt(nlcg.r2) / norm, energy, mz, mx, q2);
+            VERSION, N, p.tol, basename(p.file), h, qaa.s, iter,
+            sqrt(qaa.cg.r2) / norm, energy, mz, mx, q2);
 }
 
 int main(int argc, char *argv[])
@@ -61,34 +58,31 @@ int main(int argc, char *argv[])
     tol2 = p.tol * p.tol;
     rng = gsl_rng_alloc(T);
 
-    printf("%8s %6s %8s %16s %16s %6s %6s "\
-           "%16s %16s %16s %16s %16s\n",
-            "ver", "N", "tol", "graph", "h", "s", "iter",
-            "resid", "energy", "mz", "mx", "q2");
-        
-    /* encode graph into diagonal elements of hamiltonian */
-    qaa_compute_diagonals(p.graph.b, d);
-    h = 0.;
-
     /* generate random initial wavefunction */
     gsl_rng_env_setup();
     for (i = 0; i < D; i++) psi[i] = gsl_ran_gaussian(rng, 1.) / sqrt_D;
 
-    for (h=p.h[ih=0]; ih < p.nh; h=p.h[++ih])
+    qaa_init(&qaa, p.graph.b, psi);
+    h = 0.;
+
+    printf("%8s %6s %8s %16s %16s %6s %6s "\
+           "%16s %16s %16s %16s %16s\n",
+            "ver", "N", "tol", "graph", "h", "s", "iter",
+            "resid", "energy", "mz", "mx", "q2");
+
+    for (ih = 0; ih < p.nh; ih++)
     {
-        qaa_update_diagonals(p.h[ih] - h, d);
+        qaa_shift_field(&qaa, p.h[ih] - h);
         h = p.h[ih];
 
-        for (s=p.s[is=0]; is < p.ns; s=p.s[++is])
+        for (qaa.s=p.s[is=0]; is < p.ns; qaa.s=p.s[++is], qaa_reset(&qaa, psi))
         {
-            qaa_nlcg_init(p.s[is], d, psi, &edrvr, &args, &nlcg);
-
             if (p.fullout)
             {
                 for (iter = 0; iter < p.itermax; iter++)
                 {
-                    if ((nlcg.r2 / nlcg.x2) < tol2) break;
-                    energy = nlcg_iterate(&nlcg);
+                    if ((qaa.cg.r2 / qaa.cg.x2) < tol2) break;
+                    energy = qaa_iterate(&qaa, psi);
                     write_output();
                 }
             }
@@ -96,8 +90,8 @@ int main(int argc, char *argv[])
             {
                 for (iter = 0; iter < p.itermax; iter++)
                 {
-                    if ((nlcg.r2 / nlcg.x2) < tol2) break;
-                    energy = nlcg_iterate(&nlcg);
+                    if ((qaa.cg.r2 / qaa.cg.x2) < tol2) break;
+                    energy = qaa_iterate(&qaa, psi);
                 }
 
                 write_output();
