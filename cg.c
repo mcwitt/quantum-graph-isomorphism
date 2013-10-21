@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
         {
             if (p.fullout)
             {
-                for (iter = 0; iter < p.itermax; iter++)
+                for (iter = 1; iter <= p.itermax; iter++)
                 {
                     if ((qaa.cg.r2 / qaa.cg.x2) < tol2) break;
                     energy = qaa_iterate(&qaa, psi);
