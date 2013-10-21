@@ -3,6 +3,7 @@
 #include "graph.h"
 #include "range.h"
 #include <getopt.h>
+#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -14,8 +15,7 @@ char *params_errmsg[] = {
 
 char *params_usage = \
         "Conjugate gradient energy minimization.\n" \
-        "Usage: %s [-option arg ...] " \
-        "[(-f amatrix_file | -b bit_string | -x hex_string)]\n" \
+        "Usage: %s [-option arg ...]\n" \
         "Reads graph in bit-string format from stdin if " \
         "-f, -b or -x not specified.\n" \
         "Flags:\n" \
@@ -51,8 +51,6 @@ void params_defaults(params_t *p)
     p->file = NULL;
 }
 
-enum read_mode { READ_FILE, READ_BITS, READ_HEXS };
-
 static int read_file(graph_t *g, char *file)
 {
     FILE *fp;
@@ -75,9 +73,7 @@ int params_from_cmd(params_t *p, int argc, char *argv[])
 {
     extern char *optarg;
     extern int optind;
-    enum read_mode mode = READ_BITS;
-    char *arg;
-    int c, long_index;
+    int c, long_index, is_graph_loaded = 0;
 
     static struct option long_options[] = {
         {"file",    required_argument, 0, 'f'},
@@ -104,8 +100,25 @@ int params_from_cmd(params_t *p, int argc, char *argv[])
     {
         switch (c)
         {
-            case 'f' : mode       = READ_FILE; break;
-            case 'x' : mode       = READ_HEXS; break;
+            case 'f': 
+                if (read_file(&p->graph, optarg) != 0)
+                    return PARAMS_ERR_LOAD;
+                graph_to_hexs(&p->graph, p->hexs);
+                p->file = optarg;
+                is_graph_loaded = 1;
+                break;
+            case 'b':
+                if (graph_read_bits(&p->graph, optarg) != 0)
+                    return PARAMS_ERR_LOAD;
+                graph_to_hexs(&p->graph, p->hexs);
+                is_graph_loaded = 1;
+                break;
+            case 'x':
+                if (graph_read_hexs(&p->graph, optarg) != 0)
+                    return PARAMS_ERR_LOAD;
+                strcpy(p->hexs, optarg);
+                is_graph_loaded = 1;
+                break;
             case 's' : p->smin    = atof(optarg); break;
             case 'S' : p->smax    = atof(optarg); break;
             case 'n' : p->ns      = atoi(optarg); break;
@@ -121,33 +134,11 @@ int params_from_cmd(params_t *p, int argc, char *argv[])
         }
     }
 
+    if ((! is_graph_loaded) && (read_stdin(&p->graph) != 0))
+        return PARAMS_ERR_LOAD;
+
     p->s = linspace(p->smin, p->smax, p->ns);
     p->h = logspace(p->emin, p->emax, p->nh);
-
-    if (argc > optind)  /* graph specified in command */
-    {
-        arg = argv[optind];
-
-        switch(mode)
-        {
-            case READ_BITS:
-                if (graph_read_bits(&p->graph, arg) != 0)
-                    return PARAMS_ERR_LOAD;
-                graph_to_hexs(&p->graph, p->hexs);
-                break;
-            case READ_HEXS:
-                if (graph_read_hexs(&p->graph, arg) != 0)
-                    return PARAMS_ERR_LOAD;
-                strcpy(p->hexs, arg);
-                break;
-            case READ_FILE:
-                if (read_file(&p->graph, arg) != 0) 
-                   return PARAMS_ERR_LOAD;
-                graph_to_hexs(&p->graph, p->hexs);
-                p->file = arg;
-        }
-    }
-    else if (read_stdin(&p->graph) != 0) return PARAMS_ERR_LOAD;
 
     return PARAMS_SUC;
 }
