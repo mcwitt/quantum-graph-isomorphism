@@ -6,26 +6,23 @@
 
 #include "qaa.h"
 #include "global.h"
-#include "nlcg.h"
 #include <math.h>
 #include <stdlib.h>
 
 /* SPIN(i, j) returns the eigenvalue of sigma^z_j for state |i> */
 #define SPIN(i, j)  ((int) ((((i) >> (j)) & 1) << 1) - 1)
 
-typedef struct { double s, *edrvr; const double *d; } arg_t;
-
-static double obj_x2_grad(void *arg, const double *psi, double *x2, double *grad);
+static double obj_x2_grad(void *arg, const double *psi, double *psi2, double *grad);
 static double line_min(void *arg, const double *psi, double *delta);
 
-void qaa_compute_diagonals(const int *b, double *d)
+double qaa_init(qaa_t *p, const int *b, const double *psi)
 {
     int ib, j, k, sj;
     UINT i;
 
     for (i = 0; i < D; i++)
     {
-        d[i] = 0.;
+        p->d[i] = 0.;
         ib = 0;
 
         for (j = 1; j < N; j++)
@@ -34,45 +31,42 @@ void qaa_compute_diagonals(const int *b, double *d)
 
             for (k = 0; k < j; k++)
                 if (b[ib++] == 1)
-                    d[i] += sj * SPIN(i, k);
+                    p->d[i] += sj * SPIN(i, k);
         }
     }
+
+    return nlcg_init(&p->cg, obj_x2_grad, line_min, p, psi);
 }
 
-void qaa_update_diagonals(double dh, double *d)
+void qaa_shift_field(qaa_t *p, double dh)
 {
     int j;
     UINT i;
 
     for (i = 0; i < D; i++)
         for (j = 0; j < N; j++)
-            d[i] -= dh * SPIN(i, j);
+            p->d[i] -= dh * SPIN(i, j);
 }
 
-void qaa_update_diagonals_1(int j, double dh, double *d)
+void qaa_shift_field_1(qaa_t *p, int j, double dh)
 {
     UINT i;
-    for (i = 0; i < D; i++) d[i] -= dh * SPIN(i, j);
+    for (i = 0; i < D; i++) p->d[i] -= dh * SPIN(i, j);
 }
 
-double qaa_minimize_energy(
-        double s,
-        const double *d,
-        double eps,
-        int max_iter,
-        int *num_iter,
-        double *edrvr,
-        double *psi,
-        double *psi2,
-        double *r,
-        double *r2,
-        double *delta
-        )
+double qaa_reset(qaa_t *p, const double *psi)
 {
-    arg_t args = {s, edrvr, d};
+    return nlcg_reset(&p->cg, psi);
+}
 
-    return nlcg_minimize_norm_ind(obj_x2_grad, line_min, &args, eps,
-            max_iter, num_iter, psi, psi2, r, r2, delta);
+double qaa_iterate(qaa_t *p, double *psi)
+{
+    return nlcg_iterate(&p->cg, psi);
+}
+
+double qaa_minimize(qaa_t *p, double *psi, double tol, int max_iter, int *num_iter)
+{
+    return nlcg_minimize(&p->cg, psi, tol, max_iter, num_iter);
 }
 
 double qaa_me_driver(const double *u, const double *v)
@@ -229,15 +223,15 @@ double qaa_overlap(const double *psi)
     return sqrt(result) / N;
 }
 
-static double obj_x2_grad(void *arg, const double *psi, double *x2, double *grad)
+static double obj_x2_grad(void *arg, const double *psi, double *psi2, double *grad)
 {
-    arg_t args = *((arg_t*) arg);
-    return qaa_energy_grad(args.s, args.d, psi, grad, x2, args.edrvr);
+    qaa_t *p = arg;
+    return qaa_energy_grad(p->s, p->d, psi, grad, psi2, &p->edrvr);
 }
 
 static double line_min(void *arg, const double *psi, double *delta)
 {
-    arg_t args = *((arg_t*) arg);
-    return qaa_line_min(args.s, args.d, psi, delta);
+    qaa_t *p = arg;
+    return qaa_line_min(p->s, p->d, psi, delta);
 }
 

@@ -4,64 +4,70 @@
  * @brief   Subroutines related to the QAA hamiltonian for the GIMP.
  */
 
-/**
- * Compute the diagonal elements of the Hamiltonian for h_j = 0.
- * @param[in]   b   independent adjacency matrix entries (A_21, A_31, A_32, A_41, etc.)
- * @param[out]  d   diagonal elements of f$H_df$
- */
-void qaa_compute_diagonals(const int *b, double *d);
+#include "nlcg.h"
+
+typedef struct
+{
+    nlcg_t cg;
+    double s;
+    double d[D];    /* diagonal elements of problem Hamiltonian */
+    double edrvr;
+} qaa_t;
 
 /**
- * Update diagonal elements when \f$h_j \rightarrow h_j + \delta\f$.
- * @param[in]       dh  change in field
- * @param[in,out]   d   diagonal elements of f$H_df$
+ * Compute problem hamiltonian and initialize minimization algorithm. Initially
+ * all \f$h_j\f$ are set to zero. Return initial energy.
+ * @param[out]  p   qaa_t instance.
+ * @param[in]   b   Independent adjacency matrix entries (A_21, A_31, A_32, A_41, etc.)
  */
-void qaa_update_diagonals(double dh, double *d);
+double qaa_init(qaa_t *p, const int *b, const double *psi);
 
 /**
- * Update diagonal elements for a change in field at a single site.
- * @param[in]       j   index of modified field
- * @param[in]       dh  change in field
- * @param[in,out]   d   diagonal elements of f$H_df$
+ * Update problem hamiltonian when \f$h_j \rightarrow h_j + \delta\f$.
+ * @param[in,out]   p   qaa_t instance.
+ * @param[in]       dh  Change in field.
  */
-void qaa_update_diagonals_1(int j, double dh, double *d);
+void qaa_shift_field(qaa_t *p, double dh);
 
 /**
- * Find the ground state using the conjugate gradient algorithm.
- * @param[in]   s           adiabatic parameter
- * @param[in]   d           diagonal elements of f$H_df$
- * @param[in]   eps         maximum norm of residual
- * @param[in]   max_iter    maximum number of iterations
- * @param[out]  num_iter    number of iterations
- * @param[out]  edrvr       driver energy
- * @param[out]  psi         ground state vector
- * @param[out]  psi2        squared norm of wavefunction
- * @param[out]  r           residual vector
- * @param[out]  r2          squared norm of residual
- * @param[out]  delta       CG search direction at last iteration
+ * Update problem hamiltonian for a change in field at a single site.
+ * @param[in,out]   p   qaa_t instance.
+ * @param[in]       j   Index of modified field.
+ * @param[in]       dh  Change in field.
  */
-double qaa_minimize_energy(
-        double s,
-        const double *d,
-        double eps,
-        int max_iter,
-        int *num_iter,
-        double *edrvr,
-        double *psi,
-        double *psi2,
-        double *r,
-        double *r2,
-        double *delta
-        );
+void qaa_shift_field_1(qaa_t *p, int j, double dh);
+
+/**
+ * Reset the energy minimization algorithm. Return energy.
+ * @param   p       qaa_t instance.
+ * @param   psi     Wavefunction.
+ */
+double qaa_reset(qaa_t *p, const double *psi);
+
+/**
+ * Do one iteration of the energy-minimization algorithm. Return energy.
+ * @param[in,out]   p   qaa_t instance.
+ */
+double qaa_iterate(qaa_t *p, double *psi);
+
+/**
+ * Return the minimum energy.
+ * @param[in,out]   p           qaa_t instance.
+ * @param[in,out]   psi         Wavefunction.
+ * @param[in]       tol         Stop when \f$|r|/|\psi|\f$ is less than *tol*.
+ * @param[in]       max_iter    Maximum number of iterations.
+ * @param[out]      num_iter    Number of iterations used.
+ */
+double qaa_minimize(qaa_t *p, double *psi, double tol, int max_iter, int *num_iter);
 
 /**
  * Compute the energy and energy gradient.
- * @param[in]   s       adiabatic parameter
- * @param[in]   d       diagonal elements of f$H_df$
- * @param[in]   psi     wavefunction
- * @param[out]  grad    energy gradient
- * @param[out]  psi2    squared norm of wavefunction
- * @param[out]  edrvr   driver (off-diagonal) part of energy
+ * @param[in]   s       Adiabatic parameter.
+ * @param[in]   d       Diagonal elements of \f$H_d\f$.
+ * @param[in]   psi     Wavefunction.
+ * @param[out]  grad    Energy gradient.
+ * @param[out]  psi2    Squared norm of wavefunction.
+ * @param[out]  edrvr   Driver (off-diagonal) part of energy.
  */
 double qaa_energy_grad(
         double s,
@@ -73,10 +79,10 @@ double qaa_energy_grad(
 
 /**
  * Minimize the energy along a specified direction.
- * @param[in]   s       adiabatic parameter
- * @param[in]   d       diagonal elements of f$H_df$
- * @param[in]   psi     wavefunction
- * @param[in]   delta   search direction
+ * @param[in]   s       Adiabatic parameter.
+ * @param[in]   d       Diagonal elements of \f$H_d\f$.
+ * @param[in]   psi     Wavefunction.
+ * @param[in]   delta   Search direction.
  */
 double qaa_line_min(
         double s,
@@ -86,17 +92,17 @@ double qaa_line_min(
 
 /**
  * Compute matrix element of the driver Hamiltonian, \f$H_d\f$.
- * @param[in]   u   bra vector
- * @param[in]   v   ket vector
+ * @param[in]   u   Bra vector.
+ * @param[in]   v   Ket vector.
  */
 double qaa_me_driver(const double *u, const double *v);
 
 /**
  * Compute matrix element of the problem Hamiltonian, \f$H_p\f$.
- * @param[in]   d       diagonal elements of \f$H_d\f$
- * @param[in]   u       bra vector
- * @param[in]   v       ket vector
- * @param[out]  udotv   \f$u \cdot v\f$
+ * @param[in]   d       Diagonal elements of \f$H_d\f$.
+ * @param[in]   u       Bra vector.
+ * @param[in]   v       Ket vector.
+ * @param[out]  udotv   \f$\langle u \mid v \rangle\f$.
  */
 double qaa_me_problem(
         const double *d,
