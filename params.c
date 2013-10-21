@@ -3,7 +3,6 @@
 #include "graph.h"
 #include "range.h"
 #include <getopt.h>
-#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
