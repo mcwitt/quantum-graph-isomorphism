@@ -1,3 +1,5 @@
+#include "hexbin.h"
+
 int bin2hex(int *bin, int n, char *hex)
 {
     int d, i = (4 - n%4)%4;
