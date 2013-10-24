@@ -24,7 +24,7 @@ void write_output()
     for (i = 0; i < D; i++) psi[i] /= norm;
 
     mz = qaa_mag_z(psi);
-    mx = 2. / N * qaa_me_driver(psi, psi);
+    mx = 2. / N * qaa.edrvr;
     q2 = qaa_overlap(psi);
 
     printf("%8s %6d %8g %16s %16g %6g %6d " \
