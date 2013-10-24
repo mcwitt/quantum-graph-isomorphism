@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
             for (i = 0; i < D; i++) psi_0[i] /= norm;
 
             mz = qaa_mag_z(psi_0);
-            mx = 2. / N * qaa.edrvr;
+            mx = 2. / N * qaa.edrvr / qaa.cg.x2;
             q2 = qaa_overlap(psi_0);
 
             q2p = 0.;
