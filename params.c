@@ -28,8 +28,8 @@ char *params_usage = \
         "  -s, --smin       set minimum value of adiabatic parameter s\n" \
         "  -S, --smax       set max value of s\n" \
         "  -n, --ns         set number of s values\n" \
-        "  -e, --emin       set log_10 of minimum magnetic field\n" \
-        "  -E, --emax       set log_10 of maximum magnetic field\n" \
+        "  -z, --hmin       set minimum magnetic field\n" \
+        "  -Z, --hmax       set maximum magnetic field\n" \
         "  -m, --nh         set number of magnetic field values\n" \
         "  -d, --dh         set delta for finite differences\n" \
         "  -c, --cutoff     set maxiumum number of CG iterations\n" \
@@ -84,7 +84,7 @@ int params_from_cmd(params_t *p, int argc, char *argv[])
         {"smin",    required_argument, 0, 's'},
         {"smax",    required_argument, 0, 'S'},
         {"ns",      required_argument, 0, 'n'},
-        {"hmin",    required_argument, 0, 'h'},
+        {"hmin",    required_argument, 0, 'z'},
         {"hmax",    required_argument, 0, 'Z'},
         {"nh",      required_argument, 0, 'm'},
         {"dh",      required_argument, 0, 'd'},
