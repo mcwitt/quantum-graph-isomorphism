@@ -94,8 +94,9 @@ def minimize_energy(
     full output: energy, psi, resid, delta, edrvr, num_iter
     '''
 
-    cdef double edrvr, psi2, r2
-    cdef int num_iter
+    cdef:
+        double edrvr, psi2, r2
+        int num_iter
 
     if psi is None: psi = np.random.normal(scale=1./np.sqrt(D), size=D)
     if delta is None: delta = np.empty(D, dtype=np.dtype('d'))
@@ -117,11 +118,12 @@ def minimize_energy(
 
 def hamiltonian(int[:, :] a, double[:] h, double s):
     
-    cdef int[:] rows, cols
-    cdef double[:] vals
-    cdef double c, ode = 0.5 * (1. - s)
-    cdef int j, k
-    cdef UINT i, ia, m
+    cdef:
+        int[:] rows, cols
+        double[:] vals
+        double c, ode = 0.5 * (1. - s)
+        int j, k
+        UINT i, ia, m
 
     n = (N+1)*D # number of nonzero entries
 
@@ -171,10 +173,11 @@ def overlap(double[:] psi):
     return qaa_overlap(&psi[0])
 
 def sigma_z(double[:] psi):
-    cdef double[:] result
-    cdef double c2
-    cdef int j
-    cdef UINT i
+    cdef:
+        double[:] result
+        double c2
+        int j
+        UINT i
 
     result = np.zeros(N, dtype=np.dtype('d'))
 
@@ -186,10 +189,11 @@ def sigma_z(double[:] psi):
     return np.asarray(result)
 
 def sigma2_z(double[:] psi):
-    cdef double[:,:] result
-    cdef double c2
-    cdef int j, k, s_j
-    cdef UINT i
+    cdef:
+        double[:,:] result
+        double c2
+        int j, k, s_j
+        UINT i
 
     result = np.zeros((N, N), dtype=np.dtype('d'))
 
@@ -205,9 +209,10 @@ def sigma2_z(double[:] psi):
     return a
 
 def sigma_x(double[:] psi):
-    cdef double[:] result
-    cdef int j
-    cdef UINT i, m
+    cdef:
+        double[:] result
+        int j
+        UINT i, m
 
     result = np.zeros(N, dtype=np.dtype('d'))
 
