@@ -15,11 +15,12 @@ typedef struct
     double *s;
     double *h;
     double smin, smax;
-    double emin, emax;
+    double hmin, hmax;
     int ns, nh;
     double dh;
     int itermax;
     double tol;
+    int logh;
     int fullout;
     char hexs[GRAPH_BITS_LEN / 4 + 2];
     char *file;

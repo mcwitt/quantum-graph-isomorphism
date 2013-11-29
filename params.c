@@ -1,6 +1,7 @@
 #include "params.h"
 #include "global.h"
 #include "graph.h"
+#include "math.h"
 #include "range.h"
 #include <getopt.h>
 #include <stdlib.h>
@@ -18,7 +19,8 @@ char *params_usage = \
         "Reads graph in bit-string format from stdin if " \
         "-f, -b or -x not specified.\n" \
         "Flags:\n" \
-        "  -v, --fullout    show full output including all iterations\n"
+        "  -v, --fullout    show full output including all iterations\n" \
+        "  -g, --logh       use logarithmically spaced values for h\n" \
         "Parameters:\n" \
         "  -f, --file       read adjacency matrix from file\n" \
         "  -b, --bits       read graph in bit-string format \n" \
@@ -26,8 +28,8 @@ char *params_usage = \
         "  -s, --smin       set minimum value of adiabatic parameter s\n" \
         "  -S, --smax       set max value of s\n" \
         "  -n, --ns         set number of s values\n" \
-        "  -e, --emin       set log_10 of minimum magnetic field\n" \
-        "  -E, --emax       set log_10 of maximum magnetic field\n" \
+        "  -z, --hmin       set minimum magnetic field\n" \
+        "  -Z, --hmax       set maximum magnetic field\n" \
         "  -m, --nh         set number of magnetic field values\n" \
         "  -d, --dh         set delta for finite differences\n" \
         "  -c, --cutoff     set maxiumum number of CG iterations\n" \
@@ -39,14 +41,15 @@ void params_defaults(params_t *p)
     p->h = NULL;
     p->smin = 0.02;
     p->smax = 0.98;
-    p->emin = -2.;
-    p->emax = 1.;
+    p->hmin = 0.01;
+    p->hmax = 10.0;
     p->ns = 49;
-    p->nh = 52;
+    p->nh = 49;
     p->dh = 1e-3;
     p->itermax = 300;
     p->tol = 1e-12;
     p->fullout = 0;
+    p->logh = 0;
     p->file = NULL;
 }
 
@@ -81,20 +84,21 @@ int params_from_cmd(params_t *p, int argc, char *argv[])
         {"smin",    required_argument, 0, 's'},
         {"smax",    required_argument, 0, 'S'},
         {"ns",      required_argument, 0, 'n'},
-        {"emin",    required_argument, 0, 'e'},
-        {"emax",    required_argument, 0, 'E'},
+        {"hmin",    required_argument, 0, 'z'},
+        {"hmax",    required_argument, 0, 'Z'},
         {"nh",      required_argument, 0, 'm'},
         {"dh",      required_argument, 0, 'd'},
         {"cutoff",  required_argument, 0, 'c'},
         {"tol",     required_argument, 0, 't'},
         {"fullout", no_argument,       0, 'v'},
+        {"logh",    no_argument,       0, 'g'},
         {"help",    no_argument,       0, 'h'},
         {NULL, 0, 0, 0}
     };
 
     params_defaults(p);
 
-    while ((c = getopt_long(argc, argv, "f:b:x:s:S:n:e:E:m:d:c:t:vh",
+    while ((c = getopt_long(argc, argv, "f:b:x:s:S:n:z:Z:m:d:c:t:vgh",
                     long_options, &long_index)) != -1)
     {
         switch (c)
@@ -121,13 +125,14 @@ int params_from_cmd(params_t *p, int argc, char *argv[])
             case 's' : p->smin    = atof(optarg); break;
             case 'S' : p->smax    = atof(optarg); break;
             case 'n' : p->ns      = atoi(optarg); break;
-            case 'e' : p->emin    = atof(optarg); break;
-            case 'E' : p->emax    = atof(optarg); break;
+            case 'z' : p->hmin    = atof(optarg); break;
+            case 'Z' : p->hmax    = atof(optarg); break;
             case 'm' : p->nh      = atoi(optarg); break;
             case 'd' : p->dh      = atof(optarg); break;
             case 'c' : p->itermax = atoi(optarg); break;
             case 't' : p->tol     = atof(optarg); break;
             case 'v' : p->fullout = 1;            break;
+            case 'g' : p->logh = 1;               break;
             case 'h' : return PARAMS_SUC_USAGE;   break;
             default  : return PARAMS_ERR_USAGE;
         }
@@ -137,7 +142,16 @@ int params_from_cmd(params_t *p, int argc, char *argv[])
         return PARAMS_ERR_LOAD;
 
     p->s = linspace(p->smin, p->smax, p->ns);
-    p->h = logspace(p->emin, p->emax, p->nh);
+
+    if (p->logh)
+    {
+        double dmin, dmax;
+
+        dmin = log10(p->hmin);
+        dmax = log10(p->hmax);
+        p->h = logspace(dmin, dmax, p->nh);
+    }
+    else p->h = linspace(p->hmin, p->hmax, p->nh);
 
     return PARAMS_SUC;
 }

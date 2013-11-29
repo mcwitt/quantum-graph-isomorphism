@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
             for (i = 0; i < D; i++) psi_0[i] /= norm;
 
             mz = qaa_mag_z(psi_0);
-            mx = 2. / N * qaa_me_driver(psi_0, psi_0);
+            mx = 2. / N * qaa.edrvr / qaa.cg.x2;
             q2 = qaa_overlap(psi_0);
 
             q2p = 0.;
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 
             printf("%8s %6d %8g %16s %16g %6g %6d " \
                    "%16.9e %16.9e %16.9e %16.9e %16.9e %16.9e\n",
-                    VERSION, N, p.tol, basename(p.file), p.h[ih], p.s[is], iter_0,
+                    VERSION, N, p.tol, basename(p.file), h, qaa.s, iter_0,
                     sqrt(r2_0), energy, mz, mx, q2, q2p);
         }
     }
