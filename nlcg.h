@@ -48,12 +48,18 @@ typedef struct
  * Initial guess for solution vector.
  */
 double nlcg_init(
-        nlcg_t          *p,
-        double          (*obj_x2_grad)(void*, const double*, double*, double*),
-        double          (*line_min)(void*, const double*, double*),
-        void            *arg,
-        const double    *x
+        nlcg_t *p,
+        double (*obj_x2_grad)(void*, const double*, double*, double*),
+        double (*line_min)(void*, const double*, double*),
+        void *arg,
+        const double *x
         );
+{
+    p->obj_x2_grad = obj_x2_grad;
+    p->line_min = line_min;
+    p->arg = arg;
+    return nlcg_reset(p, x);
+}
 
 /**
  * Reset algorithm following a change in the objective function.

@@ -2,11 +2,11 @@
 #include "global.h"
 
 double nlcg_init(
-        nlcg_t          *p,
-        double          (*obj_x2_grad)(void*, const double*, double*, double*),
-        double          (*line_min)(void*, const double*, double*),
-        void            *arg,
-        const double    *x
+        nlcg_t *p,
+        double (*obj_x2_grad)(void*, const double*, double*, double*),
+        double (*line_min)(void*, const double*, double*),
+        void *arg,
+        const double *x
         )
 {
     p->obj_x2_grad = obj_x2_grad;
