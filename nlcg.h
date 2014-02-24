@@ -54,12 +54,6 @@ double nlcg_init(
         void *arg,
         const double *x
         );
-{
-    p->obj_x2_grad = obj_x2_grad;
-    p->line_min = line_min;
-    p->arg = arg;
-    return nlcg_reset(p, x);
-}
 
 /**
  * Reset algorithm following a change in the objective function.
