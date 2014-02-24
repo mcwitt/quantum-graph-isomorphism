@@ -17,28 +17,24 @@ N = n
 D = ndim
 
 cdef extern from "qaa.h":
+    struct qaa_t:
+        pass
 
-    void qaa_compute_diagonals(int *b, double *d)
-    void qaa_update_diagonals(double dh, double *d)
-    void qaa_update_diagonals_1(int j, double dh, double *d)
+    double qaa_init(qaa_t *p, int *b, double *psi);
+    void qaa_shift_field(qaa_t *p, double dh);
+    void qaa_shift_field_1(qaa_t *p, int j, double dh);
+    double qaa_reset(qaa_t *p, double *psi);
+    double qaa_iterate(qaa_t *p, double *psi);
 
-    double qaa_minimize_energy(
-        double s,
-        double *d,
-        double eps,
-        int max_iter,
-        int *num_iter,
-        double *edrvr,
-        double *psi,
-        double *psi2,
-        double *r,
-        double *r2,
-        double *delta
-        )
+    double qaa_minimize(
+            qaa_t *p,
+            double *psi,
+            double tol,
+            int max_iter,
+            int *num_iter);
 
     double qaa_me_driver(double *u, double *v)
     double qaa_me_problem(double *d, double *u, double *v, double *udotv)
-
     double qaa_mag_z(double *psi)
     double qaa_overlap(double *psi)
 
