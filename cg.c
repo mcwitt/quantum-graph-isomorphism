@@ -31,6 +31,8 @@ void write_output()
            "%16.9e %16.9e %16.9e %16.9e %16.9e\n",
             VERSION, N, p.tol, basename(p.file), h, qaa.s, iter,
             sqrt(qaa.cg.r2) / norm, energy, mz, mx, q2);
+
+    fflush(stdout);
 }
 
 int main(int argc, char *argv[])
