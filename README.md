@@ -1,2 +1,2 @@
-Notes and code for simulations of quantum algorithms for the Graph
-IsoMorphism Problem (GIMP).
+Conjugate gradient energy minimization for the quantum graph isomorphism
+problem.
