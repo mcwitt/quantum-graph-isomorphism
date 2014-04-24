@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
                     VERSION, N, p.tol, basename(p.file), h, qaa.s, iter_0,
                     sqrt(r2_0), energy, mz, mx, q2, q2p);
 
-            fflush(stdout)
+            fflush(stdout);
         }
     }
 
